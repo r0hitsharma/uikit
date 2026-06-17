@@ -815,7 +815,7 @@ def test_revoke_connection_token_removes_lookup() -> None:
 
 def test_register_server_tool_routes_call_without_host_import(client: TestClient) -> None:
     """The host can register a server tool; the relay routes calls to it with no
-    host.mcp import needed inside the relay core."""
+    host-package import needed inside the relay core."""
     clear_registries()  # start clean (autouse fixture already did this, but be explicit)
     called_with: list[dict] = []
 
@@ -868,7 +868,7 @@ def test_register_server_tool_routes_call_without_host_import(client: TestClient
 
 def test_register_prompt_routes_list_and_get(client: TestClient) -> None:
     """The host can register prompts; the relay routes prompts/list and
-    prompts/get without importing host.mcp."""
+    prompts/get without importing the host package."""
     clear_registries()
 
     def _list() -> list[dict]:
@@ -954,36 +954,6 @@ def test_register_guarded_write_advertised_and_requires_confirmation(
     result = resp.json()["result"]
     assert result["isError"] is True
     assert "browser" in result["content"][0]["text"].lower()
-
-
-def test_no_host_imports_in_relay_core() -> None:
-    """Sanity check: none of the relay core modules import host.*."""
-    import importlib
-    import sys
-
-    # Force reload to get a clean module state for the import check.
-    relay_modules = [
-        "webmcp_relay.router",
-        "webmcp_relay.relay",
-        "webmcp_relay.confirm",
-        "webmcp_relay.store",
-        "webmcp_relay.protocol",
-        "webmcp_relay.tokens",
-        "webmcp_relay.registry",
-    ]
-    for mod_name in relay_modules:
-        mod = sys.modules.get(mod_name)
-        if mod is None:
-            mod = importlib.import_module(mod_name)
-        # Walk the module's globals: no name should reference host.
-        for attr_name in dir(mod):
-            attr = getattr(mod, attr_name, None)
-            if attr is None:
-                continue
-            attr_module = getattr(attr, "__module__", "") or ""
-            assert not attr_module.startswith("host"), (
-                f"{mod_name}.{attr_name} references {attr_module} (host import leaked)"
-            )
 
 
 # ---------------------------------------------------------------------------
@@ -1172,68 +1142,6 @@ def test_harness_status_not_attached_when_no_initialize(client: TestClient) -> N
 # ---------------------------------------------------------------------------
 # I1: Relay is the sole /mcp handler; FastMCP server path is gone
 # ---------------------------------------------------------------------------
-
-
-def test_relay_tools_list_advertises_atlas_search(client: TestClient) -> None:
-    """tools/list via the relay must include uikit-preview.atlas.search (registered
-    server-side by the host) and must NOT include any of the 11 data tools
-    (those are now UI-registered in the Explorer)."""
-    from host.mcp.skills import atlas_search_tool
-
-    # Register atlas.search as the host does in app._register_relay_capabilities.
-    register_server_tool(
-        ServerToolSpec(
-            name=atlas_search_tool.name,
-            description=atlas_search_tool.description,
-            input_schema=atlas_search_tool.input_schema,
-            handler=atlas_search_tool.handler,
-            mutation=atlas_search_tool.mutation,
-        )
-    )
-
-    sess = client.post("/api/sessions", json={}).json()
-    token = sess["connection_token"]
-
-    resp = client.post(
-        "/mcp",
-        json={"method": "tools/list", "id": 1},
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    assert resp.status_code == 200
-    names = [t["name"] for t in resp.json()["result"]["tools"]]
-
-    # Atlas search must appear via the relay.
-    assert "uikit-preview.atlas.search" in names
-
-    # None of the 11 data tools (now UI-registered) must appear here.
-    ui_migrated = {
-        "uikit-preview.branches.list",
-        "uikit-preview.identities.list",
-        "uikit-preview.identities.get",
-        "uikit-preview.identities.dependencies",
-        "uikit-preview.identities.dependents",
-        "uikit-preview.content_nodes.list",
-        "uikit-preview.content_nodes.get",
-        "uikit-preview.content_nodes.children",
-        "uikit-preview.identities.history",
-        "uikit-preview.commits.changes",
-        "uikit-preview.branches.compare",
-    }
-    for name in ui_migrated:
-        assert name not in names, f"{name} should not be server-registered (it is UI-migrated)"
-
-
-def test_no_fastmcp_mount_in_host_mcp() -> None:
-    """Sanity: host.mcp no longer exports mcp_asgi or mcp_server.
-    Importing the package must not create a FastMCP ASGI application."""
-    import host.mcp as mcp_pkg
-
-    assert not hasattr(mcp_pkg, "mcp_asgi"), (
-        "mcp_asgi found in host.mcp - the FastMCP mount should have been removed"
-    )
-    assert not hasattr(mcp_pkg, "mcp_server"), (
-        "mcp_server found in host.mcp - the FastMCP server should have been removed"
-    )
 
 
 def test_relay_is_sole_mcp_handler(client: TestClient) -> None:

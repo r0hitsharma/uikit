@@ -1,6 +1,6 @@
 """Relay registration interface: server tools, prompts, and guarded writes.
 
-The relay core is generic; the host populates these registries
+The relay core is generic; the host application populates these registries
 at startup with its own capabilities. No host imports live here.
 
 Registration functions (called by the host at startup):

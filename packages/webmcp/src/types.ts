@@ -1,10 +1,10 @@
 /**
  * Tool-definition contract for @archon-research/webmcp.
  *
- * Mirrors the Python ToolSpec / define_tool idiom in
+ * Mirrors the Python ToolSpec / define_tool idiom in the relay core
  * (schema-first authoring shape).
  *
- * Usage (Phase 1 will provide the concrete registerTool implementation):
+ * Usage:
  *
  *   import { defineTool } from '@archon-research/webmcp';
  *
