@@ -196,6 +196,17 @@
         "Visual verification role with plugin-native skill references.",
         "Scope adjusted for this monorepo and package layout."
       ]
+    },
+    {
+      "id": "review-discipline",
+      "kind": "skill",
+      "sourceType": "local-authored",
+      "upstream": "packages/agent-marketplace/content/skills/review-discipline/SKILL.md",
+      "pinnedRevision": "local-v1",
+      "normalizationNotes": [
+        "Authored for this repository from review retrospectives.",
+        "Repo-agnostic method; docs/REVIEWING.md carries the uikit-specific rules."
+      ]
     }
   ]
 }
