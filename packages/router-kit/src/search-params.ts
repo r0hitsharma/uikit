@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
 /**
  * Collapses a raw URL search value to the text a param means, or `undefined`
@@ -90,8 +90,11 @@ export function toSearchOption<T extends string>(
  * Schema shape returned by {@link textParam}. Named so the built `.d.ts` states
  * the param's output type instead of inlining zod's internal generics.
  */
-export type SearchTextParam = z.ZodOptional<
-  z.ZodPipe<z.ZodUnknown, z.ZodTransform<string | undefined, unknown>>
+export type SearchTextParam = z.ZodMiniOptional<
+  z.ZodMiniPipe<
+    z.ZodMiniUnknown,
+    z.ZodMiniTransform<string | undefined, unknown>
+  >
 >;
 
 /**
@@ -103,15 +106,15 @@ export type SearchTextParam = z.ZodOptional<
  * builders below.
  */
 export function textParam(): SearchTextParam {
-  return z.optional(z.unknown().transform(toSearchText));
+  return z.optional(z.pipe(z.unknown(), z.transform(toSearchText)));
 }
 
 /**
  * Schema shape returned by {@link oneOfParam}, carrying the closed option set
  * through to the inferred search type.
  */
-export type SearchOptionParam<T extends string> = z.ZodOptional<
-  z.ZodPipe<z.ZodUnknown, z.ZodTransform<T | undefined, unknown>>
+export type SearchOptionParam<T extends string> = z.ZodMiniOptional<
+  z.ZodMiniPipe<z.ZodMiniUnknown, z.ZodMiniTransform<T | undefined, unknown>>
 >;
 
 /**
@@ -127,7 +130,10 @@ export function oneOfParam<T extends string>(
   allowed: readonly T[],
 ): SearchOptionParam<T> {
   return z.optional(
-    z.unknown().transform((value) => toSearchOption(value, allowed)),
+    z.pipe(
+      z.unknown(),
+      z.transform((value) => toSearchOption(value, allowed)),
+    ),
   );
 }
 

@@ -1,5 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
+import { z as mini } from 'zod/mini';
 
 import { oneOfParam, textParam, toSearchOption } from './search-params.js';
 
@@ -57,4 +58,20 @@ export function typeAssertions(): void {
   expectTypeOf(toSearchOption('detail', mutableSet)).toEqualTypeOf<
     string | undefined
   >();
+
+  // The same inference through a mini object: an app on `zod/mini` gets the
+  // literal union and the absent case too, not a widened `unknown`.
+  const miniSchema = mini.object({ q: textParam(), tab: oneOfParam(TABS) });
+  type MiniSearch = mini.infer<typeof miniSchema>;
+  expectTypeOf<MiniSearch>().toEqualTypeOf<Search>();
+
+  // A classic object with a classic transform on top — the shape an app's
+  // shared schema usually takes — still infers through the mini children.
+  const transformed = z
+    .object({ q: textParam() })
+    .transform(({ q }) => ({ q, hasQuery: q !== undefined }));
+  expectTypeOf<z.infer<typeof transformed>>().toEqualTypeOf<{
+    q: string | undefined;
+    hasQuery: boolean;
+  }>();
 }
