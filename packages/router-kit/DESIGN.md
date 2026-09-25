@@ -91,6 +91,28 @@ shape — and when they are not, the failure reads as an inscrutable variance er
 at the route definition rather than as a duplicate dependency. A peer makes it
 one install and the question does not arise.
 
+#### Built on `zod/mini`, composable into either entry point
+
+The builders import from `zod/mini`, not from `zod`. Both entry points are thin
+layers over the same `zod/v4/core` schema model, so a mini schema nests in a
+classic `z.object` and the reverse, at runtime and in `z.infer`. What differs is
+bundle cost: a classic schema's constructor attaches the whole method table
+(`.email`, `.toJSONSchema`, and the rest), so constructing even one pulls most
+of classic zod into the app. Measured on a real app's search schemas, minified:
+about 57 kB (17 kB gzip) on classic against 14 kB (5 kB gzip) on mini.
+
+That saving only exists if *every* schema in the bundle is mini, which is why
+the call is made here: an app that moved its own schemas to mini while these
+builders stayed classic would still ship about 49 kB. An app still on classic
+pays about 1 kB for the mini wrappers alongside.
+
+The cost is that the returned schemas carry mini's surface, not classic's:
+`textParam().default(...)` or `.describe(...)` is not available. Wrap them the
+mini way (`z._default(textParam(), ...)`), or build a param of your own on
+`toSearchText` under the rules at the foot of `search-params.ts`.
+
+`zod/mini` has been exported since zod 4.0.0, so the peer floor does not move.
+
 ### `@archon-research/design-system` — not a dependency at all
 
 Not a dependency, not an optional peer. `UrlSyncedTableStateAdapter` is restated

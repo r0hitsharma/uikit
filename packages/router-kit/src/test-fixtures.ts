@@ -7,6 +7,7 @@ import {
   stringifySearchWith,
 } from '@tanstack/react-router';
 import { z } from 'zod';
+import { z as mini } from 'zod/mini';
 
 import { oneOfParam, textParam } from './search-params.js';
 import {
@@ -74,6 +75,27 @@ export function createToyRouter() {
     routeTree: rootRoute.addChildren([
       itemsRoute.addChildren([itemDetailRoute]),
       plainRoute,
+    ]),
+    trailingSlash: 'never',
+    parseSearch,
+    stringifySearch,
+  });
+}
+
+/**
+ * The toy router's cleanup with the root schema built from `zod/mini` instead
+ * of classic `zod` — the shape an app on mini writes. The router takes it as a
+ * Standard Schema, so nothing else about the tree changes.
+ */
+export function createMiniRouter() {
+  const rootRoute = createRootRoute({
+    validateSearch: mini.object({ q: textParam(), tab: oneOfParam(TABS) }),
+    beforeLoad: createValidatedSearchRedirect({ stringifySearch }),
+  });
+
+  return createRouter({
+    routeTree: rootRoute.addChildren([
+      createRoute({ getParentRoute: () => rootRoute, path: '/plain' }),
     ]),
     trailingSlash: 'never',
     parseSearch,

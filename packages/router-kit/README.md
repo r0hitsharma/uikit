@@ -85,6 +85,10 @@ export const sharedSearchSchema = z.object({
 value only if it is in the set — pass the set `as const` so the inferred type is
 the literal union rather than `string`.
 
+The builders are built on `zod/mini` and compose into an object from either
+`zod` or `zod/mini`. If nothing else in your app builds a classic schema,
+classic zod drops out of the bundle; see [DESIGN.md](./DESIGN.md).
+
 Every builder here is **total** and **idempotent**:
 
 - **Total** — no input fails, so `validateSearch` never rejects a URL. A
