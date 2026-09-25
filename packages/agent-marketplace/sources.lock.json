@@ -39,6 +39,13 @@
       "resolved": "packages/agent-marketplace/content/skills/charting/SKILL.md"
     },
     {
+      "id": "webmcp",
+      "kind": "skill",
+      "sourceType": "local-authored",
+      "pinnedRevision": "local-v1",
+      "resolved": "packages/agent-marketplace/content/skills/webmcp/SKILL.md"
+    },
+    {
       "id": "migrate-oxlint",
       "kind": "skill",
       "sourceType": "remote-markdown",
@@ -123,6 +130,13 @@
       "sourceType": "local-authored",
       "pinnedRevision": "local-v1",
       "resolved": "packages/agent-marketplace/content/agents/ui-verifier.md"
+    },
+    {
+      "id": "review-discipline",
+      "kind": "skill",
+      "sourceType": "local-authored",
+      "pinnedRevision": "local-v1",
+      "resolved": "packages/agent-marketplace/content/skills/review-discipline/SKILL.md"
     }
   ]
 }

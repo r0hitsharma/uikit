@@ -60,6 +60,17 @@
       ]
     },
     {
+      "id": "webmcp",
+      "kind": "skill",
+      "sourceType": "local-authored",
+      "upstream": "packages/agent-marketplace/content/skills/webmcp/SKILL.md",
+      "pinnedRevision": "local-v1",
+      "normalizationNotes": [
+        "Authored for this repository.",
+        "Grounded in the @r0hitsharma/webmcp public surface and the WebMCP CG draft as of 2026-09."
+      ]
+    },
+    {
       "id": "migrate-oxlint",
       "kind": "skill",
       "sourceType": "remote-markdown",
