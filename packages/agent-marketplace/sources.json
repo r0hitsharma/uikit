@@ -4,10 +4,12 @@
       "id": "eyes",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "upstream": "https://raw.githubusercontent.com/mintuz/claude-plugins/280c015271cbf539f7950469df6f515cc41be6ec/plugins/web/skills/eyes/SKILL.md",
-      "pinnedRevision": "280c015271cbf539f7950469df6f515cc41be6ec",
+      "upstream": "https://github.com/mintuz/claude-plugins",
+      "path": "src/web/skills/eyes/SKILL.md",
+      "branch": "main",
+      "pinnedRevision": "64615530948a55333f87ab951e2d4036651bdb2e",
       "normalizationNotes": [
-        "Keep source frontmatter and body as-is unless plugin runtime requires adaptation.",
+        "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "Treat this as externally owned content."
       ]
     },
@@ -15,10 +17,12 @@
       "id": "web-design",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "upstream": "https://raw.githubusercontent.com/mintuz/claude-plugins/280c015271cbf539f7950469df6f515cc41be6ec/plugins/web/skills/web-design/SKILL.md",
-      "pinnedRevision": "280c015271cbf539f7950469df6f515cc41be6ec",
+      "upstream": "https://github.com/mintuz/claude-plugins",
+      "path": "src/web/skills/web-design/SKILL.md",
+      "branch": "main",
+      "pinnedRevision": "64615530948a55333f87ab951e2d4036651bdb2e",
       "normalizationNotes": [
-        "Keep source frontmatter and body as-is unless plugin runtime requires adaptation.",
+        "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "Treat this as externally owned content."
       ]
     },
@@ -59,9 +63,12 @@
       "id": "migrate-oxlint",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "upstream": "https://raw.githubusercontent.com/oxc-project/oxc/261c47789d60d91ee0afe0a1cbc361d39e982bbe/.agents/skills/migrate-oxlint/SKILL.md",
-      "pinnedRevision": "261c47789d60d91ee0afe0a1cbc361d39e982bbe",
+      "upstream": "https://github.com/oxc-project/oxc",
+      "path": ".agents/skills/migrate-oxlint/SKILL.md",
+      "branch": "main",
+      "pinnedRevision": "52ae63f4fbb98f2fa66937b487f8ea397cbccf73",
       "normalizationNotes": [
+        "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "First-party skill from OXC package authors.",
         "Vendored into normalized content for deterministic plugin generation."
       ]
@@ -70,9 +77,12 @@
       "id": "migrate-oxfmt",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "upstream": "https://raw.githubusercontent.com/oxc-project/oxc/261c47789d60d91ee0afe0a1cbc361d39e982bbe/.agents/skills/migrate-oxfmt/SKILL.md",
-      "pinnedRevision": "261c47789d60d91ee0afe0a1cbc361d39e982bbe",
+      "upstream": "https://github.com/oxc-project/oxc",
+      "path": ".agents/skills/migrate-oxfmt/SKILL.md",
+      "branch": "main",
+      "pinnedRevision": "52ae63f4fbb98f2fa66937b487f8ea397cbccf73",
       "normalizationNotes": [
+        "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "First-party skill from OXC package authors.",
         "Vendored into normalized content for deterministic plugin generation."
       ]

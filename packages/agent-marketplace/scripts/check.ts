@@ -2,10 +2,14 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import type { LockEntry } from './refresh.ts';
+import { contentPath, readSourceEntries, sha256 } from './refresh.ts';
+
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(currentDir, '..');
 
 const sourcesPath = join(packageRoot, 'sources.json');
+const lockPath = join(packageRoot, 'sources.lock.json');
 const contentRoot = join(packageRoot, 'content');
 const claudeOutputRoot = join(packageRoot, 'claude-plugin');
 const copilotOutputRoot = join(packageRoot, 'copilot-plugin');
@@ -40,7 +44,45 @@ async function ensureFileEquals(
   }
 }
 
+// Offline: a Renovate digest bump that skipped `refresh`, or a hand edit to
+// vendored content, both surface here instead of shipping silently.
+async function ensureLockMatchesSources(): Promise<void> {
+  const sources = await readSourceEntries();
+  const lock = JSON.parse(await readFile(lockPath, 'utf8')) as {
+    sources?: LockEntry[];
+  };
+  const lockById = new Map(
+    (lock.sources ?? []).map((entry) => [entry.id, entry]),
+  );
+  const refreshHint =
+    'Run `npm run refresh --workspace @r0hitsharma/agent-marketplace`.';
+
+  for (const source of sources) {
+    const locked = lockById.get(source.id);
+    if (!locked || locked.pinnedRevision !== source.pinnedRevision) {
+      throw new Error(
+        `sources.lock.json is stale for "${source.id}". ${refreshHint}`,
+      );
+    }
+    if (source.sourceType !== 'remote-markdown') {
+      continue;
+    }
+    const text = await readFile(contentPath(source), 'utf8');
+    if (sha256(text) !== locked.contentSha256) {
+      throw new Error(
+        `Vendored "${source.id}" differs from upstream ${source.pinnedRevision}. ` +
+          `Move repo-specific guidance into a local-authored skill, then ${refreshHint}`,
+      );
+    }
+  }
+  if (lockById.size !== sources.length) {
+    throw new Error(`sources.lock.json has extra entries. ${refreshHint}`);
+  }
+}
+
 async function main() {
+  await ensureLockMatchesSources();
+
   const raw = await readFile(sourcesPath, 'utf8');
   const parsed = JSON.parse(raw) as Partial<SourcesFile>;
   if (!Array.isArray(parsed.sources)) {
