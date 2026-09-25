@@ -1,4 +1,4 @@
-import { SplitLayout, ThemeProvider } from '@archon-research/design-system';
+import { SplitLayout, ThemeProvider } from '@r0hitsharma/design-system';
 import { useState } from 'react';
 
 import { css } from '../../../styled-system/css';

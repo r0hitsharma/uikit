@@ -1,11 +1,11 @@
-# @archon-research/tsconfig
+# @r0hitsharma/tsconfig
 
 Shared TypeScript configuration presets for projects across the organization.
 
 ## Installation
 
 ```bash
-npm install --save-dev @archon-research/tsconfig typescript
+npm install --save-dev @r0hitsharma/tsconfig typescript
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ Extend the appropriate preset in your project's `tsconfig.json`:
 
 ```json
 {
-  "extends": "@archon-research/tsconfig/base",
+  "extends": "@r0hitsharma/tsconfig/base",
   "compilerOptions": {
     "outDir": "./dist"
   },
@@ -28,7 +28,7 @@ Extend the appropriate preset in your project's `tsconfig.json`:
 
 ```json
 {
-  "extends": "@archon-research/tsconfig/node"
+  "extends": "@r0hitsharma/tsconfig/node"
 }
 ```
 
@@ -36,7 +36,7 @@ Extend the appropriate preset in your project's `tsconfig.json`:
 
 ```json
 {
-  "extends": "@archon-research/tsconfig/react"
+  "extends": "@r0hitsharma/tsconfig/react"
 }
 ```
 

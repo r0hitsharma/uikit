@@ -1,5 +1,5 @@
 /**
- * `@archon-research/design-system/ark` — the Ark UI components this package
+ * `@r0hitsharma/design-system/ark` — the Ark UI components this package
  * passes through unstyled, in one place.
  *
  * These are re-exported rather than left to consumers because the

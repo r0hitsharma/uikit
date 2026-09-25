@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@archon-research/design-system';
+import { ThemeProvider } from '@r0hitsharma/design-system';
 
 import animationStylesSpec from '../../../static/tokens/spec/animation-styles.json';
 import colorPaletteSpec from '../../../static/tokens/spec/color-palette.json';

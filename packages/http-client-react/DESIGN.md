@@ -1,6 +1,6 @@
 # http-client-react — design contract
 
-`@archon-research/http-client-react` binds TanStack Query to an `openapi-fetch`
+`@r0hitsharma/http-client-react` binds TanStack Query to an `openapi-fetch`
 client. This document is the authoritative statement of what the layer
 guarantees, what it deliberately refuses to do, and why.
 

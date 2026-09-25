@@ -43,7 +43,7 @@ export class LinkCommand {
       this.discovery.loadConsumerWorkspaces(consumerRoot);
 
     const uikitPackages = uikitWorkspaces.filter((ws) =>
-      String(ws.name ?? '').startsWith('@archon-research/'),
+      String(ws.name ?? '').startsWith('@r0hitsharma/'),
     );
 
     const dirByName = new Map(
@@ -267,7 +267,7 @@ export class LinkCommand {
 
       const packageJson = this.fs.readJson<PackageJson>(packageJsonPath);
       for (const depName of Object.keys(packageJson.dependencies ?? {})) {
-        if (!depName.startsWith('@archon-research/')) {
+        if (!depName.startsWith('@r0hitsharma/')) {
           queue.push(depName);
         }
       }
@@ -293,7 +293,7 @@ export class LinkCommand {
       result.add(depName);
       const depPackageJson = this.fs.readJson<PackageJson>(depPackageJsonPath);
       for (const nestedDep of Object.keys(depPackageJson.dependencies ?? {})) {
-        if (!nestedDep.startsWith('@archon-research/')) {
+        if (!nestedDep.startsWith('@r0hitsharma/')) {
           queue.push(nestedDep);
         }
       }

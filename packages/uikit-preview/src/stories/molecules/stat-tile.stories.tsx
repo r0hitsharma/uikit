@@ -1,4 +1,4 @@
-import { Badge, StatRow, StatTile } from '@archon-research/design-system';
+import { Badge, StatRow, StatTile } from '@r0hitsharma/design-system';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 
 import { css } from '../../../styled-system/css';

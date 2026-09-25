@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/uikit-preview",
+  "name": "@r0hitsharma/uikit-preview",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,20 +21,20 @@
     "cf:test": "vitest run --config demo-relay/vitest.config.ts"
   },
   "dependencies": {
-    "@archon-research/charting": "*",
-    "@archon-research/dashboard-kit": "*",
-    "@archon-research/design-system": "*",
-    "@archon-research/mcp-connect": "*",
-    "@archon-research/webmcp": "*",
+    "@r0hitsharma/charting": "*",
+    "@r0hitsharma/dashboard-kit": "*",
+    "@r0hitsharma/design-system": "*",
+    "@r0hitsharma/mcp-connect": "*",
+    "@r0hitsharma/webmcp": "*",
     "lucide-react": "^1.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@archon-research/mcp-relay": "*",
-    "@archon-research/oxfmt-config": "*",
-    "@archon-research/oxlint-config": "*",
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/mcp-relay": "*",
+    "@r0hitsharma/oxfmt-config": "*",
+    "@r0hitsharma/oxlint-config": "*",
+    "@r0hitsharma/tsconfig": "*",
     "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^5.0.0",
     "@ladle/react": "^5.1.1",

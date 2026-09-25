@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/webmcp",
+  "name": "@r0hitsharma/webmcp",
   "publishConfig": {
     "access": "public"
   },
@@ -30,10 +30,10 @@
     "react": "^19.0.0"
   },
   "devDependencies": {
-    "@archon-research/mcp-relay": "*",
-    "@archon-research/oxfmt-config": "*",
-    "@archon-research/oxlint-config": "*",
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/mcp-relay": "*",
+    "@r0hitsharma/oxfmt-config": "*",
+    "@r0hitsharma/oxlint-config": "*",
+    "@r0hitsharma/tsconfig": "*",
     "@types/react": "^19.0.0",
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0"

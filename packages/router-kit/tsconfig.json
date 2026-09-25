@@ -1,5 +1,5 @@
 {
-  "extends": "@archon-research/tsconfig/node",
+  "extends": "@r0hitsharma/tsconfig/node",
   "compilerOptions": {
     // The node preset, not the react one: nothing here renders. The router is a
     // peer, so its types resolve regardless, but they reference `History`,

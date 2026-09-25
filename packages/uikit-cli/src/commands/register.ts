@@ -25,7 +25,7 @@ export class RegisterCommand {
 
     const uikitWorkspaces = this.discovery.loadWorkspaces(uikitRoot);
     const uikitPackages = uikitWorkspaces.filter((ws) =>
-      String(ws.name ?? '').startsWith('@archon-research/'),
+      String(ws.name ?? '').startsWith('@r0hitsharma/'),
     );
 
     const packagesToRegister = supportedNames

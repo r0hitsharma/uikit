@@ -1,5 +1,5 @@
 /**
- * `@archon-research/charting/primitives` — hand-composition primitives that
+ * `@r0hitsharma/charting/primitives` — hand-composition primitives that
  * need visx, but NOT `@visx/xychart`.
  *
  * A chart that steps off the single-plot `<XYChart>` happy path (faceted

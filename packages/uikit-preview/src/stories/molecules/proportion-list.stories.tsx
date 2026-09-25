@@ -1,4 +1,4 @@
-import { ProportionList } from '@archon-research/design-system';
+import { ProportionList } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

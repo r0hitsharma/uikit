@@ -1,4 +1,4 @@
-import { SearchInput } from '@archon-research/design-system';
+import { SearchInput } from '@r0hitsharma/design-system';
 import { useState } from 'react';
 
 import { css } from '../../../styled-system/css';

@@ -1,4 +1,4 @@
-import { Button, Popover } from '@archon-research/design-system';
+import { Button, Popover } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

@@ -11,7 +11,7 @@ import {
   DashboardInteractionProvider,
   useDashboardInteraction,
   type DashboardInteractionApi,
-} from '@archon-research/charting';
+} from '@r0hitsharma/charting';
 import { act, cleanup, render } from '@testing-library/react';
 import { createElement, useEffect, type MutableRefObject } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';

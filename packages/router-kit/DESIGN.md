@@ -1,6 +1,6 @@
 # router-kit — design contract
 
-`@archon-research/router-kit` ships the route-tree-agnostic parts of a TanStack
+`@r0hitsharma/router-kit` ships the route-tree-agnostic parts of a TanStack
 Router setup. This document states what the layer guarantees, what shape each
 dependency takes and why, and what is deliberately absent from v1.
 
@@ -91,7 +91,7 @@ shape — and when they are not, the failure reads as an inscrutable variance er
 at the route definition rather than as a duplicate dependency. A peer makes it
 one install and the question does not arise.
 
-### `@archon-research/design-system` — not a dependency at all
+### `@r0hitsharma/design-system` — not a dependency at all
 
 Not a dependency, not an optional peer. `UrlSyncedTableStateAdapter` is restated
 structurally in `table-adapter.ts` as a four-property interface.

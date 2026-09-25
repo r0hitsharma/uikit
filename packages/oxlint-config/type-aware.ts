@@ -5,8 +5,8 @@ import reactConfig from './react.js';
  * into `base` instead of taking the whole React preset:
  *
  * ```ts
- * import baseConfig from '@archon-research/oxlint-config/base';
- * import { typeAwareRules } from '@archon-research/oxlint-config/type-aware';
+ * import baseConfig from '@r0hitsharma/oxlint-config/base';
+ * import { typeAwareRules } from '@r0hitsharma/oxlint-config/type-aware';
  *
  * export default {
  *   ...baseConfig,

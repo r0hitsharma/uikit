@@ -4,7 +4,7 @@ import {
   ThemeProvider,
   ThemeToggle,
   ToggleGroup,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 import { useMemo, useState } from 'react';
 
 import { css } from '../../../styled-system/css';

@@ -1,11 +1,11 @@
-# @archon-research/oxlint-config
+# @r0hitsharma/oxlint-config
 
 Shared Oxlint configuration presets for consistent code quality across projects.
 
 ## Installation
 
 ```bash
-npm install --save-dev @archon-research/oxlint-config oxlint
+npm install --save-dev @r0hitsharma/oxlint-config oxlint
 ```
 
 **Requires oxlint 1.79.0 or later.** The `react` preset names the React Compiler
@@ -24,7 +24,7 @@ Use the configuration presets in your `oxlint.config.ts`:
 ### Base configuration
 
 ```typescript
-import baseConfig from '@archon-research/oxlint-config/base';
+import baseConfig from '@r0hitsharma/oxlint-config/base';
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
@@ -35,7 +35,7 @@ export default defineConfig({
 ### React projects
 
 ```typescript
-import reactConfig from '@archon-research/oxlint-config/react';
+import reactConfig from '@r0hitsharma/oxlint-config/react';
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
@@ -46,7 +46,7 @@ export default defineConfig({
 ### React projects, with the opt-in strict rules
 
 ```typescript
-import reactStrictConfig from '@archon-research/oxlint-config/react-strict';
+import reactStrictConfig from '@r0hitsharma/oxlint-config/react-strict';
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
@@ -77,8 +77,8 @@ Because the two halves diverge that sharply, each is also exported on its own so
 a consumer can take one axis without the other:
 
 ```typescript
-import reactConfig from '@archon-research/oxlint-config/react';
-import { noExplicitAnyRules } from '@archon-research/oxlint-config/react-strict';
+import reactConfig from '@r0hitsharma/oxlint-config/react';
+import { noExplicitAnyRules } from '@r0hitsharma/oxlint-config/react-strict';
 
 export default defineConfig({
   ...reactConfig,
@@ -103,7 +103,7 @@ instead of recording it.
 ### React projects with design-system import governance
 
 ```typescript
-import boundariesConfig from '@archon-research/oxlint-config/design-system-boundaries';
+import boundariesConfig from '@r0hitsharma/oxlint-config/design-system-boundaries';
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({
@@ -114,7 +114,7 @@ export default defineConfig({
 ### Type-aware promise safety
 
 ```typescript
-import typeAwareConfig from '@archon-research/oxlint-config/type-aware';
+import typeAwareConfig from '@r0hitsharma/oxlint-config/type-aware';
 import { defineConfig } from 'oxlint';
 
 export default defineConfig({

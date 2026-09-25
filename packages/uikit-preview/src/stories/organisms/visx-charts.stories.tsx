@@ -9,8 +9,8 @@ import {
   XYChart,
   chartTheme,
   seriesColor,
-} from '@archon-research/charting';
-import { ThemeProvider } from '@archon-research/design-system';
+} from '@r0hitsharma/charting';
+import { ThemeProvider } from '@r0hitsharma/design-system';
 import type { ReactNode } from 'react';
 
 import { css } from '../../../styled-system/css';

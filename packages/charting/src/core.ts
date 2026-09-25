@@ -1,5 +1,5 @@
 /**
- * `@archon-research/charting/core` — everything this package offers that does
+ * `@r0hitsharma/charting/core` — everything this package offers that does
  * NOT import `@visx/*`.
  *
  * This subpath exists because of one measured fact: `@visx/xychart` publishes a
@@ -9,7 +9,7 @@
  * bundles to ~8 kB minified / ~3.5 kB gzipped in total, so a consumer can put
  * the chart tokens, a legend, a data-table fallback or the downsamplers in an
  * eagerly-loaded chunk and still keep visx entirely behind a dynamic
- * `import()` of `@archon-research/charting/xychart` (or `/primitives`).
+ * `import()` of `@r0hitsharma/charting/xychart` (or `/primitives`).
  *
  * Everything here is also re-exported from the root barrel; this subpath is
  * about which chunk the code lands in, not about which names exist.

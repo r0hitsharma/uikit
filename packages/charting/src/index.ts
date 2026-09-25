@@ -1,6 +1,6 @@
 /**
  * The root barrel: the union of the three subpath barrels, so importing from
- * `@archon-research/charting` still reaches every export this package has.
+ * `@r0hitsharma/charting` still reaches every export this package has.
  *
  * The subpaths exist so a consumer can pick a chunk boundary without a wrapper
  * module, and they are derived from the dependency graph rather than from

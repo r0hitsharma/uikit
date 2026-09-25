@@ -4,7 +4,7 @@ import {
   SidebarGrid,
   StatRow,
   StatTile,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

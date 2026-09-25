@@ -26,8 +26,8 @@ import {
   useHoveredTimestamp,
   useSyncedCursor,
   useSyncedCursorHandlers,
-} from '@archon-research/charting';
-import { ThemeProvider } from '@archon-research/design-system';
+} from '@r0hitsharma/charting';
+import { ThemeProvider } from '@r0hitsharma/design-system';
 import { useEffect, useState } from 'react';
 
 import { css } from '../../../styled-system/css';

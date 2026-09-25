@@ -1,4 +1,4 @@
-import { Code, CodeBlock } from '@archon-research/design-system';
+import { Code, CodeBlock } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 
@@ -32,7 +32,7 @@ export const Inline = () => (
   <div className={frameClassName}>
     <p className={proseClassName}>
       Run <Code>npm run generate</Code> to regenerate the styled-system, then
-      import tokens from <Code>@archon-research/design-system</Code>. The{' '}
+      import tokens from <Code>@r0hitsharma/design-system</Code>. The{' '}
       <Code>surface.canvas</Code> token backs the page frame.
     </p>
   </div>
@@ -64,7 +64,7 @@ export const InlineInProse = () => (
 export const Block = () => (
   <div className={frameClassName}>
     <p className={captionClassName}>Multi-line block</p>
-    <CodeBlock>{`import { Panel, StatTile } from '@archon-research/design-system';
+    <CodeBlock>{`import { Panel, StatTile } from '@r0hitsharma/design-system';
 
 export function Summary() {
   return (
@@ -80,10 +80,10 @@ export function Summary() {
 export const Both = () => (
   <div className={frameClassName}>
     <p className={proseClassName}>
-      Install the package with <Code>npm i @archon-research/design-system</Code>{' '}
-      and wire the provider:
+      Install the package with <Code>npm i @r0hitsharma/design-system</Code> and
+      wire the provider:
     </p>
-    <CodeBlock>{`import { ThemeProvider } from '@archon-research/design-system';
+    <CodeBlock>{`import { ThemeProvider } from '@r0hitsharma/design-system';
 
 <ThemeProvider>
   <App />

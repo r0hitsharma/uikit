@@ -7,7 +7,7 @@
  *
  * ```ts
  * // panda.config.ts
- * import { designSystemStaticCssRecipes } from '@archon-research/design-system';
+ * import { designSystemStaticCssRecipes } from '@r0hitsharma/design-system';
  *
  * export default defineConfig({
  *   presets: [designSystemPreset],

@@ -5,7 +5,7 @@
  *
  * CORE vs HOST BOUNDARY
  * ---------------------
- * RelaySession (from @archon-research/mcp-relay) owns framing and state.
+ * RelaySession (from @r0hitsharma/mcp-relay) owns framing and state.
  * This DO owns:
  *   - The live WebSocket (browser back-channel), using the CF Hibernation API.
  *   - The async invoke round-trip: generates call_id, sends InvokeMessage,
@@ -23,11 +23,11 @@ import {
   RelaySession,
   parseBearer,
   sessionIdFromToken,
-} from '@archon-research/mcp-relay';
+} from '@r0hitsharma/mcp-relay';
 import type {
   RelaySessionSnapshot,
   ToolDefinition,
-} from '@archon-research/mcp-relay';
+} from '@r0hitsharma/mcp-relay';
 
 import type { Env } from './env.js';
 

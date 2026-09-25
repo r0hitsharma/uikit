@@ -6,8 +6,8 @@
  * Environment wiring lives behind subpath entries so neither environment's msw
  * import ends up in the other's bundle:
  *
- * - `@archon-research/http-client-msw/browser` — `setupMockWorker`
- * - `@archon-research/http-client-msw/node` — `setupMockServer`
+ * - `@r0hitsharma/http-client-msw/browser` — `setupMockWorker`
+ * - `@r0hitsharma/http-client-msw/node` — `setupMockServer`
  *
  * Nothing here references `msw/browser` or `msw/node`, so this entry stays
  * resolvable from either environment.

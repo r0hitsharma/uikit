@@ -1,5 +1,5 @@
 /**
- * Testing entry: `@archon-research/router-kit/testing`.
+ * Testing entry: `@r0hitsharma/router-kit/testing`.
  *
  * Kept behind its own subpath so an app bundle never pulls in the memory-history
  * router this builds. Nothing here is meant to run in production.
@@ -278,7 +278,7 @@ const DEFAULT_MAX_HOPS = 4;
  *
  * @example
  * ```ts
- * import { settleEntryUrl } from '@archon-research/router-kit/testing';
+ * import { settleEntryUrl } from '@r0hitsharma/router-kit/testing';
  *
  * import { router } from '../src/router';
  *

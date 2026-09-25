@@ -1,6 +1,6 @@
 ---
 name: charting
-description: WHEN building or reviewing data visualization in this repository; use the visx-backed, token-themed @archon-research/charting package instead of hand-rolled SVG.
+description: WHEN building or reviewing data visualization in this repository; use the visx-backed, token-themed @r0hitsharma/charting package instead of hand-rolled SVG.
 ---
 
 # Charting Guidance For UIKit
@@ -11,11 +11,11 @@ visualization in this monorepo. The authoritative contract is
 
 ## Core rules
 
-- Render charts through `@archon-research/charting`. Do not hand-roll SVG charts
+- Render charts through `@r0hitsharma/charting`. Do not hand-roll SVG charts
   or reimplement scale, axis, or domain math. The package wraps
   [visx](https://github.com/airbnb/visx): UIKit owns the visual language, visx
   owns the rendering mechanics.
-- Consumers depend on `@archon-research/charting`, never on `@visx/*` directly.
+- Consumers depend on `@r0hitsharma/charting`, never on `@visx/*` directly.
   The package re-exports the supported visx surface (`XYChart`, `Axis`, `Grid`,
   `Tooltip`, `LineSeries`, `AreaSeries`, `BarSeries`, `BarGroup`, `BarStack`,
   `GlyphSeries`). `buildChartTheme` is NOT part of that surface: visx's is

@@ -1,4 +1,4 @@
-import { ThemeProvider, ThemeToggle } from '@archon-research/design-system';
+import { ThemeProvider, ThemeToggle } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

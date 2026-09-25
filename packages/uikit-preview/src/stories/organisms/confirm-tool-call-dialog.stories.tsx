@@ -13,8 +13,8 @@
  * preview site.
  */
 
-import { ConfirmToolCallDialog } from '@archon-research/mcp-connect';
-import type { PendingCallRecord } from '@archon-research/mcp-connect';
+import { ConfirmToolCallDialog } from '@r0hitsharma/mcp-connect';
+import type { PendingCallRecord } from '@r0hitsharma/mcp-connect';
 import { useState } from 'react';
 
 import { css } from '../../../styled-system/css';

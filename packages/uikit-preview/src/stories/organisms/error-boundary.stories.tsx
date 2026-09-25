@@ -1,4 +1,4 @@
-import { ErrorBoundary } from '@archon-research/design-system';
+import { ErrorBoundary } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

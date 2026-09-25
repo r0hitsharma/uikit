@@ -1,7 +1,7 @@
 /**
  * MVP wire-protocol types for the WebMCP relay.
  *
- * Re-declared here (not imported from @archon-research/webmcp) so this
+ * Re-declared here (not imported from @r0hitsharma/webmcp) so this
  * package stays browser-free and usable in Cloudflare Workers without any
  * DOM or React dependency.
  *

@@ -1,5 +1,5 @@
 /**
- * Node entry: `@archon-research/http-client-msw/node`.
+ * Node entry: `@r0hitsharma/http-client-msw/node`.
  *
  * Kept behind its own subpath so an app bundle never resolves `msw/node`, whose
  * interceptors patch node's http modules.
@@ -29,7 +29,7 @@ export type MockServer = {
  *
  * ```ts
  * // src/test-setup.ts
- * import { setupMockServer } from '@archon-research/http-client-msw/node';
+ * import { setupMockServer } from '@r0hitsharma/http-client-msw/node';
  * import { afterAll, afterEach, beforeAll } from 'vitest';
  *
  * import { mocks } from './mocks';

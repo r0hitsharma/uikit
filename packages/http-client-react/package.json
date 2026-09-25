@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/http-client-react",
+  "name": "@r0hitsharma/http-client-react",
   "publishConfig": {
     "access": "public"
   },
@@ -24,7 +24,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@archon-research/http-client-core": "*"
+    "@r0hitsharma/http-client-core": "*"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.89.0",
@@ -32,9 +32,9 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@archon-research/oxfmt-config": "*",
-    "@archon-research/oxlint-config": "*",
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/oxfmt-config": "*",
+    "@r0hitsharma/oxlint-config": "*",
+    "@r0hitsharma/tsconfig": "*",
     "@tanstack/react-query": "5.102.8",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",

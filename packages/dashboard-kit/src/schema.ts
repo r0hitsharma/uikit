@@ -1,5 +1,5 @@
 /**
- * `@archon-research/dashboard-kit` — the generic, manifest-driven dashboard
+ * `@r0hitsharma/dashboard-kit` — the generic, manifest-driven dashboard
  * engine.
  *
  * Three concerns stay SEPARABLE rather than conflated the way Grafana (flat,

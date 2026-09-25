@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/oxfmt-config",
+  "name": "@r0hitsharma/oxfmt-config",
   "publishConfig": {
     "access": "public"
   },
@@ -25,7 +25,7 @@
     }
   },
   "devDependencies": {
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/tsconfig": "*",
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0"
   }

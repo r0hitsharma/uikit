@@ -27,7 +27,7 @@ const AREA_PRIMARY = 'var(--colors-chart-area-primary, currentColor)';
  * A lightweight, axis-less inline-SVG trend line for compact metric rails and
  * summary cards. It is a design-system primitive, not a full chart: for
  * cartesian charts with axes, grids, and tooltips use
- * `@archon-research/charting`.
+ * `@r0hitsharma/charting`.
  *
  * Colours default to the semantic `chart.*` tokens
  * (`--colors-chart-series-primary` / `--colors-chart-area-primary`), so the

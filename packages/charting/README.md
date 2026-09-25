@@ -1,4 +1,4 @@
-# @archon-research/charting
+# @r0hitsharma/charting
 
 Token-aware charts for UIKit consumer applications, built as a thin layer over
 [visx](https://github.com/airbnb/visx). UIKit owns the visual language (design
@@ -14,9 +14,9 @@ module to dynamic-import through:
 
 | Import | Contains | Cost, bundled alone |
 | --- | --- | --- |
-| `@archon-research/charting/core` | Tokens, `ChartColor`, `ChartLegend`, `Swatch`, `ChartDataTable`, `Crosshair`, `snapToStop`, `ResponsiveChart`, `downsample` | ~8 kB min / ~3.5 kB gzip — no `@visx/*` at all |
-| `@archon-research/charting/primitives` | `scale*`, shapes, `curve*`, `Group`, the themed standalone axes, `TimeRangeBrush`, `ZoomPanOverlay` | ~145 kB min / ~47 kB gzip, tree-shaking down to the visx packages actually used (`@visx/axis` ~49 kB, `@visx/scale` + `@visx/curve` + `@visx/group` ~50 kB, `@visx/zoom` ~34 kB, `@visx/brush` ~28 kB, `@visx/shape` ~14 kB — each measured on its own, so they sum to more than the tier: `@visx/axis`, `@visx/brush` and `@visx/shape` all depend on `@visx/scale`, and through it on the d3 modules in `@visx/vendor`, which the tier pays for once) |
-| `@archon-research/charting/xychart` | `XYChart`, `chartTheme`, `buildChartTheme`, every `*Series`, and every mark that reads visx's `DataContext` | ~210 kB min / ~74 kB gzip |
+| `@r0hitsharma/charting/core` | Tokens, `ChartColor`, `ChartLegend`, `Swatch`, `ChartDataTable`, `Crosshair`, `snapToStop`, `ResponsiveChart`, `downsample` | ~8 kB min / ~3.5 kB gzip — no `@visx/*` at all |
+| `@r0hitsharma/charting/primitives` | `scale*`, shapes, `curve*`, `Group`, the themed standalone axes, `TimeRangeBrush`, `ZoomPanOverlay` | ~145 kB min / ~47 kB gzip, tree-shaking down to the visx packages actually used (`@visx/axis` ~49 kB, `@visx/scale` + `@visx/curve` + `@visx/group` ~50 kB, `@visx/zoom` ~34 kB, `@visx/brush` ~28 kB, `@visx/shape` ~14 kB — each measured on its own, so they sum to more than the tier: `@visx/axis`, `@visx/brush` and `@visx/shape` all depend on `@visx/scale`, and through it on the d3 modules in `@visx/vendor`, which the tier pays for once) |
+| `@r0hitsharma/charting/xychart` | `XYChart`, `chartTheme`, `buildChartTheme`, every `*Series`, and every mark that reads visx's `DataContext` | ~210 kB min / ~74 kB gzip |
 
 The tiers are drawn where the cost is: `@visx/xychart` publishes a single
 barrel entry and nothing below it, so importing ANY symbol from it —
@@ -27,7 +27,7 @@ therefore the subpath worth loading lazily:
 ```tsx
 const Chart = lazy(async () => {
   const { XYChart, LineSeries, chartTheme } = await import(
-    '@archon-research/charting/xychart'
+    '@r0hitsharma/charting/xychart'
   );
   return { default: () => <XYChart theme={chartTheme}>{/* ... */}</XYChart> };
 });
@@ -145,7 +145,7 @@ import {
   Grid,
   Tooltip,
   chartTheme,
-} from '@archon-research/charting';
+} from '@r0hitsharma/charting';
 
 const data = [
   { label: 'Mon', value: 12 },
@@ -181,7 +181,7 @@ export function Example() {
 - Colors are design-system CSS-variable tokens (for example
   `--colors-chart-series-primary`), so charts track the active light/dark theme
   with no runtime resolution.
-- `@archon-research/design-system` is an OPTIONAL peer dependency and is never
+- `@r0hitsharma/design-system` is an OPTIONAL peer dependency and is never
   imported here: every token string carries a hex fallback, so charts render
   without it. The link is a hand-mirrored token table in `src/chart-color.ts`,
   guarded by `src/chart-color.sync.test.ts` — a token added, removed or renamed

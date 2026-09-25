@@ -1,6 +1,6 @@
-# @archon-research/http-client-react
+# @r0hitsharma/http-client-react
 
-TanStack Query bindings for `@archon-research/http-client-core`.
+TanStack Query bindings for `@r0hitsharma/http-client-core`.
 
 The generated OpenAPI `paths` type **is** the endpoint definition. Methods,
 paths, params, request bodies, response types, and error bodies are all read off
@@ -10,7 +10,7 @@ See [DESIGN.md](./DESIGN.md) for the contract and its deliberate limits.
 ## Installation
 
 ```bash
-npm install @archon-research/http-client-react @archon-research/http-client-core '@tanstack/react-query@^5.89.0' react react-dom
+npm install @r0hitsharma/http-client-react @r0hitsharma/http-client-core '@tanstack/react-query@^5.89.0' react react-dom
 ```
 
 `@tanstack/react-query` is a **peer** dependency, so the app owns the version and
@@ -28,7 +28,7 @@ npx uikit-openapi-generate --schema openapi.json --output src/api.types.ts
 
 ```ts
 // src/api.ts
-import { createApiClient, createQueryApi } from '@archon-research/http-client-react';
+import { createApiClient, createQueryApi } from '@r0hitsharma/http-client-react';
 
 import type { paths } from './api.types';
 
@@ -45,7 +45,7 @@ export const api = createQueryApi(client, {
 ### 2. Provide a QueryClient
 
 ```tsx
-import { createQueryClient, HttpProvider } from '@archon-research/http-client-react';
+import { createQueryClient, HttpProvider } from '@r0hitsharma/http-client-react';
 
 const queryClient = createQueryClient();
 
@@ -131,7 +131,7 @@ import {
   createQueryClient,
   isRetryableError,
   shouldRetryRequest,
-} from '@archon-research/http-client-react';
+} from '@r0hitsharma/http-client-react';
 
 createQueryClient({
   defaultOptions: {
@@ -184,7 +184,7 @@ export const queryClient = createQueryClient({
 ### 3. Query in a component
 
 ```tsx
-import { isHttpRequestError } from '@archon-research/http-client-react';
+import { isHttpRequestError } from '@r0hitsharma/http-client-react';
 import { useQuery } from '@tanstack/react-query';
 
 import { api } from './api';
@@ -258,7 +258,7 @@ import {
   createQueryApi,
   createZodResponseMiddleware,
   type QueryApiMiddleware,
-} from '@archon-research/http-client-react';
+} from '@r0hitsharma/http-client-react';
 
 import openApiDocument from '../openapi.json';
 import type { paths } from './api.types';

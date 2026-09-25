@@ -2,8 +2,8 @@ import {
   DashboardRenderer,
   type DashboardDataSources,
   type DashboardSpec,
-} from '@archon-research/dashboard-kit';
-import { ThemeProvider } from '@archon-research/design-system';
+} from '@r0hitsharma/dashboard-kit';
+import { ThemeProvider } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 
@@ -129,7 +129,7 @@ export const SampleManifest = () => (
     <div className={pageClassName}>
       <p className={captionClassName}>
         A generic manifest rendered through{' '}
-        <code>@archon-research/dashboard-kit</code>. Click a table row to
+        <code>@r0hitsharma/dashboard-kit</code>. Click a table row to
         cross-highlight the matching region tile.
       </p>
       <DashboardRenderer spec={spec} dataSources={dataSources} />

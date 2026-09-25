@@ -20,7 +20,7 @@ import {
   newPairingToken,
   parseBearer,
   sessionIdFromToken,
-} from '@archon-research/mcp-relay';
+} from '@r0hitsharma/mcp-relay';
 
 import type { Env } from './env.js';
 

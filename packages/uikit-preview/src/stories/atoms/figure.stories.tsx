@@ -1,4 +1,4 @@
-import { Figure } from '@archon-research/design-system';
+import { Figure } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

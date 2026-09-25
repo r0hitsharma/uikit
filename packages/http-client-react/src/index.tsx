@@ -7,12 +7,12 @@ import type { PropsWithChildren } from 'react';
 
 import { createQueryClient } from './query-client.js';
 
-export { createApiClient } from '@archon-research/http-client-core';
+export { createApiClient } from '@r0hitsharma/http-client-core';
 export type {
   ApiClient,
   ApiClientOptions,
   JsonSchema,
-} from '@archon-research/http-client-core';
+} from '@r0hitsharma/http-client-core';
 
 export { createQueryApi } from './query-api.js';
 export type {

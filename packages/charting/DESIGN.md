@@ -1,6 +1,6 @@
 # Charting DESIGN
 
-Design contract for `@archon-research/charting`. The visx-backed, token-driven
+Design contract for `@r0hitsharma/charting`. The visx-backed, token-driven
 rework described here has landed: the package exports the theme and a curated
 visx surface, and the earlier hand-rolled SVG primitives have been removed. A
 few items below are still marked Planned.
@@ -11,7 +11,7 @@ A thin, token-rich layer over [visx](https://github.com/airbnb/visx). UIKit owns
 the visual language (colors, axes, grid, typography, states); visx owns the
 rendering mechanics (scales, shapes, axes, tooltips, responsiveness). We do not
 hand-roll SVG scaling/axis math. The package is also the dependency boundary:
-consumers depend on `@archon-research/charting`, not on `@visx/*` directly.
+consumers depend on `@r0hitsharma/charting`, not on `@visx/*` directly.
 
 ## Theming: token-driven, no runtime resolution
 
@@ -217,7 +217,7 @@ era, when `chart.*` did not exist upstream yet and every chart quietly ran on it
 fallback. Two guards make the contract explicit rather than by-convention — and
 the third entry below is the check it is easy to assume exists, and does not:
 
-- **Optional peer dependency.** `@archon-research/design-system` is declared as an
+- **Optional peer dependency.** `@r0hitsharma/design-system` is declared as an
   *optional* `peerDependency` (spec `*`, following the monorepo's unversioned
   internal-dependency convention): charting still renders on its fallbacks without
   it, but the dependency graph now records who owns these variables. The
@@ -418,7 +418,7 @@ Planned:
 - `Sparkline`: an axis-less mini line built on low-level primitives
   (`@visx/shape` `LinePath` + `@visx/scale`), not `XYChart`, so a metrics rail
   does not pull the full `XYChart` bundle. (Note: a `Sparkline` already exists
-  in `@archon-research/design-system` as a hand-rolled inline-SVG micro
+  in `@r0hitsharma/design-system` as a hand-rolled inline-SVG micro
   primitive; if one lands here too, reconcile which package owns it before
   both ship.)
 
@@ -665,7 +665,7 @@ specifically for a leaf widget bound to one field, where hover-frequency
 re-renders would otherwise be wasted work.
 
 ```tsx
-import { useInteractionValue } from '@archon-research/charting';
+import { useInteractionValue } from '@r0hitsharma/charting';
 
 function LegendChip({ seriesKey }: { seriesKey: string }) {
   const highlightedKey = useInteractionValue('highlightedKey');
@@ -907,7 +907,7 @@ the original, since it's still just an array of the same datum type.
   points per series, conflate before rendering.
 
 ```tsx
-import { AreaSeries, downsample } from '@archon-research/charting';
+import { AreaSeries, downsample } from '@r0hitsharma/charting';
 
 const plotted = downsample(rawSeries, {
   x: (d) => d.timestamp,
@@ -927,7 +927,7 @@ no product-specific datum shape baked in.
 Standard cartesian charts (line, bar, area, scatter) use `XYChart` with the theme:
 
 ```tsx
-import { XYChart, LineSeries, Axis, Grid, Tooltip, chartTheme } from '@archon-research/charting';
+import { XYChart, LineSeries, Axis, Grid, Tooltip, chartTheme } from '@r0hitsharma/charting';
 
 <XYChart theme={chartTheme} xScale={{ type: 'band' }} yScale={{ type: 'linear' }}>
   <Grid columns={false} />

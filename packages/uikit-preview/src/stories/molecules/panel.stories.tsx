@@ -1,4 +1,4 @@
-import { Badge, Button, Panel } from '@archon-research/design-system';
+import { Badge, Button, Panel } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

@@ -1,5 +1,5 @@
 {
-  "extends": "@archon-research/tsconfig/react",
+  "extends": "@r0hitsharma/tsconfig/react",
   "compilerOptions": {
     // `src/exports.test.ts` reads this directory's own source files to assert
     // that the `/core` and `/primitives` subpaths import no `@visx/xychart`.

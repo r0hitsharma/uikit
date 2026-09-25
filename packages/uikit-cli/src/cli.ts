@@ -171,12 +171,12 @@ function linkCliIntoConsumer(
   logger: ConsoleLogger,
 ): void {
   const result = executor.exec(
-    'npm link "@archon-research/uikit-cli" --package-lock=false --save=false --no-workspaces',
+    'npm link "@r0hitsharma/uikit-cli" --package-lock=false --save=false --no-workspaces',
     { cwd: consumerRoot },
   );
   if (!result.success) {
     logger.warn(
-      'Could not link the local @archon-research/uikit-cli — you may be running ' +
+      'Could not link the local @r0hitsharma/uikit-cli — you may be running ' +
         'the registry version, which can lag behind the local one (e.g. missing ' +
         '`doctor --codegen`). A consumer .npmrc with `min-release-age` can reject ' +
         'a fresh prerelease with ETARGET here.',

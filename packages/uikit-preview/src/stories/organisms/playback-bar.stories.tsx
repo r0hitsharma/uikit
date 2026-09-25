@@ -11,7 +11,7 @@ import {
   type PlaybackBarMark,
   type PlaybackEvent,
   type TransportHotkeyAction,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { css } from '../../../styled-system/css';

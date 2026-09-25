@@ -3,7 +3,7 @@ import {
   RangePicker,
   type RangePreset,
   type TimeRange,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 import { useState } from 'react';
 
 import { css } from '../../../styled-system/css';

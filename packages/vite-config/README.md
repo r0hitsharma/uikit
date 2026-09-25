@@ -1,11 +1,11 @@
-# @archon-research/vite-config
+# @r0hitsharma/vite-config
 
 Shared Vite build presets, so that wiring every app needs is written once.
 
 ## Installation
 
 ```bash
-npm install --save-dev @archon-research/vite-config \
+npm install --save-dev @r0hitsharma/vite-config \
   vite @vitejs/plugin-react @rolldown/plugin-babel babel-plugin-react-compiler
 ```
 
@@ -16,7 +16,7 @@ required: the preset is built on rolldown's plugin API.
 ## React Compiler
 
 ```typescript
-import reactCompiler from '@archon-research/vite-config/react-compiler';
+import reactCompiler from '@r0hitsharma/vite-config/react-compiler';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
@@ -114,7 +114,7 @@ that the excluded trees really do come out untouched.
 ## Linting for it
 
 The compiler's own static analysis is available as oxlint rules, and the `react`
-preset in [`@archon-research/oxlint-config`](../oxlint-config/README.md) enables
+preset in [`@r0hitsharma/oxlint-config`](../oxlint-config/README.md) enables
 19 of them. A consumer on that preset gets the build and the lint agreeing
 without configuring anything.
 

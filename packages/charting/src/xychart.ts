@@ -1,5 +1,5 @@
 /**
- * `@archon-research/charting/xychart` — the `<XYChart>` surface: the curated
+ * `@r0hitsharma/charting/xychart` — the `<XYChart>` surface: the curated
  * visx re-exports, the theme built for them, and every mark in this package
  * that reads visx's `DataContext`.
  *

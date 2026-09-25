@@ -1,6 +1,6 @@
 # dashboard-kit — design contract
 
-`@archon-research/dashboard-kit` is the generic declarative-dashboard engine,
+`@r0hitsharma/dashboard-kit` is the generic declarative-dashboard engine,
 graduated from an app prototype. This document is the authoritative contract for
 what the engine owns and what it deliberately leaves to consumers.
 
@@ -72,7 +72,7 @@ the manifest declarative (field names, not JSX).
 supply their own registry entirely. An unresolved `ref` or `component` renders
 an inline `UnknownWidget` marker, never a thrown error.
 
-Charts are built exclusively on `@archon-research/charting` (never hand-rolled
+Charts are built exclusively on `@r0hitsharma/charting` (never hand-rolled
 SVG or a direct `@visx/*` dependency), per the charting contract.
 
 ## Validation

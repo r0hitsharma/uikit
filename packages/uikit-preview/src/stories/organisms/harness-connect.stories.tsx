@@ -14,7 +14,7 @@
  * open the modal.
  */
 
-import { HarnessConnect } from '@archon-research/mcp-connect';
+import { HarnessConnect } from '@r0hitsharma/mcp-connect';
 
 import { css } from '../../../styled-system/css';
 

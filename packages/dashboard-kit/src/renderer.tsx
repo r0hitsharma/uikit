@@ -1,4 +1,4 @@
-import { Panel, SplitLayout } from '@archon-research/design-system';
+import { Panel, SplitLayout } from '@r0hitsharma/design-system';
 import { type CSSProperties, type JSX } from 'react';
 
 import {

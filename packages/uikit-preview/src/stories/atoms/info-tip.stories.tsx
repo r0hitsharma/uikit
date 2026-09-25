@@ -1,4 +1,4 @@
-import { InfoTip } from '@archon-research/design-system';
+import { InfoTip } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

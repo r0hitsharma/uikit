@@ -3,7 +3,7 @@
  *
  * A pure data transform for series with more points than a chart can
  * usefully render — apply it to a series' data BEFORE handing it to
- * `LineSeries`/`AreaSeries`/etc. `@archon-research/charting` needs no other
+ * `LineSeries`/`AreaSeries`/etc. `@r0hitsharma/charting` needs no other
  * change to benefit: every visx behavior (tooltips, synced cursor, reference
  * bands) keeps working against the downsampled array exactly as it would
  * against the original.

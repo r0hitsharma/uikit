@@ -54,7 +54,7 @@ type WorkspacePackage = {
 };
 
 const repoRoot = process.cwd();
-const INTERNAL_SCOPE = '@archon-research/';
+const INTERNAL_SCOPE = '@r0hitsharma/';
 
 // Repo-root paths that cannot change what any package publishes, so a change
 // confined to them attributes to no package instead of forcing a full publish.

@@ -2,7 +2,7 @@ import {
   useDashboardInteraction,
   type InteractionKey,
   type TimeRange,
-} from '@archon-research/charting';
+} from '@r0hitsharma/charting';
 import {
   useCallback,
   useEffect,

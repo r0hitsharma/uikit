@@ -1,4 +1,4 @@
-import { Switch } from '@archon-research/design-system';
+import { Switch } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 import { toggleSwitch } from '../../../styled-system/recipes';

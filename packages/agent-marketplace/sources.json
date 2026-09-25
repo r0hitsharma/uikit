@@ -52,7 +52,7 @@
       "pinnedRevision": "local-v1",
       "normalizationNotes": [
         "Authored for this repository.",
-        "Grounded in the visx-backed, token-themed @archon-research/charting contract in packages/charting/DESIGN.md."
+        "Grounded in the visx-backed, token-themed @r0hitsharma/charting contract in packages/charting/DESIGN.md."
       ]
     },
     {

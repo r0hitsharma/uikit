@@ -2,7 +2,7 @@
   // `.github/scripts` is not an npm workspace, so it has no package of its own
   // to hang a `type:check` script off. The root `type:check` runs tsc against
   // this project directly -- see the root package.json.
-  "extends": "@archon-research/tsconfig/node",
+  "extends": "@r0hitsharma/tsconfig/node",
   "compilerOptions": {
     "types": ["node"]
   },

@@ -1,4 +1,4 @@
-import { Button } from '@archon-research/design-system';
+import { Button } from '@r0hitsharma/design-system';
 import { Plus, Settings2, X } from 'lucide-react';
 
 import { css } from '../../../styled-system/css';

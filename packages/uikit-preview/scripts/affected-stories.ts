@@ -82,7 +82,7 @@ const HOST = '127.0.0.1';
 /**
  * Build every workspace package, not just this one.
  *
- * The preview imports `@archon-research/*` through each package's `exports`,
+ * The preview imports `@r0hitsharma/*` through each package's `exports`,
  * which resolve to `dist/` — Ladle bundles that compiled output and never sees
  * the package's `src/`. Building only this package therefore re-rendered the
  * PREVIOUS build of every dependency, which matched the PREVIOUS baseline: the

@@ -10,7 +10,7 @@ Use this skill for normal formatting tasks in this repository after migration is
 ## Repository Conventions
 
 - Shared formatter preset lives in `packages/oxfmt-config/index.ts`.
-- Typical package config delegates to `@archon-research/oxfmt-config`.
+- Typical package config delegates to `@r0hitsharma/oxfmt-config`.
 - Current shared defaults include:
   - `printWidth: 80`
   - `singleQuote: true`

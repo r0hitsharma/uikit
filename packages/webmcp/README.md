@@ -1,4 +1,4 @@
-# @archon-research/webmcp
+# @r0hitsharma/webmcp
 
 A stable React wrapper over [WebMCP](https://github.com/webmcp-org) (`@mcp-b/global`) for registering UI tools that a connected agent harness can call. It exposes a fixed interface so the fast-moving `@mcp-b/*` packages can churn behind a single seam.
 
@@ -7,7 +7,7 @@ Tools are registered into `document.modelContext`. A tool registered here runs i
 ## Installation
 
 ```bash
-npm install @archon-research/webmcp react
+npm install @r0hitsharma/webmcp react
 ```
 
 `react` is a peer dependency (>= 19).
@@ -25,7 +25,7 @@ npm install @archon-research/webmcp react
 ### Wrap your app
 
 ```tsx
-import { WebMCPProvider } from '@archon-research/webmcp';
+import { WebMCPProvider } from '@r0hitsharma/webmcp';
 
 export function App() {
   return (
@@ -44,7 +44,7 @@ latest spec through a ref, so it re-registers only when the tool *name* changes,
 never on every render.
 
 ```tsx
-import { defineTool, useRegisterTool } from '@archon-research/webmcp';
+import { defineTool, useRegisterTool } from '@r0hitsharma/webmcp';
 
 function IdentityView({ onSelect }: { onSelect: (id: string) => void }) {
   const selectIdentityTool = defineTool<{ identityId: string }, { selected: string }>({
@@ -76,8 +76,8 @@ function IdentityView({ onSelect }: { onSelect: (id: string) => void }) {
 - `useContributeViewState` — contribute a partial view-state slice
 - `listTools` / `getViewState` — imperative helpers for non-React callers
 - `useRelaySession` — drive the relay back-channel from the registry: mint/reuse a session, advertise the registered tools, run incoming `invoke`s, and gate any `mutation: true` tool behind a local confirmation
-- Tool types (`ToolSpec`, `ToolHandler`, `PendingCallPrompt`, `ViewState`, ...) and the wire-protocol types re-exported from [`@archon-research/mcp-relay`](../mcp-relay/README.md), the single source of truth shared with the Python relay
+- Tool types (`ToolSpec`, `ToolHandler`, `PendingCallPrompt`, `ViewState`, ...) and the wire-protocol types re-exported from [`@r0hitsharma/mcp-relay`](../mcp-relay/README.md), the single source of truth shared with the Python relay
 
 ## Related
 
-- [`@archon-research/mcp-connect`](../mcp-connect/README.md) — the connection UI (chat icon, status indicator, connect modal) that pairs the browser with a harness over the relay.
+- [`@r0hitsharma/mcp-connect`](../mcp-connect/README.md) — the connection UI (chat icon, status indicator, connect modal) that pairs the browser with a harness over the relay.

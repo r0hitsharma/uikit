@@ -121,7 +121,7 @@ jobs:
         continue-on-error: true
         run: |
           cat > "$RUNNER_TEMP/npmrc-gpr" <<EOF
-          @archon-research:registry=https://npm.pkg.github.com
+          @r0hitsharma:registry=https://npm.pkg.github.com
           //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
           EOF
           failed=0
@@ -133,7 +133,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_ACCESS: public
           NPM_CONFIG_REGISTRY: https://npm.pkg.github.com
-          NPM_CONFIG_SCOPE: '@archon-research'
+          NPM_CONFIG_SCOPE: '@r0hitsharma'
           NPM_CONFIG_TAG: ${{ steps.release-meta.outputs.npm_tag }}
 
       - name: Switch workspace publish registry to npmjs
@@ -154,7 +154,7 @@ jobs:
         env:
           NPM_CONFIG_ACCESS: public
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org
-          NPM_CONFIG_SCOPE: '@archon-research'
+          NPM_CONFIG_SCOPE: '@r0hitsharma'
           NPM_CONFIG_TAG: ${{ steps.release-meta.outputs.npm_tag }}
 
       - name: Pack tarballs for release assets

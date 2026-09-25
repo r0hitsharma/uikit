@@ -1,4 +1,4 @@
-import { ProportionBar } from '@archon-research/design-system';
+import { ProportionBar } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

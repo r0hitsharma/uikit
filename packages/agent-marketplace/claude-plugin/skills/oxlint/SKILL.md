@@ -33,7 +33,7 @@ npm run lint
 
 ## Editing Rules Safely
 
-1. Prefer reusing shared presets from `@archon-research/oxlint-config`.
+1. Prefer reusing shared presets from `@r0hitsharma/oxlint-config`.
 2. Keep local package overrides minimal and documented by intent.
 3. Use `warn` first for new rule groups, then tighten after baseline cleanup.
 4. For design-system consumers, prefer the boundaries preset to discourage direct `@ark-ui/react` imports.

@@ -453,7 +453,7 @@ function missingStaticCssMessage(relative: string): string {
     '  nothing, and runtime-selected variants (status tones, dense tables,\n' +
     '  drawer sizes) render unstyled. Spread the exported map into your\n' +
     '  Panda config `staticCss`:\n' +
-    "    import { designSystemStaticCssRecipes } from '@archon-research/design-system/recipes';\n" +
+    "    import { designSystemStaticCssRecipes } from '@r0hitsharma/design-system/recipes';\n" +
     '    staticCss: { recipes: { ...designSystemStaticCssRecipes } }\n' +
     '  then re-run `panda codegen`. (A narrowed subset is fine — this only\n' +
     '  flags the case where nothing is wired at all.)'

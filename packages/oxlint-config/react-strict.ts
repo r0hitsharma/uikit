@@ -12,8 +12,8 @@ import reactConfig from './react.js';
  * one without the other:
  *
  * ```ts
- * import reactConfig from '@archon-research/oxlint-config/react';
- * import { noExplicitAnyRules } from '@archon-research/oxlint-config/react-strict';
+ * import reactConfig from '@r0hitsharma/oxlint-config/react';
+ * import { noExplicitAnyRules } from '@r0hitsharma/oxlint-config/react-strict';
  *
  * export default {
  *   ...reactConfig,
@@ -124,7 +124,7 @@ export const reactStrictRules = {
  * why the recommendation is that a *consumer app* adopt it and this repo not.
  *
  * ```ts
- * import reactStrictConfig from '@archon-research/oxlint-config/react-strict';
+ * import reactStrictConfig from '@r0hitsharma/oxlint-config/react-strict';
  * import { defineConfig } from 'oxlint';
  *
  * export default defineConfig({ ...reactStrictConfig });
