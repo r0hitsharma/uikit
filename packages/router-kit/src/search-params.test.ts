@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { z as classic } from 'zod';
+import { z as mini } from 'zod/mini';
 
 import {
   oneOfParam,
@@ -7,6 +9,7 @@ import {
   toSearchText,
 } from './search-params.js';
 import {
+  createMiniRouter,
   jsonParseSearch,
   jsonStringifySearch,
   parseSearch,
@@ -14,6 +17,7 @@ import {
   stringifySearch,
   TABS,
 } from './test-fixtures.js';
+import { settleEntryUrl } from './testing.js';
 
 /**
  * Renders a normalized value into a query string and decodes it back through
@@ -171,5 +175,30 @@ describe('oneOfParam', () => {
   it('drops a value outside the set', () => {
     expect(oneOfParam(TABS).parse('unknown')).toBeUndefined();
     expect(oneOfParam(TABS).parse('overview')).toBe('overview');
+  });
+});
+
+describe('composing into either zod entry point', () => {
+  // The builders are built on `zod/mini` so an app on mini does not pull the
+  // classic API back in, and an app on classic `zod` still composes them into
+  // its own `z.object`. Both share `zod/v4/core`, so it is one schema model.
+  const shape = { q: textParam(), tab: oneOfParam(TABS) };
+  const raw = { q: '  hello ', tab: 'archive', stray: 1 };
+
+  it('applies the same rule under a classic and a mini object', () => {
+    const expected = { q: 'hello', tab: undefined };
+
+    expect(classic.object(shape).parse(raw)).toEqual(expected);
+    expect(mini.object(shape).parse(raw)).toEqual(expected);
+  });
+
+  it('settles an entry URL through a route whose schema is a mini object', async () => {
+    const settled = await settleEntryUrl(
+      createMiniRouter().options,
+      '/plain?q=%20hi%20&tab=archive',
+    );
+
+    expect(settled.url).toBe('/plain?q=hi');
+    expect(settled.result.search).toEqual({ q: 'hi' });
   });
 });
