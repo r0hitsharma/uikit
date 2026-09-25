@@ -48,20 +48,29 @@ npm run check --workspace @r0hitsharma/agent-marketplace
 
 ## Source Registry Model
 
-`sources.json` tracks:
+`sources.json` tracks, per skill or agent:
 
-- logical id
-- kind (`skill` or `agent`)
-- source type
-- upstream location
-- pinned revision
+- logical id and kind (`skill` or `agent`)
+- source type: `local-authored` (edited in `content/`) or `remote-markdown` (vendored)
+- for `remote-markdown`: `upstream` GitHub repo, `path` inside it, tracked `branch`, and the `pinnedRevision` commit
 - normalization notes
 
-`sources.lock.json` is generated from `sources.json` and records resolved source pointers used for reproducible output generation.
+`refresh` fetches every `remote-markdown` file verbatim at its pinned commit into
+`content/`, writes `sources.lock.json` (with a sha256 of each vendored file), and
+regenerates the plugin output. `check` (the CI gate) fails when the lock is stale
+against `sources.json`, when vendored content was edited by hand, or when the
+generated output drifts from `content/`. Put uikit-specific guidance in a
+local-authored skill, never as a patch to vendored content.
+
+Renovate bumps `pinnedRevision` (a regex manager in `renovate.json5`, grouped as
+`agent-skills`, subject to the 7-day minimum release age) and runs `refresh` as a
+post-upgrade task, so the PR carries the new content. If an upstream file moves,
+`refresh` fails with a hint to update `path`.
 
 ## Add New Skill
 
-1. Add normalized content in `content/skills/<new-skill>/SKILL.md`.
+1. Add normalized content in `content/skills/<new-skill>/SKILL.md` (local), or a
+   `remote-markdown` entry with `upstream`/`path`/`branch`/`pinnedRevision`.
 2. Add source metadata in `sources.json`.
 3. Run refresh:
 

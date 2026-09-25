@@ -13,8 +13,8 @@
     {
       customType: "regex",
       description: "Update Node runtime version in .node-version",
-      fileMatch: [
-        "(^|/)\\.node-version$",
+      managerFilePatterns: [
+        "/(^|/)\\.node-version$/",
       ],
       matchStrings: [
         "^(?<currentValue>\\d+\\.\\d+\\.\\d+)\\s*$",
@@ -22,6 +22,21 @@
       depNameTemplate: "node",
       datasourceTemplate: "node-version",
       versioningTemplate: "node",
+    },
+    {
+      // Vendored agent skills: bump the pinned commit of each upstream file.
+      // github-digest (not git-refs) because it reports commit dates, so the
+      // 7-day minimumReleaseAge still applies; Renovate 42+ holds updates with
+      // no timestamp forever.
+      customType: "regex",
+      description: "Update vendored agent-marketplace skills in sources.json",
+      managerFilePatterns: [
+        "/^packages/agent-marketplace/sources\\.json$/",
+      ],
+      matchStrings: [
+        "\"upstream\":\\s*\"https://github\\.com/(?<depName>[^\"]+)\",\\s*\"path\":\\s*\"[^\"]+\",\\s*\"branch\":\\s*\"(?<currentValue>[^\"]+)\",\\s*\"pinnedRevision\":\\s*\"(?<currentDigest>[0-9a-f]{40})\"",
+      ],
+      datasourceTemplate: "github-digest",
     },
   ],
   // Renovate merges packageRules in array order, and the LAST matching rule
@@ -104,6 +119,26 @@
       matchPackageNames: ["@babel/core"],
       matchUpdateTypes: ["major"],
       enabled: false,
+    },
+    {
+      // A digest bump alone leaves content/ and the generated plugins stale
+      // (the agent-marketplace check job fails on that). Re-fetch and
+      // regenerate in the same PR. The command must also be allowlisted via
+      // RENOVATE_ALLOWED_COMMANDS in .github/workflows/renovate.yml.
+      matchManagers: ["custom.regex"],
+      matchFileNames: ["packages/agent-marketplace/sources.json"],
+      groupName: "agent-skills",
+      postUpgradeTasks: {
+        commands: [
+          "node --experimental-strip-types packages/agent-marketplace/scripts/refresh.ts",
+        ],
+        fileFilters: [
+          "packages/agent-marketplace/**",
+          ".claude-plugin/marketplace.json",
+          ".github/plugin/marketplace.json",
+        ],
+        executionMode: "branch",
+      },
     },
   ],
   // Open all PRs as drafts for supply chain review
