@@ -29,6 +29,8 @@ jobs:
         env:
           RENOVATE_AUTODISCOVER: "false"
           RENOVATE_REPOSITORIES: ${{ github.repository }}
+          # postUpgradeTasks allowlist (see the agent-skills rule in renovate.json5)
+          RENOVATE_ALLOWED_COMMANDS: '["^node --experimental-strip-types packages/agent-marketplace/scripts/refresh\\.ts$"]'
         with:
           configurationFile: renovate.json5
           token: ${{ secrets.GITHUB_TOKEN }}
