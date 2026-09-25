@@ -413,7 +413,8 @@
       "packages/uikit-preview/src/stories/tokens/tokens.stories.tsx"
     ],
     "packages/mcp-connect/dist/ConfirmToolCallDialog.js": [
-      "packages/uikit-preview/src/stories/organisms/confirm-tool-call-dialog.stories.tsx"
+      "packages/uikit-preview/src/stories/organisms/confirm-tool-call-dialog.stories.tsx",
+      "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
     ],
     "packages/mcp-connect/dist/HarnessConnect.js": [
       "packages/uikit-preview/src/stories/organisms/harness-connect.stories.tsx",
@@ -943,7 +944,19 @@
       "packages/uikit-preview/src/stories/templates/split-layout.stories.tsx",
       "packages/uikit-preview/src/stories/tokens/tokens.stories.tsx"
     ],
+    "packages/webmcp/dist/hooks.js": [
+      "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
+    ],
     "packages/webmcp/dist/provider.js": [
+      "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
+    ],
+    "packages/webmcp/dist/registration.js": [
+      "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
+    ],
+    "packages/webmcp/dist/types.js": [
+      "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
+    ],
+    "packages/webmcp/dist/useRelaySession.js": [
       "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
     ]
   }
