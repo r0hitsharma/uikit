@@ -1,4 +1,4 @@
-import boundariesConfig from '@archon-research/oxlint-config/design-system-boundaries';
+import boundariesConfig from '@r0hitsharma/oxlint-config/design-system-boundaries';
 
 // The ark-ui boundary was previously hand-copied here at `warn`, which is both
 // the preset's own content duplicated and a severity oxlint cannot fail on.

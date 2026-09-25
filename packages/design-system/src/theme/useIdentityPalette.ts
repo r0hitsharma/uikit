@@ -74,7 +74,7 @@ function useStableArray<T>(array: T[], key: string): T[] {
  * from it on every render.
  *
  * Each value is a raw CSS `var(...)` string, which is directly usable anywhere
- * `@archon-research/charting` accepts a `ChartColor` — that type's escape hatch
+ * `@r0hitsharma/charting` accepts a `ChartColor` — that type's escape hatch
  * covers exactly this case, a color chosen at runtime rather than named in
  * source. A static color should be named by token instead
  * (`color="identity.3"`), so a typo is a compile error.

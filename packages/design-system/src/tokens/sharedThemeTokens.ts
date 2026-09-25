@@ -20,7 +20,7 @@ import type { Config } from '@pandacss/dev';
  *
  * NOT re-exported from the package barrel: these are config-assembly internals
  * with no consumer use, unlike `chartColorSemanticTokens` (which
- * `@archon-research/charting` mirrors) or `designSystemStaticCssRecipes` (which
+ * `@r0hitsharma/charting` mirrors) or `designSystemStaticCssRecipes` (which
  * consumers must spread into their own `panda.config`).
  *
  * The literals are already in Panda's shape, so each spreads or slots straight

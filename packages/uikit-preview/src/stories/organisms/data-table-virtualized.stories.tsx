@@ -1,4 +1,4 @@
-import { DataTable, useDataTable } from '@archon-research/design-system';
+import { DataTable, useDataTable } from '@r0hitsharma/design-system';
 import { useEffect, useState } from 'react';
 
 import { css } from '../../../styled-system/css';

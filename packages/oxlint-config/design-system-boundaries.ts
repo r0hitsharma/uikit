@@ -16,14 +16,14 @@ const designSystemBoundariesConfig = {
           {
             name: '@ark-ui/react',
             message:
-              'Import from @archon-research/design-system instead of @ark-ui/react.',
+              'Import from @r0hitsharma/design-system instead of @ark-ui/react.',
           },
         ],
         patterns: [
           {
             group: ['@ark-ui/react/*'],
             message:
-              'Import from @archon-research/design-system instead of @ark-ui/react subpaths.',
+              'Import from @r0hitsharma/design-system instead of @ark-ui/react subpaths.',
           },
         ],
       },

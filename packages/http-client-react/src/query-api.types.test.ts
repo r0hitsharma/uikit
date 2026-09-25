@@ -1,7 +1,4 @@
-import {
-  type ApiClient,
-  createApiClient,
-} from '@archon-research/http-client-core';
+import { type ApiClient, createApiClient } from '@r0hitsharma/http-client-core';
 import { useQuery } from '@tanstack/react-query';
 import type { DataTag, QueryClient } from '@tanstack/react-query';
 import { describe, expect, expectTypeOf, it } from 'vitest';

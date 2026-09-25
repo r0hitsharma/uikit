@@ -4,7 +4,7 @@ import {
   ThemeProvider,
   ThemeToggle,
   Tabs,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 

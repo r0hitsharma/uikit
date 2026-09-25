@@ -78,6 +78,10 @@ jobs:
         run: npm ci
 
       - name: Build packages
+        env:
+          # Enables the live MCP Connect story; unset, it renders a notice
+          # instead of connecting. See packages/uikit-preview/demo-relay.
+          VITE_DEMO_RELAY_URL: ${{ vars.DEMO_RELAY_URL }}
         run: npm run build
 
       - name: Publish preview to gh-pages

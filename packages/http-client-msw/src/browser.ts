@@ -1,5 +1,5 @@
 /**
- * Browser entry: `@archon-research/http-client-msw/browser`.
+ * Browser entry: `@r0hitsharma/http-client-msw/browser`.
  *
  * Kept behind its own subpath so `msw/browser` — and the service-worker
  * machinery it pulls in — never reaches a node test's module graph, and so an
@@ -47,7 +47,7 @@ export type MockWorker = {
  * // src/main.tsx
  * if (import.meta.env.VITE_API_MOCKS === '1') {
  *   const { setupMockWorker } = await import(
- *     '@archon-research/http-client-msw/browser'
+ *     '@r0hitsharma/http-client-msw/browser'
  *   );
  *   const { mocks } = await import('./mocks');
  *

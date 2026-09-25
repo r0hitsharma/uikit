@@ -50,5 +50,5 @@ Produce:
 
 ## Charting guardrail
 
-- Charts, graphs, and sparklines must come from the visx-backed, token-themed `@archon-research/charting` package (see `packages/charting/DESIGN.md` and the `charting` skill).
+- Charts, graphs, and sparklines must come from the visx-backed, token-themed `@r0hitsharma/charting` package (see `packages/charting/DESIGN.md` and the `charting` skill).
 - Flag as violations: hand-rolled SVG chart math, hardcoded chart colors instead of `--colors-chart-*` tokens, a direct `@visx/*` dependency in a consumer, or a chart theme rebuilt at runtime rather than passed as `var(...)` tokens.

@@ -1,4 +1,4 @@
-import { Meter } from '@archon-research/design-system';
+import { Meter } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

@@ -6,7 +6,7 @@
  * ~83 kB minified no matter which symbol is taken. Keeping the tokens here and
  * the `<XYChart>` theme built from them in `xychart-theme.ts` is what lets
  * `ChartLegend`, `ChartDataTable` and the axis styles ship in the
- * `@archon-research/charting/core` subpath without that floor. Add nothing to
+ * `@r0hitsharma/charting/core` subpath without that floor. Add nothing to
  * this module that imports `@visx/*`.
  */
 import { chartColorTokens } from './chart-color.js';

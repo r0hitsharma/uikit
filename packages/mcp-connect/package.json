@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/mcp-connect",
+  "name": "@r0hitsharma/mcp-connect",
   "publishConfig": {
     "access": "public"
   },
@@ -24,16 +24,16 @@
     "format:check": "oxfmt -c oxfmt.config.ts --check src"
   },
   "dependencies": {
-    "@archon-research/design-system": "*",
+    "@r0hitsharma/design-system": "*",
     "lucide-react": "1.41.0"
   },
   "peerDependencies": {
     "react": "^19.0.0"
   },
   "devDependencies": {
-    "@archon-research/oxfmt-config": "*",
-    "@archon-research/oxlint-config": "*",
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/oxfmt-config": "*",
+    "@r0hitsharma/oxlint-config": "*",
+    "@r0hitsharma/tsconfig": "*",
     "@types/react": "^19.0.0",
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0"

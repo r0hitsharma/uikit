@@ -14,12 +14,7 @@
  *   reconnecting (WS dropped, retrying)        -> pending
  */
 
-import {
-  Button,
-  Dialog,
-  Indicator,
-  Tabs,
-} from '@archon-research/design-system';
+import { Button, Dialog, Indicator, Tabs } from '@r0hitsharma/design-system';
 import { Check, Copy, MessageCircle, X } from 'lucide-react';
 import { useState, type CSSProperties } from 'react';
 

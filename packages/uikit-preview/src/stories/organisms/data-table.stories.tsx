@@ -4,7 +4,7 @@ import {
   defineColumns,
   numericColumnMeta,
   useDataTable,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 import type { SortingState } from '@tanstack/react-table';
 import { useMemo, useState, type ReactNode } from 'react';
 

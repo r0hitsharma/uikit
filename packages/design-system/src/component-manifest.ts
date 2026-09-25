@@ -10,7 +10,7 @@
  * is missing here.
  *
  * Fields:
- * - `exportName`   — the exported symbol from `@archon-research/design-system`.
+ * - `exportName`   — the exported symbol from `@r0hitsharma/design-system`.
  * - `behaviorSource` — where the behaviour lives: `design-system` (owned here),
  *   `ark-ui` (wraps/re-exports an Ark UI primitive), or `tanstack-react-table`.
  * - `styleOwner`   — who owns the visuals: `design-system-preset` (a Panda recipe

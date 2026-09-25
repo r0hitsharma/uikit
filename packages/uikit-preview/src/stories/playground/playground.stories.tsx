@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@archon-research/design-system';
+import { ThemeProvider } from '@r0hitsharma/design-system';
 import { useMemo, useState } from 'react';
 
 import semanticTokensSpec from '../../../static/tokens/spec/semantic-tokens.json';

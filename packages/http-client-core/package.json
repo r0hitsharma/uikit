@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/http-client-core",
+  "name": "@r0hitsharma/http-client-core",
   "publishConfig": {
     "access": "public"
   },
@@ -34,8 +34,8 @@
     "openapi-typescript": "^7.13.0"
   },
   "devDependencies": {
-    "@archon-research/oxfmt-config": "*",
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/oxfmt-config": "*",
+    "@r0hitsharma/tsconfig": "*",
     "@types/node": "24.13.3",
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0"

@@ -1,4 +1,4 @@
-import { TreeRow } from '@archon-research/design-system';
+import { TreeRow } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

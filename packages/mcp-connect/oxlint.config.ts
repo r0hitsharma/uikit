@@ -1,4 +1,4 @@
-import reactConfig from '@archon-research/oxlint-config/react';
+import reactConfig from '@r0hitsharma/oxlint-config/react';
 
 export default {
   ...reactConfig,

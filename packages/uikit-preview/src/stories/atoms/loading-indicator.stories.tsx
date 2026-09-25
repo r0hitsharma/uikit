@@ -1,4 +1,4 @@
-import { LoadingIndicator } from '@archon-research/design-system';
+import { LoadingIndicator } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

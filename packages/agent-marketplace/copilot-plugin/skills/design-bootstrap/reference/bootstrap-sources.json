@@ -28,7 +28,7 @@
     "packages/uikit-preview/tests/snapshot.spec.ts-snapshots/"
   ],
   "commands": {
-    "regenerateTokens": "npm run generate --workspace @archon-research/uikit-preview",
-    "snapshotVerify": "npm run snapshot:test --workspace @archon-research/uikit-preview"
+    "regenerateTokens": "npm run generate --workspace @r0hitsharma/uikit-preview",
+    "snapshotVerify": "npm run snapshot:test --workspace @r0hitsharma/uikit-preview"
   }
 }

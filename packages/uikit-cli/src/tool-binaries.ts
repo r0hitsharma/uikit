@@ -18,7 +18,7 @@ export function resolveCliBinary(
     return path.join(path.dirname(packageJsonPath), binaryPath);
   } catch {
     throw new Error(
-      `Could not resolve ${packageName} binary from @archon-research/uikit-cli dependencies.`,
+      `Could not resolve ${packageName} binary from @r0hitsharma/uikit-cli dependencies.`,
     );
   }
 }

@@ -3,7 +3,7 @@
 This directory deploys the WebMCP relay that backs the **MCP Connect** story
 in the published preview. It is a thin Cloudflare
 Workers + Durable Objects host around the I/O-free
-[`@archon-research/mcp-relay`](../../mcp-relay) core.
+[`@r0hitsharma/mcp-relay`](../../mcp-relay) core.
 
 It exists so the published, static component preview can be driven by a real
 MCP harness (Claude Code, Copilot CLI): the demo story registers a few
@@ -14,7 +14,7 @@ can call them to search components, select a story, and change the theme.
 
 ```
 GitHub Pages (stable origin)            Cloudflare Worker            Harness
-https://archon-research.github.io       mcp-relay.*.workers.dev      (claude/copilot)
+https://r0hitsharma.github.io           mcp-relay.*.workers.dev      (claude/copilot)
   MCP Connect story      ── WS ──▶  /ws/sessions/:id  (back-channel)
                                           │
   registers ladle.* tools                 │  invoke / result
@@ -52,15 +52,19 @@ https://archon-research.github.io       mcp-relay.*.workers.dev      (claude/cop
 ## GitHub Pages ↔ Worker wiring (CORS)
 
 The preview is published to GitHub Pages at a **stable origin**
-(`https://archon-research.github.io`). Because that origin never changes, the
+(`https://r0hitsharma.github.io`). Because that origin never changes, the
 Worker scopes browser access to it precisely instead of using a wildcard:
 
-- `wrangler.toml` sets `[vars] ALLOWED_ORIGINS = "https://archon-research.github.io"`.
+- `wrangler.toml` sets `[vars] ALLOWED_ORIGINS = "https://r0hitsharma.github.io"`.
 - `worker.ts` echoes the request `Origin` only when it is in the allow-list
   (adding `Vary: Origin`); any other origin gets the canonical origin back, so
   the browser blocks the cross-origin read.
 - Auth is a bearer JWT, never cookies, so this is defence-in-depth on top of
   token verification.
+- The story reads the Worker's URL from `VITE_DEMO_RELAY_URL` at build time.
+  `preview.yml` sets it from the `DEMO_RELAY_URL` repository variable; when
+  that is unset, the live story renders a "not configured" notice and
+  connects nowhere.
 
 For local `wrangler dev`, override the allow-list in `.dev.vars`
 (`ALLOWED_ORIGINS=` — empty falls back to `*`).

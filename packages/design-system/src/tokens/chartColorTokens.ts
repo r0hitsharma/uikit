@@ -127,7 +127,7 @@ type TokenPathsOf<T> = {
  * The union of chart color token paths — `'chart.axis' | 'chart.grid' |
  * 'chart.area.primary' | 'chart.series.primary' | … | 'identity.8'`.
  *
- * `@archon-research/charting` mirrors this union as its `ChartColorToken` type
+ * `@r0hitsharma/charting` mirrors this union as its `ChartColorToken` type
  * (it cannot import it: the design system is an OPTIONAL peer there, so a
  * type-only import would silently degrade to `any` under `skipLibCheck` for
  * consumers who install charting alone). A test in that package asserts the two

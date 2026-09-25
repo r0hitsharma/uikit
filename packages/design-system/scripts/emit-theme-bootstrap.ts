@@ -42,7 +42,7 @@ if (typeof THEME_BOOTSTRAP_SCRIPT !== 'string' || !THEME_BOOTSTRAP_SCRIPT) {
 }
 
 const banner = `/**
- * Pre-paint theme bootstrap for @archon-research/design-system.
+ * Pre-paint theme bootstrap for @r0hitsharma/design-system.
  *
  * GENERATED at package build time from src/theme/theme-bootstrap.ts — do not
  * edit. Load this as the first script in <head> when a CSP forbids inline

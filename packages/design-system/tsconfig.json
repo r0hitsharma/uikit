@@ -1,5 +1,5 @@
 {
-  "extends": "@archon-research/tsconfig/react",
+  "extends": "@r0hitsharma/tsconfig/react",
   "compilerOptions": {
     // `scripts/` is node-flavoured (the theme-bootstrap emitter), so node's
     // types have to resolve alongside the DOM ones the components need.

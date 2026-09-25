@@ -1,11 +1,11 @@
-# @archon-research/oxfmt-config
+# @r0hitsharma/oxfmt-config
 
 Shared Oxfmt (Oxc formatter) configuration for consistent code formatting.
 
 ## Installation
 
 ```bash
-npm install --save-dev @archon-research/oxfmt-config oxfmt
+npm install --save-dev @r0hitsharma/oxfmt-config oxfmt
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ npm install --save-dev @archon-research/oxfmt-config oxfmt
 Use the configuration in your `oxfmt.config.ts`:
 
 ```typescript
-import baseConfig from '@archon-research/oxfmt-config';
+import baseConfig from '@r0hitsharma/oxfmt-config';
 import { defineConfig } from 'oxfmt';
 
 export default defineConfig({

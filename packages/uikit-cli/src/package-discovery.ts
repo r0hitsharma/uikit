@@ -17,7 +17,7 @@ export class PackageDiscovery {
    * Find the consumer root by walking up from `startDir`. Prefers a monorepo
    * root (a `package.json` with a `workspaces` field); if none exists anywhere
    * up the tree, falls back to the nearest single package that depends on an
-   * `@archon-research/*` package — so link/unlink work for a plain
+   * `@r0hitsharma/*` package — so link/unlink work for a plain
    * non-workspaces consumer, not just a monorepo.
    */
   findConsumerRoot(startDir: string): string {
@@ -59,7 +59,7 @@ export class PackageDiscovery {
           `Could not find a consumer root.\n` +
             `Searched from: ${startDir}\n` +
             `Found no package.json with a "workspaces" field, and none depending ` +
-            `on an @archon-research/* package.\n` +
+            `on an @r0hitsharma/* package.\n` +
             `Run from inside your consumer project (a monorepo root or a single ` +
             `package that installs uikit).`,
         );
@@ -83,7 +83,7 @@ export class PackageDiscovery {
     return fields.some(
       (field) =>
         field &&
-        Object.keys(field).some((name) => name.startsWith('@archon-research/')),
+        Object.keys(field).some((name) => name.startsWith('@r0hitsharma/')),
     );
   }
 
@@ -139,9 +139,7 @@ export class PackageDiscovery {
 
     try {
       const workspaces = this.loadWorkspaces(rootDir);
-      return workspaces.some(
-        (ws) => ws.name === '@archon-research/design-system',
-      );
+      return workspaces.some((ws) => ws.name === '@r0hitsharma/design-system');
     } catch {
       return false;
     }

@@ -1,6 +1,6 @@
 # router-kit — design contract
 
-`@archon-research/router-kit` ships the route-tree-agnostic parts of a TanStack
+`@r0hitsharma/router-kit` ships the route-tree-agnostic parts of a TanStack
 Router setup. This document states what the layer guarantees, what shape each
 dependency takes and why, and what is deliberately absent from v1.
 
@@ -113,7 +113,7 @@ mini way (`z._default(textParam(), ...)`), or build a param of your own on
 
 `zod/mini` has been exported since zod 4.0.0, so the peer floor does not move.
 
-### `@archon-research/design-system` — not a dependency at all
+### `@r0hitsharma/design-system` — not a dependency at all
 
 Not a dependency, not an optional peer. `UrlSyncedTableStateAdapter` is restated
 structurally in `table-adapter.ts` as a four-property interface.

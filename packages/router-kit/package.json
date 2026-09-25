@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/router-kit",
+  "name": "@r0hitsharma/router-kit",
   "publishConfig": {
     "access": "public"
   },
@@ -38,9 +38,9 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
-    "@archon-research/oxfmt-config": "*",
-    "@archon-research/oxlint-config": "*",
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/oxfmt-config": "*",
+    "@r0hitsharma/oxlint-config": "*",
+    "@r0hitsharma/tsconfig": "*",
     "@tanstack/react-router": "1.170.33",
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0",

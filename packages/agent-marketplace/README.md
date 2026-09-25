@@ -31,19 +31,19 @@ packages/agent-marketplace/
 From repository root:
 
 ```bash
-npm run generate --workspace @archon-research/agent-marketplace
+npm run generate --workspace @r0hitsharma/agent-marketplace
 ```
 
 ```bash
-npm run refresh --workspace @archon-research/agent-marketplace
+npm run refresh --workspace @r0hitsharma/agent-marketplace
 ```
 
 ```bash
-npm run refresh:dry-run --workspace @archon-research/agent-marketplace
+npm run refresh:dry-run --workspace @r0hitsharma/agent-marketplace
 ```
 
 ```bash
-npm run check --workspace @archon-research/agent-marketplace
+npm run check --workspace @r0hitsharma/agent-marketplace
 ```
 
 ## Source Registry Model
@@ -66,12 +66,12 @@ npm run check --workspace @archon-research/agent-marketplace
 3. Run refresh:
 
 ```bash
-npm run refresh --workspace @archon-research/agent-marketplace
+npm run refresh --workspace @r0hitsharma/agent-marketplace
 ```
 
 ## Validation Checklist
 
-- `npm run check --workspace @archon-research/agent-marketplace` (CI gate: generated plugin output matches `content/`)
+- `npm run check --workspace @r0hitsharma/agent-marketplace` (CI gate: generated plugin output matches `content/`)
 - `claude plugin validate .`
 - `claude plugin validate ./packages/agent-marketplace/claude-plugin`
 - `copilot plugin install ./packages/agent-marketplace/copilot-plugin`
@@ -95,9 +95,9 @@ Claude Code team marketplace setup guide:
 Typical commands:
 
 ```bash
-claude plugin marketplace add https://github.com/archon-research/uikit.git
+claude plugin marketplace add https://github.com/r0hitsharma/uikit.git
 claude plugin install uikit-agent-marketplace
 
-copilot plugin marketplace add https://github.com/archon-research/uikit.git
+copilot plugin marketplace add https://github.com/r0hitsharma/uikit.git
 copilot plugin install uikit-agent-marketplace@uikit-plugins
 ```

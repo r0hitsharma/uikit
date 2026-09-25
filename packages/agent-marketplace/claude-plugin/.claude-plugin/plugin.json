@@ -2,7 +2,7 @@
   "name": "uikit-agent-marketplace",
   "description": "Reusable UI-focused skills and specialist agents for Claude Code.",
   "author": {
-    "name": "Archon Research"
+    "name": "Rohit Sharma"
   },
   "lspServers": {
     "oxlint": {

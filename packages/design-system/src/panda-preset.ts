@@ -86,7 +86,7 @@ export const designSystemPreset = definePreset({
           bg: bgColors,
           // The chart/identity families come from their own shared module,
           // `src/tokens/chartColorTokens.ts` (the union
-          // `@archon-research/charting` mirrors is derived from it).
+          // `@r0hitsharma/charting` mirrors is derived from it).
           chart: chartColorSemanticTokens.chart,
           heat: heatColors,
           categorical: categoricalColors,

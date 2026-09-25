@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/http-client-msw",
+  "name": "@r0hitsharma/http-client-msw",
   "publishConfig": {
     "access": "public"
   },
@@ -43,9 +43,9 @@
     "msw": "^2.10.5"
   },
   "devDependencies": {
-    "@archon-research/oxfmt-config": "*",
-    "@archon-research/oxlint-config": "*",
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/oxfmt-config": "*",
+    "@r0hitsharma/oxlint-config": "*",
+    "@r0hitsharma/tsconfig": "*",
     "@types/node": "24.13.3",
     "msw": "2.15.0",
     "oxfmt": "0.67.0",

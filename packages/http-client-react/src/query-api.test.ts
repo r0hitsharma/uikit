@@ -1,4 +1,4 @@
-import { createApiClient } from '@archon-research/http-client-core';
+import { createApiClient } from '@r0hitsharma/http-client-core';
 import { MutationObserver, QueryClient } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 

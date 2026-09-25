@@ -2,7 +2,7 @@
 // Fail if any workspace package the preview renders has sources newer than its
 // compiled `dist/` — i.e. the preview would bundle a stale build of it.
 //
-// This package imports `@archon-research/*` through each package's `exports`,
+// This package imports `@r0hitsharma/*` through each package's `exports`,
 // which resolve to `dist/`. Ladle bundles that compiled output; it never sees
 // the package's `src/`. So editing a component and re-rendering without
 // rebuilding that package renders the PREVIOUS component — which of course

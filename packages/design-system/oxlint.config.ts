@@ -1,4 +1,4 @@
-import reactConfig from '@archon-research/oxlint-config/react';
+import reactConfig from '@r0hitsharma/oxlint-config/react';
 
 // NOTE: we would like a rule that flags `css()` (and recipe
 // functions) called with a non-literal / indirected argument, because Panda's

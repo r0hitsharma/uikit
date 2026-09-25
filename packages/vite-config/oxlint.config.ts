@@ -1,4 +1,4 @@
-import baseConfig from '@archon-research/oxlint-config/base';
+import baseConfig from '@r0hitsharma/oxlint-config/base';
 
 export default {
   ...baseConfig,

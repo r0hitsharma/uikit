@@ -100,7 +100,7 @@ jobs:
         run: npm ci
 
       - name: Verify agent-marketplace generated artifacts are committed
-        run: npm run check --workspace @archon-research/agent-marketplace
+        run: npm run check --workspace @r0hitsharma/agent-marketplace
 
   test:
     needs: detect-changes
@@ -129,12 +129,12 @@ jobs:
       - name: Build the relay core
         run: npm run build --workspace packages/mcp-relay
 
-      # http-client-react's specs import @archon-research/http-client-core, whose
+      # http-client-react's specs import @r0hitsharma/http-client-core, whose
       # exports resolve to dist/, so the dependency must be built before vitest runs.
       - name: Build http-client-core
         run: npm run build --workspace packages/http-client-core
 
-      # dashboard-kit's charting-interaction.test.ts imports @archon-research/charting,
+      # dashboard-kit's charting-interaction.test.ts imports @r0hitsharma/charting,
       # whose exports also resolve to dist/, so it needs the same treatment.
       - name: Build charting
         run: npm run build --workspace packages/charting
@@ -173,7 +173,7 @@ jobs:
       # Fail fast (before the build/render) if any committed snapshot PNG has no
       # matching story — left behind when a story was removed or renamed.
       - name: Check for orphaned snapshots
-        run: npm run snapshot:check-orphans --workspace @archon-research/uikit-preview
+        run: npm run snapshot:check-orphans --workspace @r0hitsharma/uikit-preview
 
       - name: Build packages
         run: npm run build
@@ -183,7 +183,7 @@ jobs:
       # previous baseline and passes while asserting nothing. Prove the build
       # above covered every rendered package before spending a render on it.
       - name: Check rendered packages are built from current sources
-        run: npm run snapshot:check-stale --workspace @archon-research/uikit-preview
+        run: npm run snapshot:check-stale --workspace @r0hitsharma/uikit-preview
 
       - name: Install Playwright browser
         run: npx playwright install chromium
@@ -210,7 +210,7 @@ jobs:
           echo "Scoped visual snapshots to: ${ids:-<none>}"
 
       - name: Run Ladle visual snapshots
-        run: npm run snapshot:test --workspace @archon-research/uikit-preview
+        run: npm run snapshot:test --workspace @r0hitsharma/uikit-preview
 
       - name: Upload Playwright report
         if: always()

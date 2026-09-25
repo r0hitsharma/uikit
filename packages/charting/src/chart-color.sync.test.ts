@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 // Imported from SOURCE, by relative path, on purpose. Two constraints rule out
-// the package specifier `@archon-research/design-system`:
+// the package specifier `@r0hitsharma/design-system`:
 //
 //  1. Its `exports` map resolves to `dist/`, so this test would only pass after
 //     the design system had been built. CI's test job builds only the packages

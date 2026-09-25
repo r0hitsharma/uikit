@@ -64,12 +64,12 @@ Apply these defaults unless the user asks for a deliberate exception:
 When implementing option controls in this repository, use these concrete pairings:
 
 1. Segmented options:
-	- Component primitive: `ToggleGroup` from `@archon-research/design-system`.
+	- Component primitive: `ToggleGroup` from `@r0hitsharma/design-system`.
 	- Styling contract: `segmentedControl()` recipe from styled-system.
 	- Required active selector: `&[data-state="on"]` (recipe already maps selected state).
 	- Baseline tokens: `border.default`, `interactive.selected`, `interactive.hover`, `text.default`, `text.muted`.
 2. Binary toggles:
-	- Component primitive: `Switch` from `@archon-research/design-system`.
+	- Component primitive: `Switch` from `@r0hitsharma/design-system`.
 	- Styling contract: `toggleSwitch()` slot recipe.
 	- Root defaults: `border.default`, `surface.subtle`, focus ring via `_focusVisible` rule.
 3. Data-table headers:

@@ -7,7 +7,7 @@ import {
   ThemeToggle,
   Tabs,
   useDataTable,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 import { Download, Plus, Settings2 } from 'lucide-react';
 import { useState } from 'react';
 

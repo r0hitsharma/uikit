@@ -1,20 +1,20 @@
-# @archon-research/dashboard-kit
+# @r0hitsharma/dashboard-kit
 
 A generic, declarative dashboard engine. You describe a dashboard as data — a
 `DashboardSpec` manifest — and the engine renders it: a recursive layout tree of
 resizable splits and widgets, a flat widget registry, typed data bindings, and
 declared cross-widget interaction. It ships only the ENGINE and a small set of
-GENERIC adapters over `@archon-research/design-system` and
-`@archon-research/charting`; every domain-specific widget, data source, and
+GENERIC adapters over `@r0hitsharma/design-system` and
+`@r0hitsharma/charting`; every domain-specific widget, data source, and
 component binding is the consumer's to register.
 
 ## Install
 
 ```jsonc
 // peerDependencies
-"@archon-research/dashboard-kit": "*",
-"@archon-research/design-system": "*",
-"@archon-research/charting": "*",
+"@r0hitsharma/dashboard-kit": "*",
+"@r0hitsharma/design-system": "*",
+"@r0hitsharma/charting": "*",
 "react": "^19",
 "react-dom": "^19"
 ```
@@ -26,7 +26,7 @@ import {
   DashboardRenderer,
   type DashboardSpec,
   type DashboardDataSources,
-} from '@archon-research/dashboard-kit';
+} from '@r0hitsharma/dashboard-kit';
 
 const spec: DashboardSpec = {
   version: 1,
@@ -114,7 +114,7 @@ manifest's declared `interaction`.
 Register your own component keys → adapters and merge them over the defaults:
 
 ```tsx
-import { DashboardRenderer, mergeRegistries, type RegistryComponent } from '@archon-research/dashboard-kit';
+import { DashboardRenderer, mergeRegistries, type RegistryComponent } from '@r0hitsharma/dashboard-kit';
 
 const Gauge: RegistryComponent = ({ widget, data }) => /* ... */;
 const registry = mergeRegistries({ gauge: Gauge });

@@ -116,7 +116,7 @@ export const DEFAULT_EXCLUDE: readonly IdPattern[] = [
  *
  * ```ts
  * import react from '@vitejs/plugin-react';
- * import reactCompiler from '@archon-research/vite-config/react-compiler';
+ * import reactCompiler from '@r0hitsharma/vite-config/react-compiler';
  *
  * export default defineConfig({
  *   plugins: [react(), reactCompiler()],

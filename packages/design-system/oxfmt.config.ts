@@ -1,4 +1,4 @@
-import formatConfig from '@archon-research/oxfmt-config';
+import formatConfig from '@r0hitsharma/oxfmt-config';
 
 export default {
   ...formatConfig,

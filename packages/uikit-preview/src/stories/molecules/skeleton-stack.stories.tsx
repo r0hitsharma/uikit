@@ -1,4 +1,4 @@
-import { SkeletonStack } from '@archon-research/design-system';
+import { SkeletonStack } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

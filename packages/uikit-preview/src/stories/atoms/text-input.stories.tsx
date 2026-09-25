@@ -1,4 +1,4 @@
-import { TextInput, Textarea } from '@archon-research/design-system';
+import { TextInput, Textarea } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

@@ -24,7 +24,7 @@ export class UnlinkCommand {
     const consumerWorkspaces = discovery.loadConsumerWorkspaces(consumerRoot);
 
     const uikitPackages = uikitWorkspaces.filter((ws) =>
-      String(ws.name ?? '').startsWith('@archon-research/'),
+      String(ws.name ?? '').startsWith('@r0hitsharma/'),
     );
 
     const supportedNames = new Set(

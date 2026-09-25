@@ -1,4 +1,4 @@
-# @archon-research/uikit-cli
+# @r0hitsharma/uikit-cli
 
 CLI tool for local package linking during active development with consumer repositories.
 
@@ -32,13 +32,13 @@ This makes the CLI available globally via workspace linking.
 From your consumer repository root:
 
 ```bash
-npm link @archon-research/uikit-cli --workspace <workspace-name>
+npm link @r0hitsharma/uikit-cli --workspace <workspace-name>
 ```
 
 Example for a consuming project:
 ```bash
 cd /path/to/your-project/ts
-npm link @archon-research/uikit-cli --workspace ui
+npm link @r0hitsharma/uikit-cli --workspace ui
 ```
 
 ## Usage
@@ -68,8 +68,8 @@ shared presets set the `correctness` and `suspicious` categories to `warn`. Pass
 `--max-warnings` or `--deny-warnings` to change that.
 
 If your consumer workspace prefers to run tooling directly, it can install and invoke
-`oxlint`/`oxfmt` itself. In that setup, `@archon-research/oxlint-config` and
-`@archon-research/oxfmt-config` remain reusable config packages, while `uikit-cli` remains an
+`oxlint`/`oxfmt` itself. In that setup, `@r0hitsharma/oxlint-config` and
+`@r0hitsharma/oxfmt-config` remain reusable config packages, while `uikit-cli` remains an
 optional workflow wrapper.
 
 ### Check a generated stylesheet for silently-dropped CSS
@@ -141,7 +141,7 @@ defined in a consumer's own preset extension — are covered with no list to kee
 ./node_modules/.bin/uikit-cli register
 ```
 
-Runs `npm link` in every local `@archon-research/*` package so they are available to link
+Runs `npm link` in every local `@r0hitsharma/*` package so they are available to link
 from. `link` and `unlink` do this themselves, so run it directly only to register the
 packages without touching a consumer. Pass `--uikit-root <path>` when the uikit checkout
 cannot be auto-discovered.
@@ -154,7 +154,7 @@ From your consumer repository:
 ./node_modules/.bin/uikit-cli link
 ```
 
-This command links all `@archon-research/*` packages from your local uikit monorepo into your consumer project, allowing you to develop packages and see changes immediately.
+This command links all `@r0hitsharma/*` packages from your local uikit monorepo into your consumer project, allowing you to develop packages and see changes immediately.
 
 Verify links are working:
 ```bash
@@ -184,7 +184,7 @@ When co-development is complete, restore published versions from npm:
 
 The CLI manages local development links by:
 
-1. Auto-registering local `@archon-research/*` packages from your uikit checkout via `npm link`
+1. Auto-registering local `@r0hitsharma/*` packages from your uikit checkout via `npm link`
 2. Linking only the consumer workspaces that actually depend on those packages
 3. Cleaning up shadow installs and Vite caches to ensure symlinks work correctly
 4. Using `--preserve-symlinks` flag and bundling to avoid ES module resolution issues
@@ -241,7 +241,7 @@ cause — npm rejects a fresh prerelease with `ETARGET`. Re-run with an override
 
 ### The CLI cannot repair a stale copy of itself
 
-`link` links `@archon-research/*` into the consumer — and that includes `uikit-cli` itself. So
+`link` links `@r0hitsharma/*` into the consumer — and that includes `uikit-cli` itself. So
 `npm run uikit:link` runs whatever `uikit-cli` is currently in the consumer's `node_modules`: if
 that copy is **stale**, the old code runs, and no source fix can change the run that needs it (a
 stale binary can't even report its own staleness). When developing the CLI, or right after pulling
@@ -261,7 +261,7 @@ In a consumer workspace:
 
 ```bash
 # One-time setup (see Setup section above)
-npm link @archon-research/uikit-cli --workspace <workspace-name>
+npm link @r0hitsharma/uikit-cli --workspace <workspace-name>
 
 # Link uikit packages for local development
 npm run uikit:link

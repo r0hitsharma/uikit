@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/uikit-cli",
+  "name": "@r0hitsharma/uikit-cli",
   "type": "module",
   "description": "CLI for managing local uikit package linking in consumer workspaces",
   "scripts": {
@@ -25,8 +25,8 @@
     "oxlint": "1.82.0"
   },
   "devDependencies": {
-    "@archon-research/oxfmt-config": "*",
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/oxfmt-config": "*",
+    "@r0hitsharma/tsconfig": "*",
     "@types/node": "24.13.3",
     "vitest": "^4.1.9"
   },

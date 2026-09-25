@@ -6,7 +6,7 @@ import {
   SurfaceMessageRoot,
   SurfaceMessageTitle,
   type SurfaceMessageTone,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 import type { ReactNode } from 'react';
 
 import { css } from '../../../styled-system/css';

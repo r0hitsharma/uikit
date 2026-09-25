@@ -1,4 +1,4 @@
-# @archon-research/http-client-core
+# @r0hitsharma/http-client-core
 
 Typed HTTP client utilities built on OpenAPI and Zod: an `openapi-fetch` client
 factory, the OpenAPI helper types the rest of the toolkit shares, and helpers
@@ -7,7 +7,7 @@ that turn a document's component schemas into zod validators.
 ## Installation
 
 ```bash
-npm install @archon-research/http-client-core
+npm install @r0hitsharma/http-client-core
 npm install --save-dev openapi-typescript
 ```
 
@@ -22,7 +22,7 @@ npx uikit-openapi-generate --schema openapi.json --output src/api.types.ts
 ### Create a typed client
 
 ```typescript
-import { createApiClient } from '@archon-research/http-client-core';
+import { createApiClient } from '@r0hitsharma/http-client-core';
 
 import type { paths } from './api.types';
 
@@ -47,7 +47,7 @@ const client = createApiClient<paths>('https://api.example.com', {
 ### Build a zod validator from a component schema
 
 ```typescript
-import { getComponentSchemaFromOpenApi } from '@archon-research/http-client-core';
+import { getComponentSchemaFromOpenApi } from '@r0hitsharma/http-client-core';
 
 import openApiDocument from '../openapi.json';
 

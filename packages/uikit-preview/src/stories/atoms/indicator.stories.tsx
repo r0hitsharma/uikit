@@ -1,4 +1,4 @@
-import { Indicator } from '@archon-research/design-system';
+import { Indicator } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

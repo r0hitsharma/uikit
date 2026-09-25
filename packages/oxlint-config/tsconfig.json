@@ -1,5 +1,5 @@
 {
-  "extends": "@archon-research/tsconfig/node",
+  "extends": "@r0hitsharma/tsconfig/node",
   "compilerOptions": {
     "allowImportingTsExtensions": false
   },

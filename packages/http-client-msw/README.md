@@ -1,6 +1,6 @@
-# @archon-research/http-client-msw
+# @r0hitsharma/http-client-msw
 
-Typed [msw](https://mswjs.io) mocks for `@archon-research/http-client-core`.
+Typed [msw](https://mswjs.io) mocks for `@r0hitsharma/http-client-core`.
 
 The generated OpenAPI `paths` type **is** the endpoint definition. The same type
 that drives `createApiClient` and `createQueryApi` drives the mock handlers, so a
@@ -13,7 +13,7 @@ deliberate limits.
 ## Installation
 
 ```bash
-npm install -D @archon-research/http-client-msw msw
+npm install -D @r0hitsharma/http-client-msw msw
 ```
 
 `msw` is a peer dependency: the service worker script is generated from the
@@ -55,7 +55,7 @@ import {
   createSeededRng,
   mockDelay,
   setupMocks,
-} from '@archon-research/http-client-msw';
+} from '@r0hitsharma/http-client-msw';
 
 import type { paths } from '../api.types';
 
@@ -122,7 +122,7 @@ import { App } from './App';
 
 if (import.meta.env.VITE_API_MOCKS === '1') {
   const { setupMockWorker } = await import(
-    '@archon-research/http-client-msw/browser'
+    '@r0hitsharma/http-client-msw/browser'
   );
   const { mocks } = await import('./mocks');
 
@@ -182,7 +182,7 @@ Same handler array, node interceptors:
 
 ```ts
 // src/test-setup.ts
-import { setupMockServer } from '@archon-research/http-client-msw/node';
+import { setupMockServer } from '@r0hitsharma/http-client-msw/node';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 
 import { mocks } from './mocks';

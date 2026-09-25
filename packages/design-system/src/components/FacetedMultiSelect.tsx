@@ -49,7 +49,7 @@ const cx = (...classes: Array<string | false | null | undefined>): string =>
  * counts. Data-agnostic — the caller computes `options`
  * (typically via a `Map`/`reduce` over the unfiltered rows) and this component
  * is a controlled checklist over `values`/`onToggle`. Pairs directly with
- * `useFilterValues(field)` from `@archon-research/design-system`'s filter
+ * `useFilterValues(field)` from `@r0hitsharma/design-system`'s filter
  * store: `values`/`toggle`/`clear` are that hook's return shape verbatim.
  */
 export function FacetedMultiSelect({

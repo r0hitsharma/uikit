@@ -5,7 +5,7 @@
  * Split from `cursor-layer.tsx` so neither carries that module's
  * `@visx/xychart` `DataContext` import — see `theme.ts`'s header for why that
  * boundary is worth a file. Both ship in the
- * `@archon-research/charting/core` subpath.
+ * `@r0hitsharma/charting/core` subpath.
  */
 import type { ComponentPropsWithoutRef } from 'react';
 
@@ -68,7 +68,7 @@ export function snapToStop(stops: number[], value: number): number | undefined {
  * this package had.
  *
  * Kept, with its signature and its `NaN` untouched, because it shipped in
- * `@archon-research/charting` 0.10.1: narrowing the return to
+ * `@r0hitsharma/charting` 0.10.1: narrowing the return to
  * `number | undefined` stops a strict-TS consumer assigning it to a `number`
  * from compiling, and silently inverts any `Number.isNaN(...)` guard on the
  * old sentinel (`Number.isNaN(undefined)` is `false`). That is a compatibility

@@ -1,4 +1,4 @@
-import { SkeletonRows } from '@archon-research/design-system';
+import { SkeletonRows } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

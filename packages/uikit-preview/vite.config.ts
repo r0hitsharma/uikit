@@ -36,7 +36,7 @@ const STORY_ID = /\/src\/stories\/.*\.stories\.[jt]sx?$/;
  *
  * Ran in `generateBundle` on purpose: Rollup has finished tree-shaking, so a
  * story's chunk pulls in only the components it actually renders — the shared
- * barrel (`@archon-research/design-system`) does NOT drag every component into
+ * barrel (`@r0hitsharma/design-system`) does NOT drag every component into
  * every story. That is what makes the map granular enough to update one
  * component's snapshots without re-rendering all 188 stories.
  */

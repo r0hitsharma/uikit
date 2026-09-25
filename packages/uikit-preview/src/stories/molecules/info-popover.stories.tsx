@@ -1,4 +1,4 @@
-import { InfoPopover } from '@archon-research/design-system';
+import { InfoPopover } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

@@ -7,7 +7,7 @@ This guide covers local development, testing, building, and publishing this mono
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/archon-research/uikit
+git clone https://github.com/r0hitsharma/uikit
 cd uikit
 npm ci
 ```
@@ -20,10 +20,10 @@ To install workspace dependencies from GitHub Packages during development, confi
 2. Create or edit `~/.npmrc`:
    ```
    //npm.pkg.github.com/:_authToken=ghp_YOUR_TOKEN_HERE
-   @archon-research:registry=https://npm.pkg.github.com
+   @r0hitsharma:registry=https://npm.pkg.github.com
    ```
 
-This allows `npm ci` and `npm install` to resolve `@archon-research` packages from GitHub Packages.
+This allows `npm ci` and `npm install` to resolve `@r0hitsharma` packages from GitHub Packages.
 
 ## Quality checks
 
@@ -81,7 +81,7 @@ The hooks run repository-wide lint and format checks and also normalize trailing
 
 This repository includes a lightweight preview stack using Ladle for interactive component stories.
 
-Live preview: https://archon-research.github.io/uikit/
+Live preview: https://r0hitsharma.github.io/uikit/
 
 The preview package reuses the shared Panda theme configuration from the design-system package.
 
@@ -115,15 +115,15 @@ Use it to maintain source-normalized skills and agents and to generate plugin ou
 From repository root:
 
 ```bash
-npm run generate --workspace @archon-research/agent-marketplace
+npm run generate --workspace @r0hitsharma/agent-marketplace
 ```
 
 ```bash
-npm run refresh --workspace @archon-research/agent-marketplace
+npm run refresh --workspace @r0hitsharma/agent-marketplace
 ```
 
 ```bash
-npm run refresh:dry-run --workspace @archon-research/agent-marketplace
+npm run refresh:dry-run --workspace @r0hitsharma/agent-marketplace
 ```
 
 Validation checkpoints:
@@ -141,7 +141,7 @@ To actively develop uikit packages alongside a consumer repository, use workspac
    ```json
    {
      "dependencies": {
-       "@archon-research/http-client-core": "*"
+       "@r0hitsharma/http-client-core": "*"
      }
    }
    ```
@@ -253,7 +253,7 @@ For local testing only:
 npm run prepare
 
 # Publish to GitHub Packages (requires ~./npmrc config)
-npm publish --workspaces --registry https://npm.pkg.github.com --scope @archon-research --tag dev
+npm publish --workspaces --registry https://npm.pkg.github.com --scope @r0hitsharma --tag dev
 
 # Publish to npm registry (requires npm login)
 npm publish --workspaces --registry https://registry.npmjs.org
@@ -263,13 +263,13 @@ npm publish --workspaces --registry https://registry.npmjs.org
 
 ### Design system
 
-- Package: `@archon-research/design-system`
+- Package: `@r0hitsharma/design-system`
 - Purpose: Shared UI primitives and recipes
 - Key dependencies: `@ark-ui/react`, `@pandacss/dev`
 
 ### HTTP client core
 
-- Package: `@archon-research/http-client-core`
+- Package: `@r0hitsharma/http-client-core`
 - Purpose: Typed API client helpers and response validation
 - Key dependencies: `openapi-fetch`, `zod`
 - Peer dependency: `openapi-typescript`
@@ -279,14 +279,14 @@ npm publish --workspaces --registry https://registry.npmjs.org
 
 ### HTTP client React bindings
 
-- Package: `@archon-research/http-client-react`
+- Package: `@r0hitsharma/http-client-react`
 - Purpose: React Query provider and hooks integration
-- Key dependencies: `@tanstack/react-query`, `@archon-research/http-client-core`
+- Key dependencies: `@tanstack/react-query`, `@r0hitsharma/http-client-core`
 - Peer dependency: `react`
 
 ### HTTP client MSW mocks
 
-- Package: `@archon-research/http-client-msw`
+- Package: `@r0hitsharma/http-client-msw`
 - Purpose: Typed msw request handlers derived from the same generated OpenAPI `paths` type as the
   client and query layers, plus environment-neutral setup and stateful fixture helpers
 - Key dependencies: `openapi-msw`
@@ -296,8 +296,8 @@ npm publish --workspaces --registry https://registry.npmjs.org
 
 ### Tooling config packages
 
-- `@archon-research/tsconfig` exports shared TS config presets
-- `@archon-research/oxlint-config` exports five lint presets, each a separate entry point:
+- `@r0hitsharma/tsconfig` exports shared TS config presets
+- `@r0hitsharma/oxlint-config` exports five lint presets, each a separate entry point:
   - `base` — general rules, including `import/no-cycle`
   - `react` — `base` plus React rules, including Rules of Hooks and the React Compiler rules
   - `react-strict` — `react` plus `no-explicit-any` and `only-export-components`; opt-in, aimed at
@@ -305,5 +305,5 @@ npm publish --workspaces --registry https://registry.npmjs.org
   - `design-system-boundaries` — `react` plus an error on direct primitive imports from
     `@ark-ui/react`
   - `type-aware` — `react` plus promise safety; needs `--type-aware` and `oxlint-tsgolint`
-- `@archon-research/oxfmt-config` exports a shared formatter preset
-- `@archon-research/vite-config` exports a `react-compiler` Vite preset
+- `@r0hitsharma/oxfmt-config` exports a shared formatter preset
+- `@r0hitsharma/vite-config` exports a `react-compiler` Vite preset

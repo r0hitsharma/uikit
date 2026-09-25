@@ -6,6 +6,13 @@ on:
     - cron: '0 10 * * 1'
   workflow_dispatch:
 
+# Explicit, so the job does not depend on the repository's default token
+# permissions (read-only on new repositories and forks).
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 concurrency:
   group: renovate
   cancel-in-progress: false

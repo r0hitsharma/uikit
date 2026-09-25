@@ -1,4 +1,4 @@
-import { getComponentSchemaFromOpenApi } from '@archon-research/http-client-core';
+import { getComponentSchemaFromOpenApi } from '@r0hitsharma/http-client-core';
 
 import type {
   QueryApiMiddleware,

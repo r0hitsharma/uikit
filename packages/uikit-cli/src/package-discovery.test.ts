@@ -35,7 +35,7 @@ describe('PackageDiscovery.findConsumerRoot', () => {
       makeFs({
         '/proj/package.json': {
           name: 'app',
-          dependencies: { '@archon-research/design-system': '*' },
+          dependencies: { '@r0hitsharma/design-system': '*' },
         },
       }),
     );
@@ -47,7 +47,7 @@ describe('PackageDiscovery.findConsumerRoot', () => {
       makeFs({
         '/proj/package.json': {
           name: 'app',
-          devDependencies: { '@archon-research/charting': '*' },
+          devDependencies: { '@r0hitsharma/charting': '*' },
         },
       }),
     );
@@ -68,7 +68,7 @@ describe('PackageDiscovery.loadConsumerWorkspaces', () => {
       makeFs({
         '/proj/package.json': {
           name: 'app',
-          dependencies: { '@archon-research/design-system': '*' },
+          dependencies: { '@r0hitsharma/design-system': '*' },
         },
       }),
     );

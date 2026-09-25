@@ -1,5 +1,5 @@
 /**
- * @archon-research/webmcp
+ * @r0hitsharma/webmcp
  *
  * Stable wrapper over the @mcp-b/global polyfill, exposing a fixed interface
  * that the rest of the codebase depends on. All @mcp-b/* churn is absorbed here.
@@ -14,7 +14,7 @@
  *   - useRelaySession              drive a relay back-channel from the registry
  *   - listTools / getViewState     imperative helpers for non-React callers
  *   - ToolSpec / ViewState / etc.  shared types
- *   - wire-protocol types          re-exported from @archon-research/mcp-relay
+ *   - wire-protocol types          re-exported from @r0hitsharma/mcp-relay
  */
 
 // Tool-definition contract
@@ -54,7 +54,7 @@ export type {
   UseRelaySessionResult,
 } from './useRelaySession.js';
 
-// Wire-protocol types (single source of truth: @archon-research/mcp-relay)
+// Wire-protocol types (single source of truth: @r0hitsharma/mcp-relay)
 export type {
   BrowserToServerMessage,
   ConnectionTokenClaims,

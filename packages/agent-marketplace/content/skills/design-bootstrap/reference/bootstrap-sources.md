@@ -30,6 +30,6 @@ Use this map when drafting `PRODUCT.md`, `DESIGN.md`, and `PREVIEW.md`.
 ## Commands
 
 - Regenerate token artifacts:
-  - `npm run generate --workspace @archon-research/uikit-preview`
+  - `npm run generate --workspace @r0hitsharma/uikit-preview`
 - Verify visual baseline:
-  - `npm run snapshot:test --workspace @archon-research/uikit-preview`
+  - `npm run snapshot:test --workspace @r0hitsharma/uikit-preview`

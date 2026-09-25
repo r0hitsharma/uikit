@@ -6,7 +6,7 @@ import type {
   MediaType,
   PathsWithMethod,
   RequiredKeysOf,
-} from '@archon-research/http-client-core';
+} from '@r0hitsharma/http-client-core';
 import type {
   DataTag,
   QueryClient,

@@ -1,5 +1,5 @@
 {
-  "extends": "@archon-research/tsconfig/react",
+  "extends": "@r0hitsharma/tsconfig/react",
   "compilerOptions": {
     "allowImportingTsExtensions": false,
     "noEmit": false,

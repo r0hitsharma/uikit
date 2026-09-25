@@ -2,7 +2,7 @@
  * Relay wire-protocol types for the browser side.
  *
  * Single source of truth lives in the browser-free core
- * `@archon-research/mcp-relay`; we re-export it here so the browser widget and
+ * `@r0hitsharma/mcp-relay`; we re-export it here so the browser widget and
  * the relay host can never drift. (Previously these were re-declared in full;
  * the duplicate has been collapsed.)
  *
@@ -29,4 +29,4 @@ export type {
   ToolInputSchema,
   ToolsChangedMessage,
   ToolsListMessage,
-} from '@archon-research/mcp-relay';
+} from '@r0hitsharma/mcp-relay';

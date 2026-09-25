@@ -1,5 +1,5 @@
 {
-  "name": "@archon-research/charting",
+  "name": "@r0hitsharma/charting",
   "publishConfig": {
     "access": "public"
   },
@@ -41,19 +41,19 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@archon-research/design-system": "*",
+    "@r0hitsharma/design-system": "*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "peerDependenciesMeta": {
-    "@archon-research/design-system": {
+    "@r0hitsharma/design-system": {
       "optional": true
     }
   },
   "devDependencies": {
-    "@archon-research/oxfmt-config": "*",
-    "@archon-research/oxlint-config": "*",
-    "@archon-research/tsconfig": "*",
+    "@r0hitsharma/oxfmt-config": "*",
+    "@r0hitsharma/oxlint-config": "*",
+    "@r0hitsharma/tsconfig": "*",
     "@testing-library/react": "^16.3.2",
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",

@@ -1,4 +1,4 @@
-import { Figure, useIdentityPalette } from '@archon-research/design-system';
+import { Figure, useIdentityPalette } from '@r0hitsharma/design-system';
 
 import { css } from '../../../styled-system/css';
 

@@ -3,7 +3,7 @@ import {
   StyledSelect,
   ThemeProvider,
   ThemeToggle,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 import { useEffect } from 'react';
 
 import { css } from '../../../styled-system/css';

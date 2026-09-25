@@ -1,4 +1,4 @@
-# @archon-research/mcp-relay
+# @r0hitsharma/mcp-relay
 
 Host-agnostic core for the WebMCP relay protocol.
 

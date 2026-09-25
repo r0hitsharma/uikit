@@ -1,6 +1,6 @@
 # http-client-msw — design contract
 
-`@archon-research/http-client-msw` derives msw request handlers from a generated
+`@r0hitsharma/http-client-msw` derives msw request handlers from a generated
 OpenAPI `paths` type. This document is the authoritative statement of what the
 layer guarantees, what it deliberately refuses to do, and why.
 
@@ -120,8 +120,8 @@ or `setupMockServer` under node.
 
 The two environments are **separate entry points**, not a runtime branch:
 
-- `@archon-research/http-client-msw/browser` imports `msw/browser`
-- `@archon-research/http-client-msw/node` imports `msw/node`
+- `@r0hitsharma/http-client-msw/browser` imports `msw/browser`
+- `@r0hitsharma/http-client-msw/node` imports `msw/node`
 - the root entry imports neither, so it resolves from either environment
 
 A runtime `typeof window` check would put both imports in every bundle —

@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle -- the registry exposes internal-by-convention methods (_addSpec, _contributeViewState) that these public hooks wrap. */
 /**
- * Public hooks for @archon-research/webmcp.
+ * Public hooks for @r0hitsharma/webmcp.
  *
  * All hooks require <WebMCPProvider> in the component tree.
  * None of them import @mcp-b/* directly, that coupling lives in provider.tsx.
@@ -24,7 +24,7 @@ import type { ToolSpec, ViewState } from './types.js';
  *
  * @example
  * ```tsx
- * import { defineTool, useRegisterTool } from '@archon-research/webmcp';
+ * import { defineTool, useRegisterTool } from '@r0hitsharma/webmcp';
  *
  * const selectIdentityTool = defineTool({
  *   name: 'explorer.selectIdentity',

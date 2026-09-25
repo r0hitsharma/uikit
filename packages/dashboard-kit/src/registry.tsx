@@ -6,7 +6,7 @@ import {
   Tooltip,
   XYChart,
   chartTheme,
-} from '@archon-research/charting';
+} from '@r0hitsharma/charting';
 import {
   Badge,
   DataTable,
@@ -16,7 +16,7 @@ import {
   useDataTable,
   type ColumnDef,
   type StatTileTone,
-} from '@archon-research/design-system';
+} from '@r0hitsharma/design-system';
 import {
   useCallback,
   useRef,

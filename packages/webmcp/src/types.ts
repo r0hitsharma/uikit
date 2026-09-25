@@ -1,12 +1,12 @@
 /**
- * Tool-definition contract for @archon-research/webmcp.
+ * Tool-definition contract for @r0hitsharma/webmcp.
  *
  * Mirrors the Python ToolSpec / define_tool idiom in the relay core
  * (schema-first authoring shape).
  *
  * Usage:
  *
- *   import { defineTool } from '@archon-research/webmcp';
+ *   import { defineTool } from '@r0hitsharma/webmcp';
  *
  *   const selectIdentity = defineTool({
  *     name: 'explorer.selectIdentity',
@@ -94,7 +94,7 @@ export interface ToolRegistry {
  * A mutation awaiting approval, as the browser-side UI needs to render it.
  *
  * Named `PendingCallPrompt` (not `PendingCall`) to avoid colliding with
- * `@archon-research/mcp-connect`'s richer `PendingCallRecord`, which carries
+ * `@r0hitsharma/mcp-connect`'s richer `PendingCallRecord`, which carries
  * lifecycle status. This shape is the minimal prompt: what the dialog displays.
  */
 export interface PendingCallPrompt {
