@@ -8,7 +8,7 @@
  * theme. The selected component renders in an embedded canvas iframe, so the
  * relay connection in this panel stays alive while the canvas navigates.
  *
- * The tools are authored with @archon-research/webmcp (defineTool +
+ * The tools are authored with @r0hitsharma/webmcp (defineTool +
  * useRegisterTool) and wired to the relay by useRelaySession — the same stack
  * the Explorer uses. setTheme is a mutation, so its invoke is gated behind the
  * ConfirmToolCallDialog before it runs.
@@ -17,19 +17,24 @@ import {
   ConfirmToolCallDialog,
   HarnessConnect,
   type PendingCallRecord,
-} from '@archon-research/mcp-connect';
+} from '@r0hitsharma/mcp-connect';
 import {
   defineTool,
   useRegisterTool,
   useRelaySession,
   WebMCPProvider,
-} from '@archon-research/webmcp';
+} from '@r0hitsharma/webmcp';
 import { useEffect, useState } from 'react';
 
 import { css } from '../../../styled-system/css';
 
-// The deployed relay Worker (see packages/uikit-preview/demo-relay).
-const RELAY_BASE_URL = 'https://mcp-relay.archon-tech.workers.dev';
+// The deployed relay Worker (see packages/uikit-preview/demo-relay), injected
+// at build time. Unset, the live story renders a notice instead of connecting.
+const LIVE_RELAY_BASE_URL: string | undefined =
+  import.meta.env.VITE_DEMO_RELAY_URL || undefined;
+
+// Display-only URL for the static, network-free stories below.
+const EXAMPLE_RELAY_BASE_URL = 'https://mcp-relay.example.workers.dev';
 
 type StoryMeta = { name: string; levels: string[] };
 type Stories = Record<string, StoryMeta>;
@@ -81,13 +86,22 @@ export default {
   title: 'Organisms/MCP Connect',
 };
 
-export const ControlPreview = () => (
-  <WebMCPProvider>
-    <ControlPreviewInner />
-  </WebMCPProvider>
-);
+export const ControlPreview = () =>
+  LIVE_RELAY_BASE_URL ? (
+    <WebMCPProvider>
+      <ControlPreviewInner relayBaseUrl={LIVE_RELAY_BASE_URL} />
+    </WebMCPProvider>
+  ) : (
+    <div className={frameClassName}>
+      <p className={captionClassName}>
+        The live relay demo is not configured for this build. Set{' '}
+        <code>VITE_DEMO_RELAY_URL</code> to a deployed relay Worker (see{' '}
+        <code>packages/uikit-preview/demo-relay</code>) to enable it.
+      </p>
+    </div>
+  );
 
-const ControlPreviewInner = () => {
+const ControlPreviewInner = ({ relayBaseUrl }: { relayBaseUrl: string }) => {
   const [storyId, setStoryId] = useState(DEFAULT_STORY);
   const [theme, setTheme] = useState<Theme>('light');
 
@@ -233,7 +247,7 @@ const ControlPreviewInner = () => {
     approve,
     deny,
   } = useRelaySession({
-    relayBaseUrl: RELAY_BASE_URL,
+    relayBaseUrl,
     storageKey: SESSION_STORAGE_KEY,
     title: 'uikit relay demo',
   });
@@ -263,7 +277,7 @@ const ControlPreviewInner = () => {
     <div className={frameClassName}>
       <p className={captionClassName}>
         This panel connects live to the deployed relay Worker at{' '}
-        <code>{RELAY_BASE_URL}</code> and exposes four tools to a connected
+        <code>{relayBaseUrl}</code> and exposes four tools to a connected
         harness: <code>ladle.listComponents</code>,{' '}
         <code>ladle.searchComponents</code>, <code>ladle.selectComponent</code>,
         and <code>ladle.setTheme</code>. Open the connection modal, copy the add
@@ -275,7 +289,7 @@ const ControlPreviewInner = () => {
 
       <HarnessConnect
         indicatorStatus={status}
-        relayBaseUrl={RELAY_BASE_URL}
+        relayBaseUrl={relayBaseUrl}
         connectionToken={connectionToken}
         defaultOpen
       />
@@ -339,7 +353,7 @@ export const ChatButton = () => (
     </p>
     <HarnessConnect
       indicatorStatus="ready"
-      relayBaseUrl={RELAY_BASE_URL}
+      relayBaseUrl={EXAMPLE_RELAY_BASE_URL}
       connectionToken={FAKE_TOKEN}
     />
   </div>
@@ -353,7 +367,7 @@ export const ConnectModalOpen = () => (
     </p>
     <HarnessConnect
       indicatorStatus="ready"
-      relayBaseUrl={RELAY_BASE_URL}
+      relayBaseUrl={EXAMPLE_RELAY_BASE_URL}
       connectionToken={FAKE_TOKEN}
       defaultOpen
     />

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="${REPO:-archon-research/uikit}"
+REPO="${REPO:-${GITHUB_REPOSITORY:-r0hitsharma/uikit}}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/gh-pages.sh
