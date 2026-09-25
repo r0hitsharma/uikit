@@ -167,7 +167,7 @@ function buildClaudePluginManifest(): ClaudePluginManifest {
     description:
       'Reusable UI-focused skills and specialist agents for Claude Code.',
     author: {
-      name: 'Archon Research',
+      name: 'Rohit Sharma',
     },
     lspServers: {
       oxlint: {
@@ -224,7 +224,7 @@ async function writeMarketplaceManifests(): Promise<void> {
   await writeJson(claudeMarketplacePath, {
     name: 'uikit-plugins',
     owner: {
-      name: 'Archon Research',
+      name: 'Rohit Sharma',
     },
     description:
       'UIKit marketplace for shared UI skills and specialist agents.',

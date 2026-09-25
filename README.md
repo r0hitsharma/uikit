@@ -4,7 +4,7 @@ Shared frontend toolkit monorepo for TypeScript and React projects.
 
 It contains shared build configuration, a Panda CSS design-system with charting and dashboard layers on top, typed HTTP client utilities, router helpers, and a WebMCP stack for exposing in-app tools to AI harnesses.
 
-Live preview: https://archon-research.github.io/uikit/
+Live preview: https://r0hitsharma.github.io/uikit/
 
 ## Repository layout
 
@@ -33,26 +33,26 @@ packages/
 
 Published to npm:
 
-- `@archon-research/tsconfig`
-- `@archon-research/oxlint-config`
-- `@archon-research/oxfmt-config`
-- `@archon-research/vite-config`
-- `@archon-research/design-system`
-- `@archon-research/charting`
-- `@archon-research/dashboard-kit`
-- `@archon-research/http-client-core`
-- `@archon-research/http-client-react`
-- `@archon-research/http-client-msw`
-- `@archon-research/router-kit`
-- `@archon-research/webmcp`
-- `@archon-research/mcp-connect`
-- `@archon-research/mcp-relay`
-- `@archon-research/uikit-cli`
+- `@r0hitsharma/tsconfig`
+- `@r0hitsharma/oxlint-config`
+- `@r0hitsharma/oxfmt-config`
+- `@r0hitsharma/vite-config`
+- `@r0hitsharma/design-system`
+- `@r0hitsharma/charting`
+- `@r0hitsharma/dashboard-kit`
+- `@r0hitsharma/http-client-core`
+- `@r0hitsharma/http-client-react`
+- `@r0hitsharma/http-client-msw`
+- `@r0hitsharma/router-kit`
+- `@r0hitsharma/webmcp`
+- `@r0hitsharma/mcp-connect`
+- `@r0hitsharma/mcp-relay`
+- `@r0hitsharma/uikit-cli`
 
 Private to this repository, not published:
 
-- `@archon-research/uikit-preview` — the Ladle preview site
-- `@archon-research/agent-marketplace` — plugin content and generators
+- `@r0hitsharma/uikit-preview` — the Ladle preview site
+- `@r0hitsharma/agent-marketplace` — plugin content and generators
 
 If you are adapting this template for another organization, you can replace the package scope and names while keeping the same structure and workflows.
 
@@ -61,7 +61,7 @@ If you are adapting this template for another organization, you can replace the 
 Install packages from npm:
 
 ```bash
-npm install @archon-research/tsconfig @archon-research/oxlint-config @archon-research/oxfmt-config @archon-research/vite-config @archon-research/design-system @archon-research/charting @archon-research/dashboard-kit @archon-research/http-client-core @archon-research/http-client-react @archon-research/http-client-msw @archon-research/router-kit @archon-research/webmcp @archon-research/mcp-connect @archon-research/mcp-relay @archon-research/uikit-cli
+npm install @r0hitsharma/tsconfig @r0hitsharma/oxlint-config @r0hitsharma/oxfmt-config @r0hitsharma/vite-config @r0hitsharma/design-system @r0hitsharma/charting @r0hitsharma/dashboard-kit @r0hitsharma/http-client-core @r0hitsharma/http-client-react @r0hitsharma/http-client-msw @r0hitsharma/router-kit @r0hitsharma/webmcp @r0hitsharma/mcp-connect @r0hitsharma/mcp-relay @r0hitsharma/uikit-cli
 ```
 
 Each package has its own npm page with detailed documentation and usage examples.

@@ -1,11 +1,11 @@
-# @archon-research/design-system
+# @r0hitsharma/design-system
 
 Shared UI components and design tokens built with React and Panda CSS.
 
 ## Installation
 
 ```bash
-npm install @archon-research/design-system react react-dom
+npm install @r0hitsharma/design-system react react-dom
 ```
 
 ## Features
@@ -21,7 +21,7 @@ npm install @archon-research/design-system react react-dom
 ### Import components
 
 ```typescript
-import { Panel, Button, Badge } from '@archon-research/design-system';
+import { Panel, Button, Badge } from '@r0hitsharma/design-system';
 
 export function Example() {
   return (
@@ -43,14 +43,14 @@ around [Ark UI](https://ark-ui.com) (Dialog, Tabs, Menu, TreeView, Slider, …) 
 you who owns its visuals. Because it is data, you can also list it programmatically:
 
 ```typescript
-import { designSystemComponentManifest } from '@archon-research/design-system';
+import { designSystemComponentManifest } from '@r0hitsharma/design-system';
 
 const arkWrappers = designSystemComponentManifest.filter(
   (c) => c.behaviorSource === 'ark-ui',
 );
 ```
 
-Charts live in the separate [`@archon-research/charting`](../charting/README.md) package.
+Charts live in the separate [`@r0hitsharma/charting`](../charting/README.md) package.
 
 ### Code-splitting heavy components
 
@@ -74,9 +74,9 @@ boundary in front of them without a wrapper module:
 import { lazy } from 'react';
 
 const DataTable = lazy(() =>
-  import('@archon-research/design-system/data-table').then((m) => ({ default: m.DataTable })),
+  import('@r0hitsharma/design-system/data-table').then((m) => ({ default: m.DataTable })),
 );
-// likewise: import('@archon-research/design-system/drawer'), '/search-input', '/ark', ...
+// likewise: import('@r0hitsharma/design-system/drawer'), '/search-input', '/ark', ...
 ```
 
 Those are the components measurement singles out; everything else in the package
@@ -101,8 +101,8 @@ calls a recipe function for it to extract), and every component renders unstyled
 
 ```typescript
 import { defineConfig } from '@pandacss/dev';
-import { designSystemStaticCssRecipes } from '@archon-research/design-system';
-import { designSystemPreset } from '@archon-research/design-system/panda-preset';
+import { designSystemStaticCssRecipes } from '@r0hitsharma/design-system';
+import { designSystemPreset } from '@r0hitsharma/design-system/panda-preset';
 
 export default defineConfig({
   presets: [designSystemPreset],
@@ -116,7 +116,7 @@ export default defineConfig({
 ```
 
 The recipe definitions themselves are available from the root barrel and from the
-`@archon-research/design-system/recipes` subpath. See
+`@r0hitsharma/design-system/recipes` subpath. See
 [PANDA_NOTES.md](./PANDA_NOTES.md) for this and the other Panda gotchas that bite
 consumers of the preset.
 
@@ -127,7 +127,7 @@ persists the choice, and keeps `<html>`'s `dark` class and `data-theme` attribut
 in sync.
 
 ```typescript
-import { ThemeProvider, useTheme } from '@archon-research/design-system';
+import { ThemeProvider, useTheme } from '@r0hitsharma/design-system';
 ```
 
 Because the provider applies the theme from an effect, it can only run *after*
@@ -143,7 +143,7 @@ Pick the mode that matches your CSP.
 stylesheets:
 
 ```tsx
-import { THEME_BOOTSTRAP_SCRIPT } from '@archon-research/design-system';
+import { THEME_BOOTSTRAP_SCRIPT } from '@r0hitsharma/design-system';
 
 export function Document() {
   return (
@@ -171,7 +171,7 @@ run `npm run build` — resolution through the symlink then works as normal):
 // package.json
 {
   "scripts": {
-    "prebuild": "cp node_modules/@archon-research/design-system/dist/theme-bootstrap.js public/"
+    "prebuild": "cp node_modules/@r0hitsharma/design-system/dist/theme-bootstrap.js public/"
   }
 }
 ```
@@ -190,7 +190,7 @@ step with the version you have installed.
 module, a framework pre-render hook), call the function form instead:
 
 ```typescript
-import { applyThemeBootstrap } from '@archon-research/design-system';
+import { applyThemeBootstrap } from '@r0hitsharma/design-system';
 
 applyThemeBootstrap();
 ```
@@ -200,7 +200,7 @@ side effect — the same code as the copied file in option 2, but bundled with y
 app instead of served separately:
 
 ```typescript
-import '@archon-research/design-system/theme-bootstrap.js';
+import '@r0hitsharma/design-system/theme-bootstrap.js';
 ```
 
 This form is safe from tree-shaking: `dist/theme-bootstrap.js` is the sole entry in
@@ -219,7 +219,7 @@ provider agree. Without one, the provider behaves exactly as before.
 ### Browse components
 
 View available components and their stories at:
-https://archon-research.github.io/uikit/
+https://r0hitsharma.github.io/uikit/
 
 ## Peer dependencies
 
@@ -233,5 +233,5 @@ https://archon-research.github.io/uikit/
 
 ## See also
 
-- [Live component preview](https://archon-research.github.io/uikit/)
+- [Live component preview](https://r0hitsharma.github.io/uikit/)
 - [Development guide](../../DEVELOPMENT.md#preview-site) for local component development

@@ -1,4 +1,4 @@
-# @archon-research/router-kit
+# @r0hitsharma/router-kit
 
 The generic pieces every [TanStack Router](https://tanstack.com/router) app
 rebuilds: search-param schemas that never reject, a root-route cleanup that keeps
@@ -13,7 +13,7 @@ decisions and what is deliberately not here.
 ## Installation
 
 ```bash
-npm install @archon-research/router-kit @tanstack/react-router zod
+npm install @r0hitsharma/router-kit @tanstack/react-router zod
 ```
 
 `@tanstack/react-router` and `zod` are both peer dependencies. See
@@ -70,7 +70,7 @@ writing a value back.
 ### 1. Describe the search params
 
 ```ts
-import { oneOfParam, textParam } from '@archon-research/router-kit';
+import { oneOfParam, textParam } from '@r0hitsharma/router-kit';
 import { z } from 'zod';
 
 export const TABS = ['overview', 'detail'] as const;
@@ -104,7 +104,7 @@ the gap on the root route: the URL is either the state on screen, or it is
 replaced with the one that is.
 
 ```ts
-import { createValidatedSearchRedirect } from '@archon-research/router-kit';
+import { createValidatedSearchRedirect } from '@r0hitsharma/router-kit';
 import {
   createRootRoute,
   createRouter,
@@ -199,9 +199,9 @@ const itemDetailRoute = createRoute({
 back with replace semantics.
 
 ```ts
-import { useUrlSyncedTableStateAdapter } from '@archon-research/design-system';
-import type { UseUrlSyncedTableReturn } from '@archon-research/design-system';
-import { createUrlSyncedTableAdapter } from '@archon-research/router-kit';
+import { useUrlSyncedTableStateAdapter } from '@r0hitsharma/design-system';
+import type { UseUrlSyncedTableReturn } from '@r0hitsharma/design-system';
+import { createUrlSyncedTableAdapter } from '@r0hitsharma/router-kit';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
@@ -261,7 +261,7 @@ Four things worth knowing:
 throws if the chain never gets there.
 
 ```ts
-import { settleEntryUrl } from '@archon-research/router-kit/testing';
+import { settleEntryUrl } from '@r0hitsharma/router-kit/testing';
 import { describe, expect, it } from 'vitest';
 
 import { router } from '../src/router';
@@ -363,7 +363,7 @@ thing to know when upgrading the router: the cleanup and the harness both read
 package's own suite fails loudly if it moves — but that is why the floor is
 recorded rather than left open.
 
-`@archon-research/design-system` is **not** a dependency of this package, not
+`@r0hitsharma/design-system` is **not** a dependency of this package, not
 even an optional peer. The table adapter's type is restated structurally; see
 [DESIGN.md](./DESIGN.md), which ships in the tarball alongside this file.
 
@@ -394,7 +394,7 @@ From the root entry:
 | `UrlSyncedTableNavigate`          | type     | `table-adapter`      |
 | `UrlSyncedTableNavigateOptions`   | type     | `table-adapter`      |
 
-From `@archon-research/router-kit/testing`:
+From `@r0hitsharma/router-kit/testing`:
 
 | Export                  | Kind     |
 | ----------------------- | -------- |
@@ -414,9 +414,9 @@ Both functions return promises — see [step 4](#4-prove-the-entry-urls-settle).
 Sibling packages are linked by full URL, not by `../`: this file ships in the
 published tarball, where a relative path to another package resolves to nothing.
 
-- [design-system](https://github.com/archon-research/uikit/tree/main/packages/design-system)
+- [design-system](https://github.com/r0hitsharma/uikit/tree/main/packages/design-system)
   for `useUrlSyncedTableStateAdapter` and the `DataTable` this package's adapter
   feeds
-- [http-client-react](https://github.com/archon-research/uikit/tree/main/packages/http-client-react)
+- [http-client-react](https://github.com/r0hitsharma/uikit/tree/main/packages/http-client-react)
   for the TanStack Query layer that a future loader/query glue would have to
   straddle (see [DESIGN.md](./DESIGN.md#loader-and-query-glue))
