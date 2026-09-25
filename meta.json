@@ -1895,8 +1895,8 @@
         "Organisms",
         "Mcp connect"
       ],
-      "locStart": 333,
-      "locEnd": 346,
+      "locStart": 347,
+      "locEnd": 360,
       "filePath": "src/stories/organisms/mcp-connect.stories.tsx",
       "namedExport": "ChatButton",
       "meta": {}
@@ -1907,8 +1907,8 @@
         "Organisms",
         "Mcp connect"
       ],
-      "locStart": 348,
-      "locEnd": 361,
+      "locStart": 362,
+      "locEnd": 375,
       "filePath": "src/stories/organisms/mcp-connect.stories.tsx",
       "namedExport": "ConnectModalOpen",
       "meta": {}
@@ -1919,8 +1919,8 @@
         "Organisms",
         "Mcp connect"
       ],
-      "locStart": 84,
-      "locEnd": 88,
+      "locStart": 89,
+      "locEnd": 102,
       "filePath": "src/stories/organisms/mcp-connect.stories.tsx",
       "namedExport": "ControlPreview",
       "meta": {}
