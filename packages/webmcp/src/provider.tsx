@@ -140,8 +140,10 @@ export interface WebMCPProviderProps {
   /**
    * Seconds a mutation confirmation stays open before it expires and the call
    * is denied. Applies to calls made through document.modelContext;
-   * useRelaySession passes its own (shorter) window for relay calls.
-   * @default 60
+   * useRelaySession passes its own (shorter) window for relay calls. The
+   * default stays under the MCP SDK's 60 s request timeout, so an MCP-B client
+   * gets the denial instead of timing out while a late approval still runs.
+   * @default 50
    */
   confirmationWindowSeconds?: number;
 }
@@ -187,7 +189,7 @@ export function WebMCPProvider({
   children,
   initPolyfill = true,
   transport,
-  confirmationWindowSeconds = 60,
+  confirmationWindowSeconds = 50,
 }: WebMCPProviderProps) {
   // Stable refs so the context value object is referentially stable.
   const toolMapRef = useRef<Map<string, ToolSpec>>(new Map());
