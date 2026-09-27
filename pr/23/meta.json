@@ -1685,6 +1685,18 @@
       "namedExport": "Toolbar",
       "meta": {}
     },
+    "organisms--drawer--controlled-width": {
+      "name": "Controlled width",
+      "levels": [
+        "Organisms",
+        "Drawer"
+      ],
+      "locStart": 185,
+      "locEnd": 218,
+      "filePath": "src/stories/organisms/drawer.stories.tsx",
+      "namedExport": "ControlledWidth",
+      "meta": {}
+    },
     "organisms--drawer--default": {
       "name": "Default",
       "levels": [
