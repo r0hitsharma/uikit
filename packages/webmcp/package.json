@@ -25,13 +25,13 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@mcp-b/global": "5.1.0"
+    "@mcp-b/global": "5.1.0",
+    "@r0hitsharma/mcp-relay": "*"
   },
   "peerDependencies": {
     "react": "^19.0.0"
   },
   "devDependencies": {
-    "@r0hitsharma/mcp-relay": "*",
     "@r0hitsharma/oxfmt-config": "*",
     "@r0hitsharma/oxlint-config": "*",
     "@r0hitsharma/tsconfig": "*",
