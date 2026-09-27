@@ -95,9 +95,9 @@ export function acquireToolRegistration(spec: ToolSpec): () => void {
  * React runs a parent's effects after its children's, so the provider's
  * polyfill initialization always comes after the first `useRegisterTool`
  * effects. Those registrations either found no context (none installed yet) or
- * bound to one the provider then replaced (@mcp-b/global creates a server at
- * import time; StrictMode's effect re-run closes it and creates another, which
- * starts empty). The provider calls this right after initializing, so every
+ * bound to one the provider then replaced (StrictMode's effect re-run closes
+ * the polyfill's server and creates another, which starts empty; so does a
+ * transport change). The provider calls this right after initializing, so every
  * held tool lands on the context that is actually live.
  */
 export function flushToolRegistrations(): void {

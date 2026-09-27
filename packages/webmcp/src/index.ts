@@ -31,6 +31,8 @@ export type {
 export { WebMCPProvider } from './provider.js';
 export type {
   WebMCPProviderProps,
+  WebMCPTransportEndpoint,
+  WebMCPTransportOptions,
   ToolRegistryContextValue,
 } from './provider.js';
 

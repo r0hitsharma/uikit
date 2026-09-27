@@ -1,8 +1,4 @@
 /* eslint-disable no-underscore-dangle -- the registry exposes internal-by-convention methods (_addSpec, _contributeViewState) that the public hooks wrap. */
-import {
-  cleanupWebModelContext,
-  initializeWebModelContext,
-} from '@mcp-b/global';
 /**
  * WebMCPProvider
  *
@@ -22,6 +18,11 @@ import {
   type ReactNode,
 } from 'react';
 
+import {
+  cleanupWebModelContext,
+  initializeWebModelContext,
+  type TransportConfiguration,
+} from './mcp-b.js';
 import { flushToolRegistrations } from './registration.js';
 import type { ToolSpec, ViewState } from './types.js';
 
@@ -75,6 +76,37 @@ const ToolRegistryContext = createContext<ToolRegistryContextValue | null>(
 // WebMCPProvider
 // ---------------------------------------------------------------------------
 
+/** Origins allowed to talk to one MCP-B postMessage transport. */
+export interface WebMCPTransportEndpoint {
+  /**
+   * Origins allowed to connect. `['*']` disables origin validation; pass it
+   * only deliberately.
+   */
+  allowedOrigins: readonly string[];
+  /** Channel name; MCP-B's default when omitted. */
+  channelId?: string;
+}
+
+/**
+ * Which MCP-B transports the polyfill exposes tools on, and to whom. This
+ * governs the MCP-B bridge only: a browser's native `document.modelContext`
+ * (and its own agent) is not affected.
+ */
+export interface WebMCPTransportOptions {
+  /**
+   * Same-window transport, used by the MCP-B browser extension.
+   * `false` disables it.
+   * @default { allowedOrigins: [window.location.origin] }
+   */
+  tabServer?: WebMCPTransportEndpoint | false;
+  /**
+   * Transport to a parent frame, used instead of `tabServer` when the page is
+   * embedded in an iframe. Off unless configured: name the embedding origins.
+   * @default false
+   */
+  iframeServer?: WebMCPTransportEndpoint | false;
+}
+
 export interface WebMCPProviderProps {
   children: ReactNode;
   /**
@@ -82,6 +114,25 @@ export interface WebMCPProviderProps {
    * @default true
    */
   initPolyfill?: boolean;
+  /**
+   * MCP-B transport configuration. The default accepts connections from the
+   * page's own origin only; @mcp-b/global's own default accepts any origin.
+   * Changing it re-initializes the polyfill.
+   */
+  transport?: WebMCPTransportOptions;
+}
+
+/** Resolve the provider's transport prop to @mcp-b/global's configuration. */
+function resolveTransport(
+  transport: WebMCPTransportOptions | undefined,
+): TransportConfiguration {
+  return {
+    tabServer:
+      transport?.tabServer === undefined
+        ? { allowedOrigins: [window.location.origin] }
+        : transport.tabServer,
+    iframeServer: transport?.iframeServer ?? false,
+  };
 }
 
 /**
@@ -104,6 +155,7 @@ export interface WebMCPProviderProps {
 export function WebMCPProvider({
   children,
   initPolyfill = true,
+  transport,
 }: WebMCPProviderProps) {
   // Stable refs so the context value object is referentially stable.
   const toolMapRef = useRef<Map<string, ToolSpec>>(new Map());
@@ -128,14 +180,29 @@ export function WebMCPProvider({
   // Initialize the document.modelContext polyfill on mount. This effect runs
   // after the children's registration effects, so flush the registrations
   // they already hold onto the (possibly new) context.
+  //
+  // Keyed on the serialized transport so an inline `transport={{...}}` object
+  // does not tear the polyfill down on every render.
+  const transportKey = JSON.stringify(transport ?? null);
   useEffect(() => {
     if (!initPolyfill) return;
-    initializeWebModelContext({ autoInitialize: true });
+    const configured = JSON.parse(
+      transportKey,
+    ) as WebMCPTransportOptions | null;
+    try {
+      initializeWebModelContext({
+        transport: resolveTransport(configured ?? undefined),
+      });
+    } catch (error) {
+      // e.g. every transport disabled: @mcp-b/global refuses to start. Tools
+      // still register on a native document.modelContext if there is one.
+      console.error('[webmcp] polyfill initialization failed:', error);
+    }
     flushToolRegistrations();
     return () => {
       cleanupWebModelContext();
     };
-  }, [initPolyfill]);
+  }, [initPolyfill, transportKey]);
 
   const _addSpec = useCallback(
     (spec: ToolSpec): (() => void) => {
