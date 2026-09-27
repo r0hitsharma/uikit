@@ -7,11 +7,15 @@ on:
   workflow_dispatch:
 
 # Explicit, so the job does not depend on the repository's default token
-# permissions (read-only on new repositories and forks).
+# permissions (read-only on new repositories and forks). The list is
+# exhaustive: any scope left out is none. Renovate reports a failed
+# commit-status POST as "Repository has changed during renovation", so a
+# missing `statuses` scope aborts the whole run with no other clue.
 permissions:
   contents: write
   issues: write
   pull-requests: write
+  statuses: write # the renovate/stability-days check from minimumReleaseAge
 
 concurrency:
   group: renovate
