@@ -18,8 +18,10 @@ authenticated browser session. The standard is young and moving: build against
   exactly as long as that component is mounted.
 - Never call `document.modelContext`, `navigator.modelContext`, or `@mcp-b/*`
   directly from app code.
-- Contribute read-only context with `useContributeViewState`. Do not add a
-  "get state" tool for context the view already has.
+- `useContributeViewState` feeds the local registry only (`getViewState()`, for
+  debug panels and tests). It is not sent to agents: neither the relay nor
+  native registration exposes it. State an agent must read needs a read-only
+  tool (no `mutation`).
 
 ## Designing a tool
 
