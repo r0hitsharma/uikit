@@ -199,17 +199,20 @@ function bind(name: string, entry: Entry): void {
     // Released (or re-bound) before registerTool settled: the rejection is the
     // abort we asked for, not a failure.
     if (controller.signal.aborted) return;
+    // Nothing is registered, so forget this binding: the next bind (another
+    // holder acquiring the name, or the provider re-initializing and
+    // flushing) retries instead of treating the tool as present. The refcount
+    // is untouched, so every holder's release still balances.
+    if (entry.binding?.controller === controller) entry.binding = undefined;
     if (isDuplicateError(error)) {
-      // Another registration of this name already exists on the context (a
-      // stale one from a prior race, or a second copy of this package). It
-      // stays usable, so treat the tool as present rather than failing.
+      // Another registration of this name already holds the context (a second
+      // copy of this package, or code registering it directly). Agents reach
+      // that one, not this handler.
       console.warn(
-        `[webmcp] tool "${name}" is already registered on document.modelContext; keeping the existing registration.`,
+        `[webmcp] tool "${name}" is already registered on document.modelContext by other code; agents calling it reach that registration, not this handler. It is retried on the next registration of this name or provider re-initialization.`,
       );
       return;
     }
-    // The bookkeeping stays balanced (the entry keeps its refcount, and the
-    // release still runs); only the global exposure failed. Surface it.
     console.error(`[webmcp] registering tool "${name}" failed:`, error);
   });
 }

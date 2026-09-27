@@ -5,7 +5,10 @@ import {
   installFakeContext,
   removeFakeContext,
 } from './__tests__/fake-context.js';
-import { acquireToolRegistration } from './registration.js';
+import {
+  acquireToolRegistration,
+  flushToolRegistrations,
+} from './registration.js';
 import type { ToolSpec } from './types.js';
 
 function spec(name: string, extra: Partial<ToolSpec> = {}): ToolSpec {
@@ -40,7 +43,7 @@ describe('async registerTool', () => {
     expect(ctx.tools.has('reg.basic')).toBe(false);
   });
 
-  it('treats a duplicate-name rejection as already present (no unhandled rejection)', async () => {
+  it('warns on a duplicate-name rejection (no unhandled rejection)', async () => {
     const ctx = installFakeContext();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     // A registration this package does not own already holds the name.
@@ -72,6 +75,42 @@ describe('async registerTool', () => {
     await flushMicrotasks();
     expect(ctx.tools.has('reg.fail')).toBe(true);
     again();
+  });
+
+  it('retries a duplicate-name registration once the other owner is gone', async () => {
+    const ctx = installFakeContext();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    ctx.tools.set('reg.dup2', { name: 'reg.dup2', execute: () => null });
+    const release = acquireToolRegistration(spec('reg.dup2'));
+    await flushMicrotasks();
+    expect(ctx.tools.get('reg.dup2')?.['description']).toBeUndefined();
+    ctx.tools.delete('reg.dup2');
+    flushToolRegistrations();
+    await flushMicrotasks();
+    expect(ctx.tools.get('reg.dup2')?.['description']).toBe(
+      'Test tool reg.dup2.',
+    );
+    release();
+  });
+
+  it('retries a failed registration for a second holder, keeping both holders balanced', async () => {
+    const ctx = installFakeContext();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    ctx.failWith = new TypeError('transient');
+    const releaseA = acquireToolRegistration(spec('reg.retry'));
+    await flushMicrotasks();
+    expect(ctx.tools.has('reg.retry')).toBe(false);
+    ctx.failWith = undefined;
+    const releaseB = acquireToolRegistration(spec('reg.retry'));
+    await flushMicrotasks();
+    expect(ctx.tools.has('reg.retry')).toBe(true);
+    // A's release must not unregister the tool B still holds.
+    releaseA();
+    await flushMicrotasks();
+    expect(ctx.tools.has('reg.retry')).toBe(true);
+    releaseB();
+    await flushMicrotasks();
+    expect(ctx.tools.has('reg.retry')).toBe(false);
   });
 
   it('cancels a registration released before registerTool resolved', async () => {
