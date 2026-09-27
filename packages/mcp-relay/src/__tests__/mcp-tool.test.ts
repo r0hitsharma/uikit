@@ -122,6 +122,18 @@ describe('toCallToolResult', () => {
     expect(toCallToolResult(ready)).toBe(ready);
   });
 
+  it('treats data with an untyped content field as data, not a CallToolResult', () => {
+    const data = { title: 'Doc', content: ['para 1', 'para 2'] };
+    expect(toCallToolResult(data)).toEqual({
+      content: [{ type: 'text', text: JSON.stringify(data) }],
+      structuredContent: data,
+    });
+    expect(toCallToolResult({ content: [] })).toEqual({
+      content: [{ type: 'text', text: '{"content":[]}' }],
+      structuredContent: { content: [] },
+    });
+  });
+
   it('frames a JSON-RPC response', () => {
     expect(new RelaySession('s').callToolResult(7, { ok: true })).toEqual({
       jsonrpc: '2.0',

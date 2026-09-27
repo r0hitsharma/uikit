@@ -94,6 +94,23 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * A payload that is already an MCP CallToolResult: a non-empty `content`
+ * array of typed blocks. Plain tool data that happens to have a `content`
+ * field (`{ content: ['para 1'] }`) does not qualify.
+ */
+function isCallToolResult(value: unknown): value is McpCallToolResult {
+  if (!isPlainObject(value)) return false;
+  const content = value['content'];
+  return (
+    Array.isArray(content) &&
+    content.length > 0 &&
+    content.every(
+      (block) => isPlainObject(block) && typeof block['type'] === 'string',
+    )
+  );
+}
+
+/**
  * Map a browser `result` frame's payload to an MCP `tools/call` result.
  *
  * - `error` is a string (even empty): the tool failed; `isError: true` with
@@ -102,8 +119,8 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  *   `structuredContent` (MCP only allows an object there).
  * - anything else: text (a string as-is, other values as JSON).
  *
- * A payload that already is a CallToolResult (has a `content` array) passes
- * through unchanged, for browsers that build their own.
+ * A payload that already is a CallToolResult (a `content` array of typed
+ * blocks) passes through unchanged, for older browsers that built their own.
  */
 export function toCallToolResult(
   result: unknown,
@@ -117,9 +134,7 @@ export function toCallToolResult(
       isError: true,
     };
   }
-  if (isPlainObject(result) && Array.isArray(result['content'])) {
-    return result as McpCallToolResult;
-  }
+  if (isCallToolResult(result)) return result;
   const text =
     typeof result === 'string' ? result : (JSON.stringify(result) ?? 'null');
   return {
