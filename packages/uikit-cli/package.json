@@ -27,7 +27,7 @@
   "devDependencies": {
     "@r0hitsharma/oxfmt-config": "*",
     "@r0hitsharma/tsconfig": "*",
-    "@types/node": "24.13.3",
+    "@types/node": "24.13.6",
     "vitest": "^4.1.9"
   },
   "files": [
