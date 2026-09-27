@@ -172,3 +172,47 @@ export const Resizable = () => {
     </div>
   );
 };
+
+const widthReadoutClassName = css({
+  fontFamily: 'mono',
+  fontSize: 'sm',
+  color: 'text.default',
+});
+
+// Controlled: the story owns the width. The drawer reports every drag or key
+// press through `onWidthChange` and moves only because the state it feeds
+// back into `width` changed. The readout shows the value the drawer renders.
+export const ControlledWidth = () => {
+  const [open, setOpen] = useState(true);
+  const [width, setWidth] = useState(520);
+
+  return (
+    <div className={frameClassName}>
+      <Button onClick={() => setOpen(true)}>Reopen drawer</Button>
+
+      <Drawer.Root
+        open={open}
+        onOpenChange={(details) => setOpen(details.open)}
+      >
+        <Drawer.Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner>
+            <Drawer.Content resizable width={width} onWidthChange={setWidth}>
+              <div className={bodyClassName}>
+                <Drawer.Title>Controlled width</Drawer.Title>
+                <Drawer.Description>
+                  The parent holds the width in state.
+                </Drawer.Description>
+                <p className={widthReadoutClassName}>width: {width}px</p>
+                <Button onClick={() => setWidth(448)}>Reset to 448px</Button>
+              </div>
+              <div className={footerClassName}>
+                <Drawer.CloseTrigger>Done</Drawer.CloseTrigger>
+              </div>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Drawer.Portal>
+      </Drawer.Root>
+    </div>
+  );
+};
