@@ -61,3 +61,25 @@ describe('defineTool new fields', () => {
     expect(spec.outputSchema).toMatchObject({ type: 'object' });
   });
 });
+
+describe('defineTool mutation annotations', () => {
+  const mutation = {
+    ...base,
+    name: 't.mutate',
+    mutation: true,
+    confirmationSummary: () => 'Change something.',
+  };
+
+  it('throws on a mutation annotated readOnlyHint: true', () => {
+    expect(() =>
+      defineTool({ ...mutation, annotations: { readOnlyHint: true } }),
+    ).toThrow(/cannot set annotations\.readOnlyHint: true/);
+  });
+
+  it('accepts a mutation with other annotation overrides', () => {
+    expect(
+      defineTool({ ...mutation, annotations: { untrustedContentHint: true } })
+        .annotations,
+    ).toEqual({ untrustedContentHint: true });
+  });
+});

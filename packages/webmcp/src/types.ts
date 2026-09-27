@@ -124,8 +124,9 @@ const warnedDescriptions = new Set<string>();
  * It exists to provide type inference on the handler args and to make tool
  * definitions self-documenting at the call site.
  *
- * Throws on a name `document.modelContext.registerTool` would reject, and on a
- * mutation without a confirmationSummary. Warns (does not throw) when the
+ * Throws on a name `document.modelContext.registerTool` would reject, on a
+ * mutation without a confirmationSummary, and on a mutation annotated
+ * `readOnlyHint: true`. Warns (does not throw) when the
  * description exceeds Chrome's 500-character guidance: that is a budget for
  * the agent's context, not a rule any browser enforces, so it must not break a
  * working tool.
@@ -153,6 +154,14 @@ export function defineTool<TArgs = Record<string, unknown>, TResult = unknown>(
   if (spec.mutation && !spec.confirmationSummary) {
     throw new Error(
       `defineTool("${spec.name}"): a tool with mutation:true must provide a confirmationSummary.`,
+    );
+  }
+  // A mutation advertised as read-only would tell MCP clients it is safe to
+  // call without asking (the relay then emits readOnlyHint with no
+  // destructiveHint), contradicting the confirmation gate.
+  if (spec.mutation && spec.annotations?.readOnlyHint === true) {
+    throw new Error(
+      `defineTool("${spec.name}"): a tool with mutation:true cannot set annotations.readOnlyHint: true.`,
     );
   }
   return spec;
