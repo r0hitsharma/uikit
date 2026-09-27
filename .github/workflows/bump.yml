@@ -1,5 +1,10 @@
 name: bump
 
+# Cuts a release: semantic-release picks the version from conventional commits,
+# tags it, and opens a draft GitHub release; this job then dispatches
+# publish.yml for that tag. Run it from main for a release, or from a branch
+# for a prerelease named after that branch.
+
 on:
   workflow_dispatch:
     inputs:
