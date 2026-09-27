@@ -50,8 +50,16 @@
       "path": "skills/panda-css/SKILL.md"
     },
     {
+      "id": "review-discipline",
+      "path": "skills/review-discipline/SKILL.md"
+    },
+    {
       "id": "web-design",
       "path": "skills/web-design/SKILL.md"
+    },
+    {
+      "id": "webmcp",
+      "path": "skills/webmcp/SKILL.md"
     }
   ],
   "agents": [

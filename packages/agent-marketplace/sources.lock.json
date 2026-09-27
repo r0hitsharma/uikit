@@ -1,19 +1,21 @@
 {
-  "lockVersion": 1,
+  "lockVersion": 2,
   "sources": [
     {
       "id": "eyes",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "pinnedRevision": "280c015271cbf539f7950469df6f515cc41be6ec",
-      "resolved": "https://raw.githubusercontent.com/mintuz/claude-plugins/280c015271cbf539f7950469df6f515cc41be6ec/plugins/web/skills/eyes/SKILL.md"
+      "pinnedRevision": "64615530948a55333f87ab951e2d4036651bdb2e",
+      "resolved": "https://raw.githubusercontent.com/mintuz/claude-plugins/64615530948a55333f87ab951e2d4036651bdb2e/src/web/skills/eyes/SKILL.md",
+      "contentSha256": "10c45b77f9d4c5e2d93105c529f4b751511c36989fb9693c65ee8e75b79319c3"
     },
     {
       "id": "web-design",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "pinnedRevision": "280c015271cbf539f7950469df6f515cc41be6ec",
-      "resolved": "https://raw.githubusercontent.com/mintuz/claude-plugins/280c015271cbf539f7950469df6f515cc41be6ec/plugins/web/skills/web-design/SKILL.md"
+      "pinnedRevision": "64615530948a55333f87ab951e2d4036651bdb2e",
+      "resolved": "https://raw.githubusercontent.com/mintuz/claude-plugins/64615530948a55333f87ab951e2d4036651bdb2e/src/web/skills/web-design/SKILL.md",
+      "contentSha256": "80472880d086a660740fb55a6cc28f1b8334e4775f53d776bae032cf70274bd4"
     },
     {
       "id": "panda-css",
@@ -37,18 +39,27 @@
       "resolved": "packages/agent-marketplace/content/skills/charting/SKILL.md"
     },
     {
+      "id": "webmcp",
+      "kind": "skill",
+      "sourceType": "local-authored",
+      "pinnedRevision": "local-v1",
+      "resolved": "packages/agent-marketplace/content/skills/webmcp/SKILL.md"
+    },
+    {
       "id": "migrate-oxlint",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "pinnedRevision": "261c47789d60d91ee0afe0a1cbc361d39e982bbe",
-      "resolved": "https://raw.githubusercontent.com/oxc-project/oxc/261c47789d60d91ee0afe0a1cbc361d39e982bbe/.agents/skills/migrate-oxlint/SKILL.md"
+      "pinnedRevision": "52ae63f4fbb98f2fa66937b487f8ea397cbccf73",
+      "resolved": "https://raw.githubusercontent.com/oxc-project/oxc/52ae63f4fbb98f2fa66937b487f8ea397cbccf73/.agents/skills/migrate-oxlint/SKILL.md",
+      "contentSha256": "3d2d8a2e3b57118819270689fdd32dfcd8f86edc68f2044f7f84f61282960536"
     },
     {
       "id": "migrate-oxfmt",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "pinnedRevision": "261c47789d60d91ee0afe0a1cbc361d39e982bbe",
-      "resolved": "https://raw.githubusercontent.com/oxc-project/oxc/261c47789d60d91ee0afe0a1cbc361d39e982bbe/.agents/skills/migrate-oxfmt/SKILL.md"
+      "pinnedRevision": "52ae63f4fbb98f2fa66937b487f8ea397cbccf73",
+      "resolved": "https://raw.githubusercontent.com/oxc-project/oxc/52ae63f4fbb98f2fa66937b487f8ea397cbccf73/.agents/skills/migrate-oxfmt/SKILL.md",
+      "contentSha256": "86afdda5fafc3b56f9a5b1079e069c7c8822e93f92716ea5f6e12e88d58dac22"
     },
     {
       "id": "oxlint",
@@ -119,6 +130,13 @@
       "sourceType": "local-authored",
       "pinnedRevision": "local-v1",
       "resolved": "packages/agent-marketplace/content/agents/ui-verifier.md"
+    },
+    {
+      "id": "review-discipline",
+      "kind": "skill",
+      "sourceType": "local-authored",
+      "pinnedRevision": "local-v1",
+      "resolved": "packages/agent-marketplace/content/skills/review-discipline/SKILL.md"
     }
   ]
 }
