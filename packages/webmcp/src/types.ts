@@ -26,8 +26,19 @@ import type { ToolInputSchema } from './protocol.js';
 // Tool-definition contract
 // ---------------------------------------------------------------------------
 
+/** Per-call context passed to a tool handler. */
+export interface ToolHandlerContext {
+  /**
+   * Aborted when the call is cancelled: the agent gave up on it, the tool was
+   * unregistered mid-call, or (on the relay path) the back-channel closed.
+   * Pass it to fetch() and other cancellable work.
+   */
+  signal: AbortSignal;
+}
+
 export type ToolHandler<TArgs = Record<string, unknown>, TResult = unknown> = (
   args: TArgs,
+  context?: ToolHandlerContext,
 ) => Promise<TResult> | TResult;
 
 /**

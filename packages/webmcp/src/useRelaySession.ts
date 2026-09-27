@@ -96,6 +96,9 @@ export function useRelaySession({
   const acceptedRef = useRef(false);
   // Invokes held awaiting a confirmation decision, keyed by call_id.
   const heldRef = useRef<Map<string, HeldInvoke>>(new Map());
+  // One controller per running handler, aborted when the back-channel closes
+  // (the relay can no longer deliver the result) or the hook unmounts.
+  const runningRef = useRef<Set<AbortController>>(new Set());
   // Always read the freshest registry accessor from the WS handler. Synced
   // in an effect, not during render: refs are read-only during render.
   const listToolsRef = useRef(registry.listTools);
@@ -127,10 +130,16 @@ export function useRelaySession({
   const runAndRespond = useCallback(
     async (callId: string, spec: ToolSpec, args: Record<string, unknown>) => {
       let result: unknown;
+      const controller = new AbortController();
+      runningRef.current.add(controller);
       try {
-        result = await spec.handler(args as never);
+        result = await spec.handler(args as never, {
+          signal: controller.signal,
+        });
       } catch (err) {
         result = { error: (err as Error).message };
+      } finally {
+        runningRef.current.delete(controller);
       }
       send({ type: 'result', call_id: callId, result });
       log(`-> ${JSON.stringify(result).slice(0, 160)}`);
@@ -170,6 +179,11 @@ export function useRelaySession({
   // Connect + keep the back-channel open, reconnecting with backoff.
   useEffect(() => {
     let closed = false;
+    const running = runningRef.current;
+    const abortRunning = () => {
+      for (const controller of running) controller.abort();
+      running.clear();
+    };
     let attempt = 0;
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -355,6 +369,7 @@ export function useRelaySession({
 
         ws.onclose = () => {
           acceptedRef.current = false;
+          abortRunning();
           if (!closed) scheduleReconnect();
         };
       } catch (err) {
@@ -367,6 +382,7 @@ export function useRelaySession({
 
     return () => {
       closed = true;
+      abortRunning();
       if (reconnectTimer) clearTimeout(reconnectTimer);
       wsRef.current?.close();
     };

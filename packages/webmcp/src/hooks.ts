@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, type DependencyList } from 'react';
 
 import { useToolRegistryContext } from './provider.js';
 import { acquireToolRegistration } from './registration.js';
-import type { ToolSpec, ViewState } from './types.js';
+import type { ToolHandlerContext, ToolSpec, ViewState } from './types.js';
 
 // ---------------------------------------------------------------------------
 // useRegisterTool
@@ -105,7 +105,8 @@ export function useRegisterTool<
         get confirmationSummary() {
           return (specRef.current as ToolSpec).confirmationSummary;
         },
-        handler: (args: never) => specRef.current.handler(args),
+        handler: (args: never, context?: ToolHandlerContext) =>
+          specRef.current.handler(args, context),
       }) as unknown as ToolSpec,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [spec.name],

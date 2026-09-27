@@ -23,6 +23,7 @@ export type {
   PendingCallPrompt,
   ToolAnnotations,
   ToolHandler,
+  ToolHandlerContext,
   ToolOutputSchema,
   ToolRegistry,
   ToolSpec,

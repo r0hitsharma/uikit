@@ -122,10 +122,19 @@ function bind(name: string, entry: Entry): void {
   // errors throw. A bridge that needs an MCP CallToolResult builds one: the
   // MCP-B bridge wraps a plain result (text + structuredContent) and turns a
   // throw into `isError: true`.
-  const execute = async (args: Record<string, unknown>): Promise<unknown> =>
+  const execute = async (
+    args: Record<string, unknown>,
+    options?: { signal?: AbortSignal },
+  ): Promise<unknown> => {
+    // The spec passes a per-call signal (MCP-B 5.1.0 passes none); also abort
+    // if this registration goes away mid-call.
+    const signal = options?.signal
+      ? AbortSignal.any([options.signal, controller.signal])
+      : controller.signal;
     // Read the latest spec so deps-driven handler updates take effect without
     // re-registering against the polyfill.
-    entry.spec.handler(args as never);
+    return entry.spec.handler(args as never, { signal });
+  };
 
   let pending: Promise<unknown>;
   try {

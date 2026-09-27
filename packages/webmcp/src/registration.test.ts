@@ -191,3 +191,45 @@ describe('execute', () => {
     release();
   });
 });
+
+describe('handler signal', () => {
+  it('passes the execute signal through to the handler', async () => {
+    const ctx = installFakeContext();
+    let seen: AbortSignal | undefined;
+    const release = acquireToolRegistration(
+      spec('sig.pass', {
+        handler: (_args, context) => {
+          seen = context?.signal;
+          return null;
+        },
+      }),
+    );
+    await flushMicrotasks();
+    const call = new AbortController();
+    await ctx.tools.get('sig.pass')!.execute({}, { signal: call.signal });
+    expect(seen?.aborted).toBe(false);
+    call.abort();
+    expect(seen?.aborted).toBe(true);
+    release();
+  });
+
+  it('aborts the handler signal when the tool is unregistered mid-call', async () => {
+    const ctx = installFakeContext();
+    let seen: AbortSignal | undefined;
+    const release = acquireToolRegistration(
+      spec('sig.unregister', {
+        handler: (_args, context) => {
+          seen = context?.signal;
+          return new Promise(() => {});
+        },
+      }),
+    );
+    await flushMicrotasks();
+    void ctx.tools.get('sig.unregister')!.execute({});
+    await flushMicrotasks();
+    expect(seen?.aborted).toBe(false);
+    release();
+    await flushMicrotasks();
+    expect(seen?.aborted).toBe(true);
+  });
+});
