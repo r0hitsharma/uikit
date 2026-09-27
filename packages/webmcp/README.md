@@ -24,7 +24,7 @@ npm install @r0hitsharma/webmcp react
 - Schema-first tool definitions (`defineTool`), validated against WebMCP's naming rules
 - WebMCP annotations derived from `mutation`, with per-field overrides
 - Human confirmation for every `mutation: true` call, on every invocation path
-- A cancellation `signal` for every handler call
+- An abort `signal` for every handler call, fired when the tool unregisters mid-call or the relay disconnects
 - StrictMode-safe registration that mounts/unmounts cleanly
 - A React provider that initializes the polyfill with an explicit, same-origin transport
 - Hooks to register tools, observe the registry, and contribute view state
@@ -94,7 +94,7 @@ function IdentityView({ onSelect }: { onSelect: (id: string) => void }) {
 
 Return the result as plain data. On `document.modelContext` the browser serializes it as JSON for the agent; the MCP-B bridge and the relay turn it into an MCP result, with an object passed as `structuredContent`. Throw to report a failure: it reaches native agents as a failed call and MCP clients as `isError: true`.
 
-The second handler argument carries an `AbortSignal`. It aborts when the agent cancels the call, when the tool is unregistered mid-call, or, on the relay path, when the back-channel closes. Pass it to `fetch()` and other cancellable work. Handlers that take one argument keep working.
+The second handler argument carries an `AbortSignal`. It aborts when the tool is unregistered mid-call (its component unmounts, or the provider re-initializes) and, on the relay path, when the back-channel closes. An agent's own cancellation reaches it only on a browser whose `document.modelContext` passes a per-call signal: the MCP-B polyfill does not (as of 5.1.0), and the relay protocol has no cancel frame. Pass it to `fetch()` and other cancellable work. Handlers that take one argument keep working.
 
 ```ts
 defineTool({
@@ -138,7 +138,7 @@ function Confirmations() {
 }
 ```
 
-A denied call, or one nobody answers before the window closes (`confirmationWindowSeconds` on the provider, default 50 s, under the MCP SDK's 60 s request timeout; `useRelaySession` uses its own, default 25 s, under the relay's 30 s timeout), fails without running the handler: the agent gets an error (MCP `isError: true`) saying the user declined or did not answer. It is an error rather than a result so it never has to match the tool's `outputSchema`. With no dialog mounted, mutations are therefore denied.
+A denied call, or one nobody answers before the window closes (`confirmationWindowSeconds` on the provider, default 50 s, under the MCP SDK's 60 s request timeout; `useRelaySession` uses its own, default 25 s, under the relay's 30 s timeout), fails without running the handler: the agent gets an error (MCP `isError: true`) saying the user declined or did not answer. It is an error rather than a result so it never has to match the tool's `outputSchema`. With no dialog mounted, a mutation call therefore waits out the whole window and is then denied.
 
 ### Transport
 
@@ -167,7 +167,7 @@ A denied call, or one nobody answers before the window closes (`confirmationWind
 - `useToolConfirmation` — drive a mutation-confirmation dialog from the provider's queue
 - `listTools` / `getViewState` — imperative helpers for non-React callers
 - `useRelaySession` — drive the relay back-channel from the registry: mint/reuse a session, advertise the registered tools, run incoming `invoke`s, and gate any `mutation: true` tool behind the shared confirmation queue
-- Tool types (`ToolSpec`, `ToolHandler`, `ToolHandlerContext`, `ToolAnnotations`, `ToolOutputSchema`, `PendingCallPrompt`, `ViewState`, `WebMCPTransportOptions`, ...) and the wire-protocol types re-exported from [`@r0hitsharma/mcp-relay`](../mcp-relay/README.md), the single source of truth shared with the Python relay
+- Tool types (`ToolSpec`, `ToolHandler`, `ToolHandlerContext`, `ToolAnnotations`, `ToolOutputSchema`, `PendingCallPrompt`, `ViewState`, `WebMCPTransportOptions`, ...) and the wire-protocol types re-exported from [`@r0hitsharma/mcp-relay`](../mcp-relay/README.md), their single source of truth
 
 ## Related
 

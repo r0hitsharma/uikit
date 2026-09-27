@@ -29,8 +29,11 @@ import type { ToolInputSchema } from './protocol.js';
 /** Per-call context passed to a tool handler. */
 export interface ToolHandlerContext {
   /**
-   * Aborted when the call is cancelled: the agent gave up on it, the tool was
-   * unregistered mid-call, or (on the relay path) the back-channel closed.
+   * Aborted when the tool is unregistered mid-call (its component unmounted,
+   * or the provider re-initialized) or, on the relay path, when the
+   * back-channel closes. An agent's own cancellation reaches it only where the
+   * browser's `document.modelContext` passes a per-call signal: the MCP-B
+   * polyfill (5.1.0) passes none, and the relay protocol has no cancel frame.
    * Pass it to fetch() and other cancellable work.
    */
   signal: AbortSignal;
