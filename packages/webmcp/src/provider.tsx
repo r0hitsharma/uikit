@@ -22,6 +22,7 @@ import {
 import { ConfirmationQueue, type RequestConfirmation } from './confirmation.js';
 import {
   cleanupWebModelContext,
+  hostModelContextOptions,
   initializeWebModelContext,
   type TransportConfiguration,
 } from './mcp-b.js';
@@ -131,7 +132,9 @@ export interface WebMCPProviderProps {
   /**
    * MCP-B transport configuration. The default accepts connections from the
    * page's own origin only; @mcp-b/global's own default accepts any origin.
-   * Changing it re-initializes the polyfill.
+   * When unset, a transport the host page set in
+   * `window.__webModelContextOptions` applies instead. Changing it
+   * re-initializes the polyfill.
    */
   transport?: WebMCPTransportOptions;
   /**
@@ -143,10 +146,17 @@ export interface WebMCPProviderProps {
   confirmationWindowSeconds?: number;
 }
 
-/** Resolve the provider's transport prop to @mcp-b/global's configuration. */
+/**
+ * Resolve the provider's transport prop to @mcp-b/global's configuration. The
+ * host page's own transport applies when the prop is not set.
+ */
 function resolveTransport(
   transport: WebMCPTransportOptions | undefined,
+  hostTransport: TransportConfiguration | undefined,
 ): TransportConfiguration {
+  if (transport === undefined && hostTransport !== undefined) {
+    return hostTransport;
+  }
   return {
     tabServer:
       transport?.tabServer === undefined
@@ -211,13 +221,29 @@ export function WebMCPProvider({
     const configured = JSON.parse(
       transportKey,
     ) as WebMCPTransportOptions | null;
+    const host = hostModelContextOptions();
+    if (host?.autoInitialize === true) {
+      // The host page opted in to @mcp-b/global's import-time start, so it
+      // owns that instance: do not re-configure or tear it down.
+      if (configured) {
+        console.warn(
+          "[webmcp] window.__webModelContextOptions.autoInitialize is true, so @mcp-b/global started itself with the host page's transport; WebMCPProvider's transport prop has no effect.",
+        );
+      }
+      flushToolRegistrations();
+      return undefined;
+    }
     try {
       initializeWebModelContext({
-        transport: resolveTransport(configured ?? undefined),
+        ...(host?.installTestingShim !== undefined
+          ? { installTestingShim: host.installTestingShim }
+          : {}),
+        transport: resolveTransport(configured ?? undefined, host?.transport),
       });
     } catch (error) {
-      // e.g. every transport disabled: @mcp-b/global refuses to start. Tools
-      // still register on a native document.modelContext if there is one.
+      // e.g. every transport disabled: @mcp-b/global refuses to start, after
+      // installing its polyfill. Tools still register on that polyfill's
+      // document.modelContext, but no MCP-B transport serves them.
       console.error('[webmcp] polyfill initialization failed:', error);
     }
     flushToolRegistrations();

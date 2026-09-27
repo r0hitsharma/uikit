@@ -154,7 +154,7 @@ A denied call, or one nobody answers before the window closes (`confirmationWind
 >
 ```
 
-`false` disables a transport. The prop governs the MCP-B bridge only, not a browser's native `document.modelContext`. A host page that sets `window.__webModelContextOptions` itself before loading this package keeps its own settings.
+`false` disables a transport. The prop governs the MCP-B bridge only, not a browser's native `document.modelContext`. A host page can still set `window.__webModelContextOptions` before loading this package: the provider applies its `installTestingShim`, and its `transport` when the prop is not set. Only an explicit `autoInitialize: true` keeps @mcp-b/global's import-time start; the host then owns that instance, and the provider neither re-configures nor tears it down (its `transport` prop has no effect).
 
 ## Public surface
 
