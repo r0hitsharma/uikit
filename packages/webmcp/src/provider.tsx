@@ -26,7 +26,7 @@ import {
   initializeWebModelContext,
   type TransportConfiguration,
 } from './mcp-b.js';
-import { flushToolRegistrations } from './registration.js';
+import { flushToolRegistrations, getModelContext } from './registration.js';
 import type { ToolSpec, ViewState } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -168,6 +168,22 @@ function resolveTransport(
   };
 }
 
+let warnedNoModelContext = false;
+
+/**
+ * Tools are still listed locally (listTools, the relay) when nothing is
+ * installed, so say once why browser agents cannot see them.
+ */
+function warnNoModelContext(): void {
+  if (warnedNoModelContext) return;
+  warnedNoModelContext = true;
+  console.warn(
+    globalThis.isSecureContext === false
+      ? "[webmcp] no document.modelContext: WebMCP and the MCP-B polyfill need a secure context (https or localhost), so browser agents cannot see this page's tools. The relay back-channel is not affected."
+      : "[webmcp] no document.modelContext after initializing the polyfill, so browser agents cannot see this page's tools.",
+  );
+}
+
 /**
  * Mount this provider once near the root of your React tree before using
  * any hooks from @r0hitsharma/webmcp.
@@ -248,6 +264,7 @@ export function WebMCPProvider({
       // document.modelContext, but no MCP-B transport serves them.
       console.error('[webmcp] polyfill initialization failed:', error);
     }
+    if (!getModelContext()) warnNoModelContext();
     flushToolRegistrations();
     return () => {
       cleanupWebModelContext();

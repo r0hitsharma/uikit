@@ -55,7 +55,7 @@ export interface AcquireOptions {
 const REGISTRY = new Map<string, Entry>();
 
 /** Resolve the polyfilled model context, preferring the current draft location. */
-function getModelContext(): ModelContext | undefined {
+export function getModelContext(): ModelContext | undefined {
   if (typeof window === 'undefined') return undefined;
   const doc = window.document as unknown as { modelContext?: ModelContext };
   const nav = window.navigator as unknown as { modelContext?: ModelContext };
