@@ -18,6 +18,11 @@
 import type { ToolSpec } from './types.js';
 
 type ModelContext = {
+  /**
+   * Per the WebMCP spec this returns a Promise that rejects on a duplicate
+   * name, an invalid descriptor, or an aborted signal. Typed `unknown` so an
+   * older synchronous implementation is handled too.
+   */
   registerTool: (
     tool: Record<string, unknown>,
     options?: { signal?: AbortSignal },
@@ -29,12 +34,19 @@ type ToolResult = {
   isError?: boolean;
 };
 
+/** One registration attempt against one modelContext instance. */
+type Binding = {
+  context: ModelContext;
+  // Aborting it unregisters the tool, or cancels a still-pending registerTool.
+  controller: AbortController;
+};
+
 type Entry = {
   count: number;
-  controller: AbortController;
   // Latest spec, so re-acquiring with new deps swaps the handler in place
   // without re-registering (which the polyfill would reject as a duplicate).
   spec: ToolSpec;
+  binding?: Binding;
 };
 
 const REGISTRY = new Map<string, Entry>();
@@ -51,6 +63,10 @@ function stringify(value: unknown): string {
   return typeof value === 'string' ? value : JSON.stringify(value, null, 2);
 }
 
+function isDuplicateError(error: unknown): boolean {
+  return /already registered/i.test(String(error));
+}
+
 /**
  * Acquire a registration for `spec`. Returns a release function to call on
  * unmount. Idempotent per tool name: concurrent holders share one underlying
@@ -64,16 +80,28 @@ export function acquireToolRegistration(spec: ToolSpec): () => void {
     return makeRelease(spec.name);
   }
 
-  const controller = new AbortController();
-  const entry: Entry = { count: 1, controller, spec };
+  const entry: Entry = { count: 1, spec };
   REGISTRY.set(spec.name, entry);
+  bind(spec.name, entry);
+  return makeRelease(spec.name);
+}
 
-  const modelContext = getModelContext();
-  if (!modelContext) {
+/**
+ * Register `entry` with the current modelContext. `registerTool` is async, so
+ * its outcome is handled on the returned promise, never with a synchronous
+ * try/catch (which would leave every rejection unhandled).
+ */
+function bind(name: string, entry: Entry): void {
+  const context = getModelContext();
+  if (!context) {
     // No polyfill (SSR / unsupported browser): keep the refcount bookkeeping so
     // listTools()-style local state still balances, but skip the global call.
-    return makeRelease(spec.name);
+    return;
   }
+  if (entry.binding?.context === context) return;
+
+  const controller = new AbortController();
+  entry.binding = { context, controller };
 
   const execute = async (
     args: Record<string, unknown>,
@@ -81,8 +109,7 @@ export function acquireToolRegistration(spec: ToolSpec): () => void {
     try {
       // Read the latest spec so deps-driven handler updates take effect without
       // re-registering against the polyfill.
-      const current = REGISTRY.get(spec.name)?.spec ?? spec;
-      const result = await current.handler(args as never);
+      const result = await entry.spec.handler(args as never);
       return { content: [{ type: 'text', text: stringify(result) }] };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -93,28 +120,43 @@ export function acquireToolRegistration(spec: ToolSpec): () => void {
     }
   };
 
+  let pending: Promise<unknown>;
   try {
-    modelContext.registerTool(
-      {
-        name: spec.name,
-        description: spec.description,
-        inputSchema: spec.schema,
-        ...(spec.mutation ? { annotations: { destructiveHint: true } } : {}),
-        execute,
-      },
-      { signal: controller.signal },
+    pending = Promise.resolve(
+      context.registerTool(
+        {
+          name: entry.spec.name,
+          description: entry.spec.description,
+          inputSchema: entry.spec.schema,
+          ...(entry.spec.mutation
+            ? { annotations: { destructiveHint: true } }
+            : {}),
+          execute,
+        },
+        { signal: controller.signal },
+      ),
     );
   } catch (error) {
-    // Defensive: if the polyfill still reports a duplicate (e.g. a stale
-    // registration from a prior race), treat it as already-present rather than
-    // crashing the app. The existing registration stays usable.
-    if (!/already registered/i.test(String(error))) {
-      REGISTRY.delete(spec.name);
-      throw error;
-    }
+    pending = Promise.reject(error);
   }
 
-  return makeRelease(spec.name);
+  pending.catch((error: unknown) => {
+    // Released (or re-bound) before registerTool settled: the rejection is the
+    // abort we asked for, not a failure.
+    if (controller.signal.aborted) return;
+    if (isDuplicateError(error)) {
+      // Another registration of this name already exists on the context (a
+      // stale one from a prior race, or a second copy of this package). It
+      // stays usable, so treat the tool as present rather than failing.
+      console.warn(
+        `[webmcp] tool "${name}" is already registered on document.modelContext; keeping the existing registration.`,
+      );
+      return;
+    }
+    // The bookkeeping stays balanced (the entry keeps its refcount, and the
+    // release still runs); only the global exposure failed. Surface it.
+    console.error(`[webmcp] registering tool "${name}" failed:`, error);
+  });
 }
 
 function makeRelease(name: string): () => void {
@@ -131,7 +173,7 @@ function makeRelease(name: string): () => void {
     queueMicrotask(() => {
       const current = REGISTRY.get(name);
       if (current && current.count === 0) {
-        current.controller.abort();
+        current.binding?.controller.abort();
         REGISTRY.delete(name);
       }
     });

@@ -1,0 +1,90 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  flushMicrotasks,
+  installFakeContext,
+  removeFakeContext,
+} from './__tests__/fake-context.js';
+import { acquireToolRegistration } from './registration.js';
+import type { ToolSpec } from './types.js';
+
+function spec(name: string, extra: Partial<ToolSpec> = {}): ToolSpec {
+  return {
+    name,
+    description: `Test tool ${name}.`,
+    schema: { type: 'object', properties: {} },
+    handler: () => ({ ok: true }),
+    ...extra,
+  };
+}
+
+afterEach(async () => {
+  await flushMicrotasks();
+  removeFakeContext();
+  vi.restoreAllMocks();
+});
+
+describe('async registerTool', () => {
+  it('registers once and unregisters when the last holder releases', async () => {
+    const ctx = installFakeContext();
+    const releaseA = acquireToolRegistration(spec('reg.basic'));
+    const releaseB = acquireToolRegistration(spec('reg.basic'));
+    await flushMicrotasks();
+    expect(ctx.calls).toHaveLength(1);
+    expect(ctx.tools.has('reg.basic')).toBe(true);
+    releaseA();
+    await flushMicrotasks();
+    expect(ctx.tools.has('reg.basic')).toBe(true);
+    releaseB();
+    await flushMicrotasks();
+    expect(ctx.tools.has('reg.basic')).toBe(false);
+  });
+
+  it('treats a duplicate-name rejection as already present (no unhandled rejection)', async () => {
+    const ctx = installFakeContext();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // A registration this package does not own already holds the name.
+    ctx.tools.set('reg.dup', { name: 'reg.dup', execute: () => null });
+    const release = acquireToolRegistration(spec('reg.dup'));
+    await flushMicrotasks();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('already registered'),
+    );
+    release();
+    await flushMicrotasks();
+  });
+
+  it('logs any other rejection and keeps the refcount balanced', async () => {
+    const ctx = installFakeContext();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    ctx.failWith = new TypeError('bad descriptor');
+    const release = acquireToolRegistration(spec('reg.fail'));
+    await flushMicrotasks();
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining('reg.fail'),
+      expect.any(TypeError),
+    );
+    release();
+    await flushMicrotasks();
+    // The entry was torn down, so a later mount registers afresh.
+    ctx.failWith = undefined;
+    const again = acquireToolRegistration(spec('reg.fail'));
+    await flushMicrotasks();
+    expect(ctx.tools.has('reg.fail')).toBe(true);
+    again();
+  });
+
+  it('cancels a registration released before registerTool resolved', async () => {
+    const ctx = installFakeContext();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    let open!: () => void;
+    ctx.gate = new Promise<void>((r) => (open = r));
+    const release = acquireToolRegistration(spec('reg.race'));
+    release();
+    await flushMicrotasks(); // the deferred abort fires while still pending
+    open();
+    await flushMicrotasks();
+    expect(ctx.tools.has('reg.race')).toBe(false);
+    expect(error).not.toHaveBeenCalled();
+  });
+});
