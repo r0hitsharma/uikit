@@ -15,7 +15,7 @@
  * unregister (signal abort) only fires once the last holder is gone, deferred
  * to a microtask so a StrictMode remount can cancel it.
  */
-import type { ToolSpec } from './types.js';
+import { resolveAnnotations, type ToolSpec } from './types.js';
 
 type ModelContext = {
   /**
@@ -159,9 +159,10 @@ function bind(name: string, entry: Entry): void {
           ...(entry.spec.outputSchema !== undefined
             ? { outputSchema: entry.spec.outputSchema }
             : {}),
-          ...(entry.spec.mutation
-            ? { annotations: { destructiveHint: true } }
-            : {}),
+          // WebMCP hints (there is no destructiveHint in WebMCP). A bridge to
+          // MCP forwards readOnlyHint; MCP reads readOnlyHint:false as
+          // destructive by default, so mutations stay flagged there too.
+          annotations: resolveAnnotations(entry.spec),
           execute,
         },
         { signal: controller.signal },

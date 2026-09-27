@@ -50,6 +50,21 @@ export interface ToolAnnotations {
   consequentialHint?: boolean;
 }
 
+/**
+ * The annotations a tool is registered with: explicit values from
+ * `spec.annotations`, else derived from `mutation`.
+ */
+export function resolveAnnotations(
+  spec: Pick<ToolSpec, 'mutation' | 'annotations'>,
+): Required<ToolAnnotations> {
+  const mutation = spec.mutation === true;
+  return {
+    readOnlyHint: spec.annotations?.readOnlyHint ?? !mutation,
+    untrustedContentHint: spec.annotations?.untrustedContentHint ?? false,
+    consequentialHint: spec.annotations?.consequentialHint ?? mutation,
+  };
+}
+
 /** JSON Schema for a tool's result object. */
 export type ToolOutputSchema = Record<string, unknown>;
 

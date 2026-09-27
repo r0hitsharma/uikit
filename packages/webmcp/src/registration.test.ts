@@ -110,3 +110,53 @@ describe('registered descriptor', () => {
     releaseB();
   });
 });
+
+describe('annotations', () => {
+  it('marks a mutation consequential and not read-only (no destructiveHint)', async () => {
+    const ctx = installFakeContext();
+    const release = acquireToolRegistration(
+      spec('hint.mutation', {
+        mutation: true,
+        confirmationSummary: () => 'Do it.',
+      }),
+    );
+    await flushMicrotasks();
+    const annotations = ctx.tools.get('hint.mutation')?.['annotations'];
+    expect(annotations).toEqual({
+      readOnlyHint: false,
+      untrustedContentHint: false,
+      consequentialHint: true,
+    });
+    expect(annotations).not.toHaveProperty('destructiveHint');
+    release();
+  });
+
+  it('marks any other tool read-only and passes untrustedContentHint through', async () => {
+    const ctx = installFakeContext();
+    const release = acquireToolRegistration(
+      spec('hint.read', { annotations: { untrustedContentHint: true } }),
+    );
+    await flushMicrotasks();
+    expect(ctx.tools.get('hint.read')?.['annotations']).toEqual({
+      readOnlyHint: true,
+      untrustedContentHint: true,
+      consequentialHint: false,
+    });
+    release();
+  });
+
+  it('lets explicit annotations override the derived hints', async () => {
+    const ctx = installFakeContext();
+    const release = acquireToolRegistration(
+      spec('hint.override', {
+        annotations: { readOnlyHint: false, consequentialHint: true },
+      }),
+    );
+    await flushMicrotasks();
+    expect(ctx.tools.get('hint.override')?.['annotations']).toMatchObject({
+      readOnlyHint: false,
+      consequentialHint: true,
+    });
+    release();
+  });
+});
