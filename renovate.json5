@@ -25,9 +25,9 @@
     },
     {
       // Vendored agent skills: bump the pinned commit of each upstream file.
-      // github-digest (not git-refs) because it reports commit dates, so the
-      // 7-day minimumReleaseAge still applies; Renovate 42+ holds updates with
-      // no timestamp forever.
+      // git-refs resolves the branch head with `git ls-remote`. github-digest
+      // cannot: it lists branches through a GraphQL query capped at 300,
+      // alphabetically, and oxc-project/oxc's main falls past the cap.
       customType: "regex",
       description: "Update vendored agent-marketplace skills in sources.json",
       managerFilePatterns: [
@@ -36,7 +36,8 @@
       matchStrings: [
         "\"upstream\":\\s*\"https://github\\.com/(?<depName>[^\"]+)\",\\s*\"path\":\\s*\"[^\"]+\",\\s*\"branch\":\\s*\"(?<currentValue>[^\"]+)\",\\s*\"pinnedRevision\":\\s*\"(?<currentDigest>[0-9a-f]{40})\"",
       ],
-      datasourceTemplate: "github-digest",
+      datasourceTemplate: "git-refs",
+      packageNameTemplate: "https://github.com/{{depName}}",
     },
   ],
   // Renovate merges packageRules in array order, and the LAST matching rule
@@ -125,9 +126,16 @@
       // (the agent-marketplace check job fails on that). Re-fetch and
       // regenerate in the same PR. The command must also be allowlisted via
       // RENOVATE_ALLOWED_COMMANDS in .github/workflows/renovate.yml.
+      //
+      // No minimumReleaseAge here. A digest bump is dated by the branch head,
+      // and an active upstream (oxc commits every few hours) never has a head
+      // 7 days old, so the gate would hold these bumps forever; git-refs also
+      // reports no timestamps at all. Review happens on the draft PR, which
+      // carries the full vendored-content diff.
       matchManagers: ["custom.regex"],
       matchFileNames: ["packages/agent-marketplace/sources.json"],
       groupName: "agent-skills",
+      minimumReleaseAge: null,
       postUpgradeTasks: {
         commands: [
           "node --experimental-strip-types packages/agent-marketplace/scripts/refresh.ts",

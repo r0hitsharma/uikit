@@ -62,10 +62,12 @@ against `sources.json`, when vendored content was edited by hand, or when the
 generated output drifts from `content/`. Put uikit-specific guidance in a
 local-authored skill, never as a patch to vendored content.
 
-Renovate bumps `pinnedRevision` (a regex manager in `renovate.json5`, grouped as
-`agent-skills`, subject to the 7-day minimum release age) and runs `refresh` as a
-post-upgrade task, so the PR carries the new content. If an upstream file moves,
-`refresh` fails with a hint to update `path`.
+Renovate bumps `pinnedRevision` to the head of `branch` (a `git-refs` regex
+manager in `renovate.json5`, grouped as `agent-skills`) and runs `refresh` as a
+post-upgrade task, so the PR carries the new content. These bumps are exempt from
+the 7-day minimum release age: an active upstream's branch head is never 7 days
+old, so the gate would hold them forever. Review the vendored diff on the draft PR
+instead. If an upstream file moves, `refresh` fails with a hint to update `path`.
 
 ## Add New Skill
 
