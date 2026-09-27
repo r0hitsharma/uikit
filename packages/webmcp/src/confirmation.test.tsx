@@ -134,6 +134,18 @@ describe('ConfirmationQueue', () => {
     expect(queue.getSnapshot()).toHaveLength(0);
   });
 
+  it('rejects a window that is not a positive, timer-safe number of seconds', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const queue = new ConfirmationQueue();
+    for (const windowSeconds of [Number.NaN, Infinity, 0, -5, 30 * 86_400]) {
+      await expect(queue.request(spec, {}, { windowSeconds })).rejects.toThrow(
+        RangeError,
+      );
+    }
+    expect(queue.getSnapshot()).toHaveLength(0);
+    error.mockRestore();
+  });
+
   it('keeps one prompt for a re-delivered call id', async () => {
     const queue = new ConfirmationQueue();
     const original = queue.request(spec, {}, { windowSeconds: 5, callId: 'c' });

@@ -28,6 +28,18 @@ export interface ConfirmationOptions {
   signal?: AbortSignal;
 }
 
+// setTimeout fires at once for any delay above 2^31 - 1 ms (about 24.8 days).
+const MAX_WINDOW_SECONDS = Math.floor((2 ** 31 - 1) / 1000);
+
+function isValidWindow(seconds: number): boolean {
+  return (
+    typeof seconds === 'number' &&
+    Number.isFinite(seconds) &&
+    seconds > 0 &&
+    seconds <= MAX_WINDOW_SECONDS
+  );
+}
+
 type Held = {
   prompt: PendingCallPrompt;
   settle: (decision: ConfirmationDecision) => void;
@@ -46,6 +58,15 @@ export class ConfirmationQueue {
     { windowSeconds, callId, signal }: ConfirmationOptions,
   ): Promise<ConfirmationDecision> {
     if (signal?.aborted) return Promise.resolve('cancelled');
+    if (!isValidWindow(windowSeconds)) {
+      // A bad window must not open a prompt that can never expire (or that
+      // expires at once): fail the call and tell the developer why.
+      const error = new RangeError(
+        `[webmcp] confirmationWindowSeconds must be a number of seconds above 0 and at most ${MAX_WINDOW_SECONDS}; got ${String(windowSeconds)}.`,
+      );
+      console.error(error.message);
+      return Promise.reject(error);
+    }
     const id = callId ?? `local-${(this.counter += 1)}`;
     // A re-delivered call is already on screen; the original prompt answers it.
     if (this.held.some((h) => h.prompt.callId === id)) {

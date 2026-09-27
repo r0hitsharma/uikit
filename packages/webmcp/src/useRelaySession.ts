@@ -286,7 +286,23 @@ export function useRelaySession({
               error: denialMessage(decision),
             });
           }
-          // cancelled: the back-channel closed; there is no one to answer.
+          // cancelled: the back-channel closed or the call was re-delivered
+          // (the original prompt answers it); there is no one to answer here.
+        })
+        .catch((err: unknown) => {
+          // The prompt could not open (e.g. an invalid confirmation window):
+          // fail the call now rather than let the harness time out.
+          running.delete(controller);
+          const message =
+            (err instanceof Error ? err.message : String(err)) ||
+            `Confirmation for "${toolName}" failed.`;
+          log(`-> error: ${message.slice(0, 160)}`);
+          send({
+            type: 'result',
+            call_id: callId,
+            result: null,
+            error: message,
+          });
         });
     }
 

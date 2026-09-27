@@ -19,11 +19,11 @@ function ToolMount({ spec }: { spec: ToolSpec }) {
   return null;
 }
 
-function Session() {
+function Session({ windowSeconds = 1 }: { windowSeconds?: number }) {
   const result = useRelaySession({
     relayBaseUrl: 'https://relay.test',
     storageKey: 'relay-test',
-    confirmationWindowSeconds: 1,
+    confirmationWindowSeconds: windowSeconds,
   });
   useEffect(() => {
     latest.session = result;
@@ -31,13 +31,13 @@ function Session() {
   return null;
 }
 
-function mount(tools: ToolSpec[]) {
+function mount(tools: ToolSpec[], windowSeconds?: number) {
   return render(
     <WebMCPProvider initPolyfill={false}>
       {tools.map((spec) => (
         <ToolMount key={spec.name} spec={spec} />
       ))}
-      <Session />
+      <Session windowSeconds={windowSeconds} />
     </WebMCPProvider>,
   );
 }
@@ -96,6 +96,31 @@ describe('relay mutation confirmation', () => {
       confirmationSummary: () => 'Change something.',
       handler: () => ({ changed: true }),
     });
+
+  it('fails the call at once when the confirmation window is invalid', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const handler = vi.fn();
+    mount([tool('relay.bad', { mutation: true, handler })], Number.NaN);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-nan',
+      tool_name: 'relay.bad',
+      args: {},
+    });
+    await vi.waitFor(() =>
+      expect(ws.framesOf('result')).toContainEqual({
+        type: 'result',
+        call_id: 'c-nan',
+        result: null,
+        error: expect.stringContaining('confirmationWindowSeconds'),
+      }),
+    );
+    expect(handler).not.toHaveBeenCalled();
+    expect(latest.session?.pendingConfirmation).toBeNull();
+    error.mockRestore();
+  });
 
   it('sends a denial error when the confirmation expires unanswered', async () => {
     mount([mutation()]);
