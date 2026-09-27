@@ -22,6 +22,7 @@ import {
   type ReactNode,
 } from 'react';
 
+import { flushToolRegistrations } from './registration.js';
 import type { ToolSpec, ViewState } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -124,10 +125,13 @@ export function WebMCPProvider({
     for (const listener of listenersRef.current) listener();
   }, []);
 
-  // Initialize the document.modelContext polyfill on mount.
+  // Initialize the document.modelContext polyfill on mount. This effect runs
+  // after the children's registration effects, so flush the registrations
+  // they already hold onto the (possibly new) context.
   useEffect(() => {
     if (!initPolyfill) return;
     initializeWebModelContext({ autoInitialize: true });
+    flushToolRegistrations();
     return () => {
       cleanupWebModelContext();
     };

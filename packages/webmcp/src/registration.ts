@@ -77,6 +77,9 @@ export function acquireToolRegistration(spec: ToolSpec): () => void {
   if (existing) {
     existing.count += 1;
     existing.spec = spec; // keep the freshest handler/description
+    // Re-bind if the context changed underneath (e.g. the provider re-created
+    // the polyfill); a no-op when already bound to the current one.
+    bind(spec.name, existing);
     return makeRelease(spec.name);
   }
 
@@ -84,6 +87,23 @@ export function acquireToolRegistration(spec: ToolSpec): () => void {
   REGISTRY.set(spec.name, entry);
   bind(spec.name, entry);
   return makeRelease(spec.name);
+}
+
+/**
+ * Bind every held registration to the current modelContext.
+ *
+ * React runs a parent's effects after its children's, so the provider's
+ * polyfill initialization always comes after the first `useRegisterTool`
+ * effects. Those registrations either found no context (none installed yet) or
+ * bound to one the provider then replaced (@mcp-b/global creates a server at
+ * import time; StrictMode's effect re-run closes it and creates another, which
+ * starts empty). The provider calls this right after initializing, so every
+ * held tool lands on the context that is actually live.
+ */
+export function flushToolRegistrations(): void {
+  for (const [name, entry] of REGISTRY) {
+    if (entry.count > 0) bind(name, entry);
+  }
 }
 
 /**
@@ -99,6 +119,9 @@ function bind(name: string, entry: Entry): void {
     return;
   }
   if (entry.binding?.context === context) return;
+  // Bound to a context that has since been replaced: drop that registration
+  // (a no-op on a closed server) before registering with the live one.
+  entry.binding?.controller.abort();
 
   const controller = new AbortController();
   entry.binding = { context, controller };
