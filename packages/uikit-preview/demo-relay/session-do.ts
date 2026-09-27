@@ -31,8 +31,14 @@ import type {
 
 import type { Env } from './env.js';
 
+/** What the browser's `result` frame carried: a result, or a tool error. */
+interface CallOutcome {
+  result: unknown;
+  error?: string;
+}
+
 interface PendingCall {
-  resolve: (value: unknown) => void;
+  resolve: (value: CallOutcome) => void;
   reject: (reason: unknown) => void;
   timer: ReturnType<typeof setTimeout>;
 }
@@ -224,11 +230,15 @@ export class SessionDO implements DurableObject {
       if (pending) {
         clearTimeout(pending.timer);
         this.pendingCalls.delete(callId);
-        if (msg['error']) {
-          pending.reject(new Error(msg['error'] as string));
-        } else {
-          pending.resolve(msg['result']);
-        }
+        // A tool error is still a delivered result: it becomes an MCP
+        // isError result below, distinct from relay failures (timeout,
+        // disconnect) that reject.
+        pending.resolve({
+          result: msg['result'],
+          ...(typeof msg['error'] === 'string' && msg['error']
+            ? { error: msg['error'] }
+            : {}),
+        });
       } else {
         // No pending call: a malformed/duplicate result, or one that already
         // timed out. Log it so the cause is visible rather than letting the
@@ -381,9 +391,9 @@ export class SessionDO implements DurableObject {
     }
 
     // Await result with timeout.
-    let result: unknown;
+    let outcome: CallOutcome;
     try {
-      result = await new Promise<unknown>((resolve, reject) => {
+      outcome = await new Promise<CallOutcome>((resolve, reject) => {
         const timer = setTimeout(() => {
           this.pendingCalls.delete(callId);
           reject(
@@ -404,25 +414,30 @@ export class SessionDO implements DurableObject {
       return jsonResponse(toolErrorResult(requestId, errMsg));
     }
 
-    // Emit ok activity with truncated preview.
-    const preview = truncate(JSON.stringify(result), 2000);
-    const okFrame = this.session.buildToolActivity(activityId, toolName, 'ok', {
-      resultPreview: preview,
-    });
-    this.broadcastToAccepted(JSON.stringify(okFrame));
+    if (outcome.error !== undefined) {
+      const errorFrame = this.session.buildToolActivity(
+        activityId,
+        toolName,
+        'error',
+        { error: outcome.error },
+      );
+      this.broadcastToAccepted(JSON.stringify(errorFrame));
+    } else {
+      // Emit ok activity with truncated preview.
+      const preview = truncate(JSON.stringify(outcome.result) ?? '', 2000);
+      const okFrame = this.session.buildToolActivity(
+        activityId,
+        toolName,
+        'ok',
+        { resultPreview: preview },
+      );
+      this.broadcastToAccepted(JSON.stringify(okFrame));
+    }
 
-    return jsonResponse({
-      jsonrpc: '2.0',
-      id: requestId,
-      result: {
-        content: [
-          {
-            type: 'text',
-            text: typeof result === 'string' ? result : JSON.stringify(result),
-          },
-        ],
-      },
-    });
+    // isError for a tool error, structuredContent for an object result.
+    return jsonResponse(
+      this.session.callToolResult(requestId, outcome.result, outcome.error),
+    );
   }
 
   // ---------------------------------------------------------------------------

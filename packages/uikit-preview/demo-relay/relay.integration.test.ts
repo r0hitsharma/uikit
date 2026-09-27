@@ -429,6 +429,89 @@ describe('tools/call failure paths', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Helper: attach a browser with one tool and start a tools/call
+// ---------------------------------------------------------------------------
+
+async function startCall(
+  tool: Record<string, unknown>,
+  args: Record<string, unknown> = {},
+) {
+  const session = await createSession();
+  const { ws, nextMessage } = await openBrowserSocket(
+    session.session_id,
+    session.connection_token,
+  );
+  expect(JSON.parse(await nextMessage())).toMatchObject({
+    type: 'hello/accepted',
+  });
+  ws.send(JSON.stringify({ type: 'tools/list', tools: [tool] }));
+  await Promise.all([
+    mcpCall(session.connection_token, 'initialize'),
+    nextMessage(),
+  ]);
+  await Promise.race([nextMessage(), new Promise((r) => setTimeout(r, 30))]);
+
+  const callPromise = mcpCall(
+    session.connection_token,
+    'tools/call',
+    { name: tool['name'], arguments: args },
+    11,
+  );
+  let callId: string | null = null;
+  for (let i = 0; i < 6 && !callId; i++) {
+    const raw = await Promise.race([
+      nextMessage(),
+      new Promise<null>((r) => setTimeout(() => r(null), 200)),
+    ]);
+    if (raw === null) break;
+    const frame = JSON.parse(raw) as { type: string; call_id?: string };
+    if (frame.type === 'invoke') callId = frame.call_id ?? null;
+  }
+  expect(callId).not.toBeNull();
+  return { session, ws, callId: callId!, callPromise };
+}
+
+const SIMPLE_TOOL = {
+  name: 'select_item',
+  description: 'Selects an item',
+  input_schema: { type: 'object', properties: {}, required: [] },
+};
+
+describe('tools/call result mapping', () => {
+  it('passes an object result through as structuredContent', async () => {
+    const { ws, callId, callPromise } = await startCall(SIMPLE_TOOL);
+    ws.send(
+      JSON.stringify({ type: 'result', call_id: callId, result: { id: 7 } }),
+    );
+    const result = ((await callPromise)['result'] ?? {}) as Record<
+      string,
+      unknown
+    >;
+    expect(result['isError']).toBeUndefined();
+    expect(result['structuredContent']).toEqual({ id: 7 });
+    expect(result['content']).toEqual([{ type: 'text', text: '{"id":7}' }]);
+  });
+
+  it('maps a result frame error to isError: true', async () => {
+    const { ws, callId, callPromise } = await startCall(SIMPLE_TOOL);
+    ws.send(
+      JSON.stringify({
+        type: 'result',
+        call_id: callId,
+        result: null,
+        error: 'no such item',
+      }),
+    );
+    const result = ((await callPromise)['result'] ?? {}) as Record<
+      string,
+      unknown
+    >;
+    expect(result['isError']).toBe(true);
+    expect(result['content']).toEqual([{ type: 'text', text: 'no such item' }]);
+  });
+});
+
 describe('POST /mcp parse error', () => {
   it('returns a JSON-RPC -32700 for a malformed body (not an opaque 500)', async () => {
     const session = await createSession();
