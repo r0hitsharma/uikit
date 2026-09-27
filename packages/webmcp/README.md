@@ -138,7 +138,7 @@ function Confirmations() {
 }
 ```
 
-A denied call, or one nobody answers before the window closes (`confirmationWindowSeconds` on the provider, default 60 s; `useRelaySession` uses its own, default 25 s, to stay under the relay's timeout), returns `{ denied: true, message }` without running the handler. With no dialog mounted, mutations are therefore denied.
+A denied call, or one nobody answers before the window closes (`confirmationWindowSeconds` on the provider, default 60 s; `useRelaySession` uses its own, default 25 s, to stay under the relay's timeout), fails without running the handler: the agent gets an error (MCP `isError: true`) saying the user declined or did not answer. It is an error rather than a result so it never has to match the tool's `outputSchema`. With no dialog mounted, mutations are therefore denied.
 
 ### Transport
 

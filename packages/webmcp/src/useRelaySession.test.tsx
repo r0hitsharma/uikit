@@ -97,7 +97,7 @@ describe('relay mutation confirmation', () => {
       handler: () => ({ changed: true }),
     });
 
-  it('sends a denial result when the confirmation expires unanswered', async () => {
+  it('sends a denial error when the confirmation expires unanswered', async () => {
     mount([mutation()]);
     const ws = await openedSocket();
     await ws.serverOpen();
@@ -116,7 +116,8 @@ describe('relay mutation confirmation', () => {
         expect(ws.framesOf('result')).toContainEqual({
           type: 'result',
           call_id: 'c-exp',
-          result: expect.objectContaining({ denied: true, expired: true }),
+          result: null,
+          error: expect.stringContaining('confirmation request expired'),
         }),
       { timeout: 2500 },
     );
@@ -224,7 +225,7 @@ describe('relay confirmation through the shared queue', () => {
     );
   });
 
-  it('returns a denial result when denied', async () => {
+  it('returns a denial error when denied', async () => {
     const handler = vi.fn();
     mount([mutation(handler)]);
     const ws = await openedSocket();
@@ -241,7 +242,8 @@ describe('relay confirmation through the shared queue', () => {
       expect(ws.framesOf('result')).toContainEqual({
         type: 'result',
         call_id: 'c-no',
-        result: expect.objectContaining({ denied: true }),
+        result: null,
+        error: expect.stringContaining('The user denied this call'),
       }),
     );
     expect(handler).not.toHaveBeenCalled();

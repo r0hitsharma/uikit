@@ -14,14 +14,14 @@
  *   - gates any tool declared `mutation: true` behind the provider's shared
  *     confirmation queue (the same one document.modelContext calls use): the
  *     invoke is held until the user approves (handler runs, result returned),
- *     denies, or lets it expire (a denial result is returned). The relay stays
+ *     denies, or lets it expire (a denial error is returned). The relay stays
  *     a dumb pipe — no confirmation frames cross the wire.
  *
  * Must be called inside <WebMCPProvider>.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { denialResult } from './confirmation.js';
+import { denialMessage } from './confirmation.js';
 import { useToolConfirmation } from './hooks.js';
 import type { ToolDefinition } from './protocol.js';
 import { useToolRegistryContext } from './provider.js';
@@ -46,7 +46,7 @@ export interface UseRelaySessionOptions {
   /** Human-readable title sent in the `hello` frame. */
   title?: string;
   /** Seconds a relay mutation confirmation stays open before it expires (and
-   *  a denial is returned). Kept under the relay's invoke timeout so a late
+   *  the call fails with a denial error). Kept under the relay's invoke timeout so a late
    *  approval is not wasted. Calls through document.modelContext use the
    *  provider's `confirmationWindowSeconds` instead. */
   confirmationWindowSeconds?: number;
@@ -68,7 +68,7 @@ export interface UseRelaySessionResult {
   pendingQueueLength: number;
   /** Approve the active mutation: run its handler and return the result. */
   approve: () => void;
-  /** Deny the active mutation: return a denial result to the caller. */
+  /** Deny the active mutation: the caller gets a denial error. */
   deny: () => void;
 }
 
@@ -279,7 +279,8 @@ export function useRelaySession({
             send({
               type: 'result',
               call_id: callId,
-              result: denialResult(decision),
+              result: null,
+              error: denialMessage(decision),
             });
           }
           // cancelled: the back-channel closed; there is no one to answer.

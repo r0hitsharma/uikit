@@ -118,21 +118,19 @@ function summarize(
 }
 
 /**
- * The result an agent receives when a mutation was not approved. A normal
- * result (not an error): the call did not fail, the user declined it.
+ * The error message an agent receives when a mutation was not approved.
+ *
+ * A denial is reported as a failed call (a rejected execute, an MCP
+ * `isError` result), not as a result object: a tool that declares an
+ * `outputSchema` would otherwise hand the agent an object that fails its own
+ * schema, and MCP servers and clients reject that as a broken tool. The
+ * message says the user declined, so an agent can tell it from a bug and does
+ * not retry blindly.
  */
-export function denialResult(decision: 'denied' | 'expired'): {
-  denied: true;
-  expired?: true;
-  message: string;
-} {
+export function denialMessage(decision: 'denied' | 'expired'): string {
   return decision === 'expired'
-    ? {
-        denied: true,
-        expired: true,
-        message: 'The confirmation request expired before the user answered.',
-      }
-    : { denied: true, message: 'The user denied this call.' };
+    ? 'The user did not approve this call before the confirmation request expired; it was not run.'
+    : 'The user denied this call; it was not run.';
 }
 
 /** Signature the registration layer uses to ask for approval. */

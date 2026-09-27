@@ -15,7 +15,7 @@
  * unregister (signal abort) only fires once the last holder is gone, deferred
  * to a microtask so a StrictMode remount can cancel it.
  */
-import { denialResult, type RequestConfirmation } from './confirmation.js';
+import { denialMessage, type RequestConfirmation } from './confirmation.js';
 import { resolveAnnotations, type ToolSpec } from './types.js';
 
 type ModelContext = {
@@ -161,7 +161,7 @@ function bind(name: string, entry: Entry): void {
         signal.throwIfAborted();
         throw new Error('The confirmation request was withdrawn.');
       }
-      if (decision !== 'approved') return denialResult(decision);
+      if (decision !== 'approved') throw new Error(denialMessage(decision));
     }
     return current.handler(args as never, { signal });
   };

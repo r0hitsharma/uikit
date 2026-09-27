@@ -83,7 +83,7 @@ describe('mutation confirmation on the document.modelContext path', () => {
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
-  it('returns a denial result without running the handler when denied', async () => {
+  it('fails with a denial error without running the handler when denied', async () => {
     const handler = vi.fn();
     const { execute } = await setup(handler);
     const call = execute({});
@@ -91,17 +91,14 @@ describe('mutation confirmation on the document.modelContext path', () => {
       expect(latest.confirmation?.pendingQueueLength).toBe(1),
     );
     act(() => latest.confirmation!.deny());
-    await expect(call).resolves.toMatchObject({ denied: true });
+    await expect(call).rejects.toThrow('The user denied this call');
     expect(handler).not.toHaveBeenCalled();
   });
 
   it('denies when nobody answers before the window closes', async () => {
     const handler = vi.fn();
     const { execute } = await setup(handler, 0.05);
-    await expect(execute({})).resolves.toMatchObject({
-      denied: true,
-      expired: true,
-    });
+    await expect(execute({})).rejects.toThrow('confirmation request expired');
     expect(handler).not.toHaveBeenCalled();
   });
 
