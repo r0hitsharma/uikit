@@ -123,3 +123,70 @@ describe('relay mutation confirmation', () => {
     expect(latest.session?.pendingConfirmation).toBeNull();
   });
 });
+
+describe('relay results', () => {
+  it('returns a handler result in the result field', async () => {
+    mount([tool('relay.ok', { handler: () => ({ selected: 'a' }) })]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-ok',
+      tool_name: 'relay.ok',
+      args: {},
+    });
+    await vi.waitFor(() =>
+      expect(ws.framesOf('result')).toContainEqual({
+        type: 'result',
+        call_id: 'c-ok',
+        result: { selected: 'a' },
+      }),
+    );
+  });
+
+  it('reports a thrown handler error in the error field, not as a result', async () => {
+    mount([
+      tool('relay.throws', {
+        handler: () => {
+          throw new Error('no such identity');
+        },
+      }),
+    ]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-err',
+      tool_name: 'relay.throws',
+      args: {},
+    });
+    await vi.waitFor(() =>
+      expect(ws.framesOf('result')).toContainEqual({
+        type: 'result',
+        call_id: 'c-err',
+        result: null,
+        error: 'no such identity',
+      }),
+    );
+  });
+
+  it('reports an unknown tool in the error field', async () => {
+    mount([]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-unknown',
+      tool_name: 'relay.missing',
+      args: {},
+    });
+    await vi.waitFor(() =>
+      expect(ws.framesOf('result')).toContainEqual({
+        type: 'result',
+        call_id: 'c-unknown',
+        result: null,
+        error: 'Unknown tool: relay.missing',
+      }),
+    );
+  });
+});

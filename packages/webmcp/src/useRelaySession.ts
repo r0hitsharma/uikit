@@ -129,20 +129,23 @@ export function useRelaySession({
   // Run a (non-mutation, or already-approved) tool and return its result frame.
   const runAndRespond = useCallback(
     async (callId: string, spec: ToolSpec, args: Record<string, unknown>) => {
-      let result: unknown;
       const controller = new AbortController();
       runningRef.current.add(controller);
       try {
-        result = await spec.handler(args as never, {
+        const result = await spec.handler(args as never, {
           signal: controller.signal,
         });
+        send({ type: 'result', call_id: callId, result });
+        log(`-> ${JSON.stringify(result)?.slice(0, 160)}`);
       } catch (err) {
-        result = { error: (err as Error).message };
+        // A failed call goes in the protocol's `error` field (the relay maps
+        // it to an MCP `isError` result), not dressed up as a success.
+        const message = err instanceof Error ? err.message : String(err);
+        send({ type: 'result', call_id: callId, result: null, error: message });
+        log(`-> error: ${message.slice(0, 160)}`);
       } finally {
         runningRef.current.delete(controller);
       }
-      send({ type: 'result', call_id: callId, result });
-      log(`-> ${JSON.stringify(result).slice(0, 160)}`);
     },
     [send, log],
   );
@@ -252,7 +255,8 @@ export function useRelaySession({
         send({
           type: 'result',
           call_id: callId,
-          result: { error: `Unknown tool: ${toolName}` },
+          result: null,
+          error: `Unknown tool: ${toolName}`,
         });
         return;
       }
