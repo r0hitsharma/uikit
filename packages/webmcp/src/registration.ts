@@ -149,8 +149,16 @@ function bind(name: string, entry: Entry): void {
       context.registerTool(
         {
           name: entry.spec.name,
+          ...(entry.spec.title !== undefined
+            ? { title: entry.spec.title }
+            : {}),
           description: entry.spec.description,
           inputSchema: entry.spec.schema,
+          // Not in WebMCP (a native modelContext ignores it); the MCP-B bridge
+          // forwards it to MCP clients.
+          ...(entry.spec.outputSchema !== undefined
+            ? { outputSchema: entry.spec.outputSchema }
+            : {}),
           ...(entry.spec.mutation
             ? { annotations: { destructiveHint: true } }
             : {}),

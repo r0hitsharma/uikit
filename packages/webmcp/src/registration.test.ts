@@ -88,3 +88,25 @@ describe('async registerTool', () => {
     expect(error).not.toHaveBeenCalled();
   });
 });
+
+describe('registered descriptor', () => {
+  it('forwards title and outputSchema, omitting them when unset', async () => {
+    const ctx = installFakeContext();
+    const releaseA = acquireToolRegistration(
+      spec('desc.full', {
+        title: 'Full',
+        outputSchema: { type: 'object', properties: {} },
+      }),
+    );
+    const releaseB = acquireToolRegistration(spec('desc.bare'));
+    await flushMicrotasks();
+    expect(ctx.tools.get('desc.full')).toMatchObject({
+      title: 'Full',
+      outputSchema: { type: 'object', properties: {} },
+    });
+    expect(ctx.tools.get('desc.bare')).not.toHaveProperty('title');
+    expect(ctx.tools.get('desc.bare')).not.toHaveProperty('outputSchema');
+    releaseA();
+    releaseB();
+  });
+});

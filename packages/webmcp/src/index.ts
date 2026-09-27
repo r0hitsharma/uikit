@@ -21,7 +21,9 @@
 export { defineTool } from './types.js';
 export type {
   PendingCallPrompt,
+  ToolAnnotations,
   ToolHandler,
+  ToolOutputSchema,
   ToolRegistry,
   ToolSpec,
   ViewState,

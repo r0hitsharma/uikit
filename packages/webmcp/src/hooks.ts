@@ -84,11 +84,20 @@ export function useRegisterTool<
         get name() {
           return specRef.current.name;
         },
+        get title() {
+          return specRef.current.title;
+        },
         get description() {
           return specRef.current.description;
         },
         get schema() {
           return specRef.current.schema;
+        },
+        get outputSchema() {
+          return specRef.current.outputSchema;
+        },
+        get annotations() {
+          return specRef.current.annotations;
         },
         get mutation() {
           return specRef.current.mutation;
