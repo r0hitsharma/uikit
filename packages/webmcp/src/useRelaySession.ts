@@ -25,7 +25,11 @@ import { denialResult } from './confirmation.js';
 import { useToolConfirmation } from './hooks.js';
 import type { ToolDefinition } from './protocol.js';
 import { useToolRegistryContext } from './provider.js';
-import type { PendingCallPrompt, ToolSpec } from './types.js';
+import {
+  resolveAnnotations,
+  type PendingCallPrompt,
+  type ToolSpec,
+} from './types.js';
 
 /** Connection state surfaced to the connect UI (mirrors the indicator states). */
 export type RelaySessionStatus =
@@ -77,8 +81,14 @@ type StoredSession = {
 function toWireTool(spec: ToolSpec): ToolDefinition {
   return {
     name: spec.name,
+    ...(spec.title !== undefined ? { title: spec.title } : {}),
     description: spec.description,
     input_schema: spec.schema,
+    ...(spec.outputSchema !== undefined
+      ? { output_schema: spec.outputSchema }
+      : {}),
+    // The same hints document.modelContext gets; the relay maps them to MCP.
+    annotations: resolveAnnotations(spec),
     ...(spec.mutation ? { mutation: true } : {}),
   };
 }

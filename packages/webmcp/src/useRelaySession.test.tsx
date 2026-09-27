@@ -262,3 +262,50 @@ describe('relay confirmation through the shared queue', () => {
     await vi.waitFor(() => expect(latest.session?.pendingQueueLength).toBe(0));
   });
 });
+
+describe('advertised tools', () => {
+  it('sends title, annotations and output_schema in tools/list', async () => {
+    mount([
+      tool('relay.read', {
+        title: 'Read',
+        outputSchema: { type: 'object', properties: {} },
+        annotations: { untrustedContentHint: true },
+      }),
+      tool('relay.write', {
+        mutation: true,
+        confirmationSummary: () => 'Write.',
+      }),
+    ]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await vi.waitFor(() =>
+      expect(ws.framesOf('tools/list')).not.toHaveLength(0),
+    );
+    const tools = ws.framesOf('tools/list').at(-1)!['tools'];
+    expect(tools).toEqual([
+      {
+        name: 'relay.read',
+        title: 'Read',
+        description: 'Test tool relay.read.',
+        input_schema: { type: 'object', properties: {} },
+        output_schema: { type: 'object', properties: {} },
+        annotations: {
+          readOnlyHint: true,
+          untrustedContentHint: true,
+          consequentialHint: false,
+        },
+      },
+      {
+        name: 'relay.write',
+        description: 'Test tool relay.write.',
+        input_schema: { type: 'object', properties: {} },
+        annotations: {
+          readOnlyHint: false,
+          untrustedContentHint: false,
+          consequentialHint: true,
+        },
+        mutation: true,
+      },
+    ]);
+  });
+});
