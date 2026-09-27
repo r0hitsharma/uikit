@@ -72,6 +72,13 @@ export async function readSourceEntries(): Promise<SourceEntry[]> {
       `sources.json contains invalid entries: ${JSON.stringify(invalid)}`,
     );
   }
+  const ids = parsed.sources.map((entry: SourceEntry) => entry.id);
+  const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+  if (duplicates.length > 0) {
+    throw new Error(
+      `sources.json has duplicate ids: ${[...new Set(duplicates)].join(', ')}`,
+    );
+  }
   return parsed.sources as SourceEntry[];
 }
 
@@ -85,7 +92,7 @@ export function sha256(text: string): string {
   return createHash('sha256').update(text).digest('hex');
 }
 
-function rawUrl(source: SourceEntry): string {
+export function rawUrl(source: SourceEntry): string {
   const repo = source.upstream.replace('https://github.com/', '');
   return `https://raw.githubusercontent.com/${repo}/${source.pinnedRevision}/${source.path}`;
 }
@@ -102,19 +109,31 @@ async function fetchUpstream(source: SourceEntry): Promise<string> {
   return response.text();
 }
 
+// The lock entry refresh writes for a source. check rebuilds it the same way,
+// so every field (not just pinnedRevision) must agree with sources.json.
+export function lockEntryFor(
+  source: SourceEntry,
+  contentSha256?: string,
+): LockEntry {
+  const entry: LockEntry = {
+    id: source.id,
+    kind: source.kind,
+    sourceType: source.sourceType,
+    pinnedRevision: source.pinnedRevision,
+    resolved:
+      source.sourceType === 'remote-markdown'
+        ? rawUrl(source)
+        : contentPath(source).replace(
+            `${resolve(packageRoot, '..', '..')}/`,
+            '',
+          ),
+  };
+  return contentSha256 === undefined ? entry : { ...entry, contentSha256 };
+}
+
 async function toLockEntry(source: SourceEntry): Promise<LockEntry> {
-  const relativeContentPath = contentPath(source).replace(
-    `${resolve(packageRoot, '..', '..')}/`,
-    '',
-  );
   if (source.sourceType !== 'remote-markdown') {
-    return {
-      id: source.id,
-      kind: source.kind,
-      sourceType: source.sourceType,
-      pinnedRevision: source.pinnedRevision,
-      resolved: relativeContentPath,
-    };
+    return lockEntryFor(source);
   }
 
   // Vendored content is written verbatim: repo-specific guidance belongs in a
@@ -124,14 +143,7 @@ async function toLockEntry(source: SourceEntry): Promise<LockEntry> {
     await mkdir(dirname(contentPath(source)), { recursive: true });
     await writeFile(contentPath(source), text, 'utf8');
   }
-  return {
-    id: source.id,
-    kind: source.kind,
-    sourceType: source.sourceType,
-    pinnedRevision: source.pinnedRevision,
-    resolved: rawUrl(source),
-    contentSha256: sha256(text),
-  };
+  return lockEntryFor(source, sha256(text));
 }
 
 async function main() {
