@@ -38,6 +38,13 @@ https://r0hitsharma.github.io           mcp-relay.*.workers.dev      (claude/cop
 | GET    | `/ws/sessions/:id` | WebSocket upgrade for the browser back-channel    |
 | POST   | `/mcp`             | Harness Streamable HTTP (bearer auth required)    |
 
+`/mcp` is a request/response subset of MCP Streamable HTTP: it negotiates
+protocol revision `2025-06-18` (or `2025-03-26` when a client asks for it),
+answers notifications with `202 Accepted`, and answers `GET` (no SSE stream)
+with `405`. With no stream to push on, it does not advertise
+`tools.listChanged`; clients re-list tools instead. It takes one JSON-RPC
+message per request: a batch gets a `-32600` error.
+
 ## Files
 
 | File                       | Role                                                       |

@@ -33,6 +33,116 @@ import type {
   ToolDefinition,
 } from './protocol.js';
 
+/** An entry of an MCP `tools/list` result. */
+export interface McpTool {
+  name: string;
+  title?: string;
+  description: string;
+  inputSchema: ToolDefinition['input_schema'];
+  outputSchema?: Record<string, unknown>;
+  annotations?: {
+    title?: string;
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+  };
+}
+
+/**
+ * Map a browser tool definition to an MCP `tools/list` entry.
+ *
+ * MCP has readOnlyHint and destructiveHint; WebMCP has readOnlyHint and
+ * consequentialHint. A tool is destructive to MCP when the browser marked it
+ * consequential or as a mutation. Definitions from browsers that predate
+ * annotations carry only `mutation`, which maps to readOnlyHint: false +
+ * destructiveHint: true. With nothing to go on, no annotations are emitted
+ * (MCP's defaults then apply). WebMCP's untrustedContentHint has no MCP
+ * counterpart and is not forwarded.
+ */
+export function toMcpTool(def: ToolDefinition): McpTool {
+  const hints = def.annotations ?? {};
+  const destructive = hints.consequentialHint ?? def.mutation;
+  const readOnly = hints.readOnlyHint ?? (def.mutation ? false : undefined);
+  const annotations: NonNullable<McpTool['annotations']> = {
+    ...(readOnly !== undefined ? { readOnlyHint: readOnly } : {}),
+    // Only meaningful for a tool that is not read-only.
+    ...(destructive !== undefined && readOnly !== true
+      ? { destructiveHint: destructive }
+      : {}),
+  };
+  return {
+    name: def.name,
+    ...(def.title !== undefined ? { title: def.title } : {}),
+    description: def.description,
+    inputSchema: def.input_schema,
+    ...(def.output_schema !== undefined
+      ? { outputSchema: def.output_schema }
+      : {}),
+    ...(Object.keys(annotations).length > 0 ? { annotations } : {}),
+  };
+}
+
+/** An MCP `tools/call` result. */
+export interface McpCallToolResult {
+  content: Array<{ type: 'text'; text: string }>;
+  structuredContent?: Record<string, unknown>;
+  isError?: boolean;
+  [key: string]: unknown;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * A payload that is already an MCP CallToolResult: a non-empty `content`
+ * array of typed blocks. Plain tool data that happens to have a `content`
+ * field (`{ content: ['para 1'] }`) does not qualify.
+ */
+function isCallToolResult(value: unknown): value is McpCallToolResult {
+  if (!isPlainObject(value)) return false;
+  const content = value['content'];
+  return (
+    Array.isArray(content) &&
+    content.length > 0 &&
+    content.every(
+      (block) => isPlainObject(block) && typeof block['type'] === 'string',
+    )
+  );
+}
+
+/**
+ * Map a browser `result` frame's payload to an MCP `tools/call` result.
+ *
+ * - `error` is a string (even empty): the tool failed; `isError: true` with
+ *   the message.
+ * - an object: JSON text for older clients, plus the object as
+ *   `structuredContent` (MCP only allows an object there).
+ * - anything else: text (a string as-is, other values as JSON).
+ *
+ * A payload that already is a CallToolResult (a `content` array of typed
+ * blocks) passes through unchanged, for older browsers that built their own.
+ */
+export function toCallToolResult(
+  result: unknown,
+  error?: string | null,
+): McpCallToolResult {
+  // Any error string marks a failure, even an empty one (a browser that sent
+  // `throw new Error()` through): only null/undefined means success.
+  if (typeof error === 'string') {
+    return {
+      content: [{ type: 'text', text: error || 'The tool call failed.' }],
+      isError: true,
+    };
+  }
+  if (isCallToolResult(result)) return result;
+  const text =
+    typeof result === 'string' ? result : (JSON.stringify(result) ?? 'null');
+  return {
+    content: [{ type: 'text', text }],
+    ...(isPlainObject(result) ? { structuredContent: result } : {}),
+  };
+}
+
 /** State machine states, mirroring the Python SessionRecord. */
 export type SessionState = 'pending' | 'connected' | 'disconnected';
 
@@ -211,12 +321,21 @@ export class RelaySession {
       jsonrpc: '2.0',
       id: jsonRpcId,
       result: {
-        tools: this.toolsCatalogue.map((t) => ({
-          name: t.name,
-          description: t.description,
-          inputSchema: t.input_schema,
-        })),
+        tools: this.toolsCatalogue.map(toMcpTool),
       },
+    };
+  }
+
+  /** Build the JSON-RPC `tools/call` response for a browser `result` frame. */
+  callToolResult(
+    jsonRpcId: unknown,
+    result: unknown,
+    error?: string | null,
+  ): object {
+    return {
+      jsonrpc: '2.0',
+      id: jsonRpcId,
+      result: toCallToolResult(result, error),
     };
   }
 

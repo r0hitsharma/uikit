@@ -31,13 +31,34 @@ import type {
 
 import type { Env } from './env.js';
 
+/** What the browser's `result` frame carried: a result, or a tool error. */
+interface CallOutcome {
+  result: unknown;
+  error?: string;
+}
+
 interface PendingCall {
-  resolve: (value: unknown) => void;
+  resolve: (value: CallOutcome) => void;
   reject: (reason: unknown) => void;
   timer: ReturnType<typeof setTimeout>;
 }
 
 const ALARM_INTERVAL_MS = 30_000;
+
+/**
+ * MCP protocol revisions this relay answers, newest first. 2025-06-18 is the
+ * first with tool titles, outputSchema and structuredContent, which the relay
+ * now forwards; 2025-03-26 clients get the same payloads and ignore the rest.
+ */
+const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26'] as const;
+
+/** Echo the client's requested revision when supported, else offer our latest. */
+function negotiateProtocolVersion(requested: unknown): string {
+  return typeof requested === 'string' &&
+    (SUPPORTED_PROTOCOL_VERSIONS as readonly string[]).includes(requested)
+    ? requested
+    : SUPPORTED_PROTOCOL_VERSIONS[0];
+}
 
 export class SessionDO implements DurableObject {
   private readonly state: DurableObjectState;
@@ -224,11 +245,14 @@ export class SessionDO implements DurableObject {
       if (pending) {
         clearTimeout(pending.timer);
         this.pendingCalls.delete(callId);
-        if (msg['error']) {
-          pending.reject(new Error(msg['error'] as string));
-        } else {
-          pending.resolve(msg['result']);
-        }
+        // A tool error is still a delivered result: it becomes an MCP
+        // isError result below, distinct from relay failures (timeout,
+        // disconnect) that reject.
+        pending.resolve({
+          result: msg['result'],
+          // Any string is an error, even an empty one; see toCallToolResult.
+          ...(typeof msg['error'] === 'string' ? { error: msg['error'] } : {}),
+        });
       } else {
         // No pending call: a malformed/duplicate result, or one that already
         // timed out. Log it so the cause is visible rather than letting the
@@ -270,15 +294,45 @@ export class SessionDO implements DurableObject {
       return jsonResponse({ error: 'Token does not match session.' }, 401);
     }
 
-    let body: Record<string, unknown>;
+    let parsed: unknown;
     try {
-      body = (await request.json()) as Record<string, unknown>;
+      parsed = await request.json();
     } catch {
       return jsonResponse({
         jsonrpc: '2.0',
         id: null,
         error: { code: -32700, message: 'Parse error' },
       });
+    }
+    // One JSON-RPC message per POST. A batch (allowed by 2025-03-26, removed
+    // in 2025-06-18) is refused explicitly rather than mistaken for a
+    // notification and dropped; any other non-object is not JSON-RPC at all.
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      return jsonResponse({
+        jsonrpc: '2.0',
+        id: null,
+        error: {
+          code: -32600,
+          message: Array.isArray(parsed)
+            ? 'Invalid Request: JSON-RPC batches are not supported; send one message per request.'
+            : 'Invalid Request: expected a JSON-RPC message object.',
+        },
+      });
+    }
+    const body = parsed as Record<string, unknown>;
+
+    // A notification (no id) or a client's response to us (no method) gets
+    // 202 Accepted with no body, per Streamable HTTP; there is nothing to
+    // answer. Harness liveness is still recorded.
+    if (!('id' in body) || typeof body['method'] !== 'string') {
+      const frame = this.session.touch(Date.now());
+      this.broadcastToAccepted(JSON.stringify(frame));
+      await this.persist();
+      return new Response(null, { status: 202 });
     }
 
     const method = body['method'] as string;
@@ -299,9 +353,11 @@ export class SessionDO implements DurableObject {
         jsonrpc: '2.0',
         id,
         result: {
-          protocolVersion: '2025-03-26',
+          protocolVersion: negotiateProtocolVersion(params['protocolVersion']),
           serverInfo: { name: 'mcp-relay-cf', version: '1' },
-          capabilities: { tools: { listChanged: true } },
+          // No listChanged: there is no server-to-client stream to send
+          // notifications/tools/list_changed on. Clients re-list instead.
+          capabilities: { tools: {} },
           _relay: { session_id: this.session.sessionId },
         },
       });
@@ -381,9 +437,9 @@ export class SessionDO implements DurableObject {
     }
 
     // Await result with timeout.
-    let result: unknown;
+    let outcome: CallOutcome;
     try {
-      result = await new Promise<unknown>((resolve, reject) => {
+      outcome = await new Promise<CallOutcome>((resolve, reject) => {
         const timer = setTimeout(() => {
           this.pendingCalls.delete(callId);
           reject(
@@ -404,25 +460,30 @@ export class SessionDO implements DurableObject {
       return jsonResponse(toolErrorResult(requestId, errMsg));
     }
 
-    // Emit ok activity with truncated preview.
-    const preview = truncate(JSON.stringify(result), 2000);
-    const okFrame = this.session.buildToolActivity(activityId, toolName, 'ok', {
-      resultPreview: preview,
-    });
-    this.broadcastToAccepted(JSON.stringify(okFrame));
+    if (outcome.error !== undefined) {
+      const errorFrame = this.session.buildToolActivity(
+        activityId,
+        toolName,
+        'error',
+        { error: outcome.error },
+      );
+      this.broadcastToAccepted(JSON.stringify(errorFrame));
+    } else {
+      // Emit ok activity with truncated preview.
+      const preview = truncate(JSON.stringify(outcome.result) ?? '', 2000);
+      const okFrame = this.session.buildToolActivity(
+        activityId,
+        toolName,
+        'ok',
+        { resultPreview: preview },
+      );
+      this.broadcastToAccepted(JSON.stringify(okFrame));
+    }
 
-    return jsonResponse({
-      jsonrpc: '2.0',
-      id: requestId,
-      result: {
-        content: [
-          {
-            type: 'text',
-            text: typeof result === 'string' ? result : JSON.stringify(result),
-          },
-        ],
-      },
-    });
+    // isError for a tool error, structuredContent for an object result.
+    return jsonResponse(
+      this.session.callToolResult(requestId, outcome.result, outcome.error),
+    );
   }
 
   // ---------------------------------------------------------------------------
