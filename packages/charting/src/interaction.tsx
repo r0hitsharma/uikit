@@ -667,7 +667,9 @@ export function SyncedChartGroup({ children }: { children: ReactNode }) {
  * Wires a single `<XYChart>`'s top-level pointer events to the shared
  * `hoveredTimestamp`, using the caller's own x-accessor to read a timestamp
  * off the nearest datum (no scale inversion needed). Spread the returned
- * handlers onto `<XYChart onPointerMove onPointerOut>`.
+ * handlers onto `<XYChart onPointerMove onPointerOut>`. A datum whose x is
+ * not finite clears the shared cursor instead of publishing it, so a chart
+ * with no usable x domain can be wired the same way as any other.
  *
  * Reads the cursor setter via the stable dispatch (not the subscribing
  * context), so wiring a chart up with this — the documented path — does NOT
@@ -686,7 +688,13 @@ export function useSyncedCursorHandlers<Datum>(
   const onPointerMove = useCallback(
     (params: { datum?: unknown } | undefined) => {
       const datum = params?.datum;
-      if (datum != null) setHoveredTimestamp(xAccessor(datum as Datum));
+      if (datum == null) return;
+      // A datum with no usable x (the accessor returns `NaN`) clears the
+      // cursor rather than publishing it: every other chart in the group
+      // snaps the shared value to one of its own stops, so a non-finite one
+      // would move their crosshairs to a bucket nobody pointed at.
+      const x = xAccessor(datum as Datum);
+      setHoveredTimestamp(Number.isFinite(x) ? x : null);
     },
     [xAccessor, setHoveredTimestamp],
   );

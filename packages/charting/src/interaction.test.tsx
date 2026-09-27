@@ -293,6 +293,51 @@ describe('stable setters (useSyncedCursorHandlers / useInteractionSetters)', () 
   });
 });
 
+describe('useSyncedCursorHandlers', () => {
+  const renderWired = () =>
+    renderHook(
+      () => ({
+        handlers: useSyncedCursorHandlers<{ t: number }>((d) => d.t),
+        hovered: useInteractionValue('hoveredTimestamp'),
+      }),
+      { wrapper: DashboardInteractionProvider },
+    );
+
+  it("publishes the hovered datum's x to the shared cursor", () => {
+    const { result } = renderWired();
+
+    act(() => {
+      result.current.handlers.onPointerMove({ datum: { t: 20 } });
+    });
+
+    expect(result.current.hovered).toBe(20);
+  });
+
+  // A datum with no usable x (the accessor returns `NaN`) must not reach the
+  // shared cursor: every other chart in the group would snap it to a stop the
+  // reader never pointed at. It clears the cursor instead, as leaving the
+  // chart does, so a stale value from an earlier datum is not left showing.
+  it('clears the shared cursor instead of publishing a non-finite x', () => {
+    const { result } = renderWired();
+
+    act(() => {
+      result.current.handlers.onPointerMove({ datum: { t: 20 } });
+    });
+    expect(result.current.hovered).toBe(20);
+
+    act(() => {
+      result.current.handlers.onPointerMove({ datum: { t: NaN } });
+    });
+    expect(result.current.hovered).toBeNull();
+
+    act(() => {
+      result.current.handlers.onPointerMove({ datum: { t: 20 } });
+      result.current.handlers.onPointerMove({ datum: { t: Infinity } });
+    });
+    expect(result.current.hovered).toBeNull();
+  });
+});
+
 describe('useTimeRangeBrushGesture', () => {
   it('commits a range when the drag exceeds the 4px threshold', () => {
     const { result } = renderHook(() => useTimeRangeBrushGesture());
