@@ -9,8 +9,12 @@ as the `review-discipline` skill in `packages/agent-marketplace`.
 ## Repo facts every review must hold
 
 1. **The commit type is a release trigger, not a label.** semantic-release runs the
-   conventionalcommits preset over a single lockstep version: `feat` → minor,
-   `fix` → patch, `chore` → **no release** (except `chore(deps)`, forced to patch).
+   conventionalcommits preset over a single lockstep version: `feat` → minor;
+   `fix` and `perf` → patch; any `(deps)` scope → patch (the `.releaserc.json`
+   rule has no type, so `ci(deps)` releases too); a `git revert` commit → patch,
+   whatever it reverts; a breaking marker (`!` or `BREAKING CHANGE:`) → major on
+   any type. Everything else (`chore`, `docs`, `ci`, `refactor`, `test`) →
+   **no release**.
    The review test for the type is mechanical: **does it add public API surface?**
    New exports, subpaths, tokens, props, or CLI commands typed as `chore` ship
    nothing until an unrelated release cuts a version — this has happened (#100
@@ -18,8 +22,9 @@ as the `review-discipline` skill in `packages/agent-marketplace`.
    the merge-base when the type looks wrong.
 2. **Pre-v1 breaking policy.** Enabling a lint rule in a shared preset breaks
    consumer builds on upgrade; while this repo is v0 that ships as a plain `fix`,
-   not `feat!`. Flag it in review so the intent is recorded, but do not block on
-   the missing `!`.
+   not `feat!`. Flag it in review so the intent is recorded, but do not ask for a
+   `!`: semantic-release has no 0.x special case, so any breaking marker cuts
+   1.0.0.
 3. **This repository is public.** No internal tracker IDs, internal links, or
    internal project names in PR bodies, commits, code, or docs. Review for leaks,
    not just correctness.
@@ -86,8 +91,10 @@ as the `review-discipline` skill in `packages/agent-marketplace`.
   `panda-preset.ts`, `panda.shared.ts`, `staticCss.ts`) compile into the global
   stylesheet every story consumes by class name, outside any story's JS module
   graph.
-- **Preview deploys** share a gh-pages concurrency group that cancels rather than
-  queues: parallel pushes cancel each other's `build-and-deploy`. That failure is
-  not a code failure — re-run serially.
+- **Preview deploys** use one concurrency group per PR (`preview.yml`), with
+  `cancel-in-progress: false`: a newer push to the same PR supersedes its queued
+  run, and PRs no longer cancel each other. Cross-PR gh-pages pushes can still
+  race; the publish script retries against a fresh fetch. A failed
+  `build-and-deploy` is therefore a real failure until its log says otherwise.
 - **Snapshot tooling is itself guard code** (`packages/uikit-preview/scripts/`):
   apply rule 4 above to any change there.
