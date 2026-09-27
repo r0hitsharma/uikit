@@ -124,18 +124,27 @@ export function CandlestickSeries<Datum>({
 
   if (!xScale || !yScale) return null;
 
+  // A band scale maps a value to its band's LEFT edge, so the candle is
+  // centred by adding half the band, and the body is clamped to 60% of the
+  // band so neighbours never touch. A continuous scale maps a value to the
+  // datum's own pixel, the point a `LineSeries` or the crosshair draws at:
+  // there is no band, so nothing is added and the body is `maxBodyWidth`.
   const bandwidth =
-    typeof xScale.bandwidth === 'function'
-      ? xScale.bandwidth()
-      : maxBodyWidth * 2;
-  const bodyWidth = Math.max(2, Math.min(bandwidth * 0.6, maxBodyWidth));
+    typeof xScale.bandwidth === 'function' ? xScale.bandwidth() : undefined;
+  const centreOffset = bandwidth === undefined ? 0 : bandwidth / 2;
+  const bodyWidth = Math.max(
+    2,
+    bandwidth === undefined
+      ? maxBodyWidth
+      : Math.min(bandwidth * 0.6, maxBodyWidth),
+  );
 
   return (
     <g data-part="candlestick-series">
       {data.map((d, i) => {
         const cxRaw = xScale(xAccessor(d));
         if (cxRaw === undefined) return null;
-        const cx = cxRaw + bandwidth / 2;
+        const cx = cxRaw + centreOffset;
         const open = openAccessor(d);
         const close = closeAccessor(d);
         const high = highAccessor(d);
