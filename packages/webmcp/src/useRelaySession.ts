@@ -277,12 +277,24 @@ export function useRelaySession({
         prev.some((p) => p.callId === callId) ? prev : [...prev, prompt],
       );
       log(`awaiting confirmation for ${toolName}`);
-      // Self-expire so a never-answered prompt does not wedge the dialog.
+      // Self-expire so a never-answered prompt does not wedge the dialog, and
+      // answer the harness now rather than leaving it to hit the relay's
+      // invoke timeout with a generic error.
       setTimeout(() => {
         if (!heldRef.current.has(callId)) return;
         heldRef.current.delete(callId);
         setPendingQueue((prev) => prev.filter((p) => p.callId !== callId));
         log(`confirmation for ${toolName} expired`);
+        send({
+          type: 'result',
+          call_id: callId,
+          result: {
+            denied: true,
+            expired: true,
+            message:
+              'The confirmation request expired before the user answered.',
+          },
+        });
       }, confirmationWindowSeconds * 1000);
     }
 

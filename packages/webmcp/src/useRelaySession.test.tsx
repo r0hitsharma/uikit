@@ -88,3 +88,38 @@ describe('relay handler signal', () => {
     expect(seen?.aborted).toBe(true);
   });
 });
+
+describe('relay mutation confirmation', () => {
+  const mutation = () =>
+    tool('relay.mutate', {
+      mutation: true,
+      confirmationSummary: () => 'Change something.',
+      handler: () => ({ changed: true }),
+    });
+
+  it('sends a denial result when the confirmation expires unanswered', async () => {
+    mount([mutation()]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-exp',
+      tool_name: 'relay.mutate',
+      args: {},
+    });
+    await vi.waitFor(() =>
+      expect(latest.session?.pendingConfirmation?.callId).toBe('c-exp'),
+    );
+    // confirmationWindowSeconds is 1 in these tests.
+    await vi.waitFor(
+      () =>
+        expect(ws.framesOf('result')).toContainEqual({
+          type: 'result',
+          call_id: 'c-exp',
+          result: expect.objectContaining({ denied: true, expired: true }),
+        }),
+      { timeout: 2500 },
+    );
+    expect(latest.session?.pendingConfirmation).toBeNull();
+  });
+});
