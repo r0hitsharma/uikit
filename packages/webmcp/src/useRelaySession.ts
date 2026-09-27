@@ -130,11 +130,15 @@ export function useRelaySession({
     );
   }, []);
 
-  const send = useCallback((frame: unknown) => {
+  // Returns whether the frame went out: nothing is sent once the socket has
+  // closed (the relay has already failed that call_id).
+  const send = useCallback((frame: unknown): boolean => {
     const ws = wsRef.current;
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(frame));
+      return true;
     }
+    return false;
   }, []);
 
   const advertiseTools = useCallback(() => {
@@ -153,8 +157,11 @@ export function useRelaySession({
         const result = await spec.handler(args as never, {
           signal: controller.signal,
         });
-        send({ type: 'result', call_id: callId, result });
-        log(`-> ${JSON.stringify(result)?.slice(0, 160)}`);
+        log(
+          send({ type: 'result', call_id: callId, result })
+            ? `-> ${JSON.stringify(result)?.slice(0, 160)}`
+            : `result for ${spec.name} dropped: the back-channel closed`,
+        );
       } catch (err) {
         // A failed call goes in the protocol's `error` field (the relay maps
         // it to an MCP `isError` result), not dressed up as a success. Never
@@ -162,8 +169,16 @@ export function useRelaySession({
         const message =
           (err instanceof Error ? err.message : String(err)) ||
           `Tool "${spec.name}" failed without an error message.`;
-        send({ type: 'result', call_id: callId, result: null, error: message });
-        log(`-> error: ${message.slice(0, 160)}`);
+        log(
+          send({
+            type: 'result',
+            call_id: callId,
+            result: null,
+            error: message,
+          })
+            ? `-> error: ${message.slice(0, 160)}`
+            : `error for ${spec.name} dropped: the back-channel closed`,
+        );
       } finally {
         runningRef.current.delete(controller);
       }

@@ -89,6 +89,38 @@ describe('relay handler signal', () => {
   });
 });
 
+describe('relay results after the back-channel closed', () => {
+  it('logs a late result as dropped, not as sent', async () => {
+    let finish!: (value: unknown) => void;
+    mount([
+      tool('relay.late', {
+        // Ignores its signal, so it resolves after the socket has closed.
+        handler: () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          }),
+      }),
+    ]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-late',
+      tool_name: 'relay.late',
+      args: {},
+    });
+    await vi.waitFor(() => expect(finish).toBeDefined());
+    await act(async () => ws.close());
+    await act(async () => finish({ done: true }));
+    await vi.waitFor(() =>
+      expect(latest.session?.activity[0]).toContain(
+        'result for relay.late dropped',
+      ),
+    );
+    expect(ws.framesOf('result')).toEqual([]);
+  });
+});
+
 describe('relay mutation confirmation', () => {
   const mutation = () =>
     tool('relay.mutate', {
