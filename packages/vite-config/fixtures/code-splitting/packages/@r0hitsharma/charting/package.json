@@ -2,5 +2,5 @@
   "name": "@r0hitsharma/charting",
   "type": "module",
   "sideEffects": false,
-  "exports": { "./xychart": "./xychart.js" }
+  "exports": { "./primitives": "./primitives.js", "./xychart": "./xychart.js" }
 }

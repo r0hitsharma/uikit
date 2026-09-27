@@ -143,6 +143,7 @@ Five further split rules are deferred to `off` in that preset, each with its
 reason and current finding count recorded beside it in
 [`react.ts`](../oxlint-config/react.ts).
 
+
 ## Code splitting
 
 ```typescript
@@ -162,27 +163,61 @@ export default defineConfig({
 ```
 
 `codeSplitting()` returns the value of rolldown's `output.codeSplitting`: an
-object holding the groups below. It only needs `vite`; the React Compiler peers
-are not involved, and the two exports compose by living in different parts of
-the config.
+object holding the groups below. It needs only `vite`, and it composes with
+`./react-compiler` because the two live in different parts of the config.
 
-| Group | Captures | Priority | `entriesAware` |
+| Group | Test | Priority | `entriesAware` |
 | --- | --- | --- | --- |
-| `react` | `react`, `react-dom`, `scheduler` | 30 | no |
-| `design-system` | `@r0hitsharma/design-system` | 20 | yes |
-| `charting` | `@r0hitsharma/charting` | 10 | no |
+| `react` | `/[\\/]node_modules[\\/](?:react\|react-dom\|scheduler)[\\/]/` | 30 | no |
+| `design-system` | `/[\\/]design-system[\\/]/` | 20 | yes |
+| `charting` | `/[\\/]charting[\\/]/` | 10 | yes |
 
-Each group also takes the dependencies of what it captures (rolldown's
-`includeDependenciesRecursively`, on by default), so Ark UI lands with the
-design system and visx with charting. That is also why the order is what it
-is: React outranks everything so no other group's walk drags it along, and the
-design system outranks charting because charting imports it.
+A group that matches nothing emits no chunk, so an app without charts can take
+the preset whole.
 
-The groups match on a `node_modules/@r0hitsharma/...` path segment, the scope
-these packages publish under (exported as `PACKAGE_SCOPE`). A package resolved
-anywhere else falls through to rolldown's automatic chunking: an `npm link`ed
-checkout, for one, which rolldown resolves to its real path unless
-`resolve.preserveSymlinks` is set.
+Neither package group names a dependency of the package it captures. Ark UI,
+TanStack and lucide arrive with the design system and visx with charting
+through rolldown's `includeDependenciesRecursively`, which the preset sets
+explicitly rather than inheriting. That walk is also why the order is what it
+is: React is a peer dependency of both packages, so it outranks them or their
+walks would take it, and the design system outranks charting because charting
+imports it and would otherwise pull the modules the entry needs into a
+charting chunk.
+
+### Why directory names, not package names
+
+Vite resolves with `preserveSymlinks: false`, so a workspace or `npm link`ed
+package's module ids are its real path, something like
+`packages/design-system/dist/index.js`, with no `@r0hitsharma` segment in them.
+A test on the scoped package name matches an npm install and silently matches
+nothing when the package is linked, which is how a consumer developing against
+this repository runs. So the design-system and charting tests match the
+directory name, and cover both layouts.
+
+The trade-off runs the other way: an app's own `src/design-system/` or
+`src/charting/` directory is swept into the group too. Take it back with a
+group that outranks the default (a tie goes to the default, which is declared
+first):
+
+```typescript
+import codeSplitting, {
+  GROUP_PRIORITY,
+} from '@r0hitsharma/vite-config/code-splitting';
+
+codeSplitting({
+  groups: [
+    {
+      name: 'app-design-system',
+      test: /[\\/]src[\\/]design-system[\\/]/,
+      priority: GROUP_PRIORITY.designSystem + 1,
+    },
+  ],
+});
+```
+
+Keep such a group to modules that do not import the design system package, for
+the reason in the next section. React stays anchored on `node_modules`: it is
+never linked, and the bare word is too common for a path segment.
 
 ### Adding app-specific groups
 
@@ -194,11 +229,12 @@ codeSplitting({
 });
 ```
 
-Leave their `priority` unset (0) or below 10. A group that outranks a default
-group does not just take its own modules: through the same dependency walk it
-takes every module of that group its modules import. A drawer-only group ranked
-above the design system takes the button the drawer uses, and since the entry
-needs that button, the drawer now loads with the entry.
+Leave their `priority` unset (0) or below 10 unless the point is to take
+modules away from a default group. A group that outranks a default does not
+only take its own modules: through the same dependency walk it takes every
+module of that default its modules import. A drawer-only group ranked above
+the design system takes the button the drawer uses, and since the entry needs
+that button, the drawer now loads with the entry.
 
 The result is a plain object, so global options go next to it:
 
@@ -206,48 +242,66 @@ The result is a plain object, so global options go next to it:
 output: { codeSplitting: { ...codeSplitting(), minSize: 20_000 } },
 ```
 
-`DEFAULT_GROUPS` and `GROUP_PRIORITY` are exported for a config that wants to
-start from the defaults and drop or reshape one.
+`DEFAULT_GROUPS`, `GROUP_PRIORITY` and the three tests (`REACT_TEST`,
+`DESIGN_SYSTEM_TEST`, `CHARTING_TEST`) are exported for a config that wants to
+start from the defaults and reshape one. Each call returns fresh copies of the
+groups, so editing the result never reaches the defaults.
 
 ### The option name matters
 
 Vite 8 bundles with rolldown, and the option rolldown reads is
-`build.rolldownOptions.output.codeSplitting`. The Rollup-era alternatives look
-like they still apply, and mostly do not:
+`build.rolldownOptions.output.codeSplitting`. The Rollup-era spellings are
+still accepted, and none of them fails in a way that points here. Observed on
+Vite 8.2.2 with rolldown 1.2.6:
 
-- `manualChunks` survives only in function form, deprecated, as a shim rolldown
-  rewrites into one `codeSplitting` group. Its object form is gone: the build
-  fails with `manualChunks is not a function`.
-- `advancedChunks` is deprecated too.
-- Once `codeSplitting` is set, rolldown ignores both of them, with a warning
-  and nothing else. A `manualChunks` left over from a Vite 7 config, next to
-  this preset, type-checks, builds and does nothing, so delete it rather than
-  keep it alongside.
+| Config | Result |
+| --- | --- |
+| `manualChunks` function, alone | Applied, as one group with a dynamic name. No warning of any kind |
+| `manualChunks` object, alone | Option validation warns, then the build fails: `manualChunks is not a function` |
+| `advancedChunks`, alone | Applied, with `advancedChunks option is deprecated, please use codeSplitting instead.` |
+| any of the three, plus `codeSplitting` | Ignored: `<option> option is ignored because the codeSplitting option is specified.` The object form also still logs its validation warning, but the build succeeds |
 
-`build.rollupOptions` is itself a deprecated alias of `build.rolldownOptions`
-in Vite 8.
+So a `manualChunks` function carried over from a Vite 7 config looks like it
+works on its own: the named chunks appear. What it cannot express is
+`entriesAware`, so it is permanently the flat grouping described below. Next to
+this preset it does nothing at all, so delete it rather than keep it alongside.
+`build.rollupOptions` is itself a deprecated alias of `build.rolldownOptions`.
 
-### Why `entriesAware` is on for the design system
+### Why `entriesAware` is on
 
 Without it a group is a single chunk. The app shell imports some design-system
 code statically, so that one chunk loads up front, and it carries every
 design-system module any route uses: the drawer that only one lazy route opens
-is fetched on first paint. With `entriesAware`, modules are grouped by the set
-of entries that reach them (dynamic imports count as entries), so the shell's
-components get a chunk of their own and drawer-only code lands in a chunk only
-that route loads.
+is fetched on first paint, with the Ark UI code behind it. With `entriesAware`,
+modules are grouped by the set of entries that reach them (dynamic imports
+count as entries), so the shell's components get a chunk of their own and
+drawer-only code lands in a chunk only that route loads. It is also what makes
+the design system's subpath exports pay off: importing `design-system/drawer`
+keeps the drawer out of the root barrel's graph, and `entriesAware` keeps it
+out of the entry's chunk. Either alone leaves it there.
 
-The effect is not small. A minimal app with the design system's button in its
-shell and the drawer and a chart behind lazy routes loads about 190 kB of
-minified JavaScript up front with the preset, and about 280 kB with the same
-groups minus `entriesAware`.
+Charting has it for the same reason, against its `core`, `primitives` and
+`xychart` subpaths: a route that imports only `primitives` should not download
+`@visx/xychart` because another route asked for it.
+
+The effect is not small. In a minimal app built against this repository's own
+packages, with the design system's button in the shell and the drawer, an
+xychart and a primitives chart behind three lazy routes:
+
+| Groups | Loaded up front | Extra for the primitives route |
+| --- | --- | --- |
+| preset | ~193 kB | ~144 kB |
+| design system flat | ~287 kB | |
+| charting flat | ~193 kB | ~172 kB |
+
+Minified JavaScript, measured as emitted bytes.
 
 ### Confirming it applied
 
 A group rolldown never reads changes nothing visible. The chunk names are the
-check: after `vite build`, `dist/assets/` should hold `react-*.js`,
-`charting-*.js` and `design-system~<entry>-*.js` files, the part after `~`
-naming the entries that share that chunk. This package's own tests make the
-same checks against a real build, including that lazy-only design-system code
-stays out of everything the entry loads, and that it does not once
-`entriesAware` is dropped.
+check: after `vite build`, `dist/assets/` should hold `react-*.js` and
+`design-system~<entries>-*.js` / `charting~<entries>-*.js` files, the part
+after `~` naming the entries that share that chunk. This package's own tests
+make the same checks against real builds, in both the installed and the linked
+layout, and pin every behaviour this section describes, each against a control
+build that must break it.
