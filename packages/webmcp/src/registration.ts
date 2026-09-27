@@ -29,11 +29,6 @@ type ModelContext = {
   ) => unknown;
 };
 
-type ToolResult = {
-  content: Array<{ type: 'text'; text: string }>;
-  isError?: boolean;
-};
-
 /** One registration attempt against one modelContext instance. */
 type Binding = {
   context: ModelContext;
@@ -57,10 +52,6 @@ function getModelContext(): ModelContext | undefined {
   const doc = window.document as unknown as { modelContext?: ModelContext };
   const nav = window.navigator as unknown as { modelContext?: ModelContext };
   return doc?.modelContext ?? nav?.modelContext;
-}
-
-function stringify(value: unknown): string {
-  return typeof value === 'string' ? value : JSON.stringify(value, null, 2);
 }
 
 function isDuplicateError(error: unknown): boolean {
@@ -126,22 +117,15 @@ function bind(name: string, entry: Entry): void {
   const controller = new AbortController();
   entry.binding = { context, controller };
 
-  const execute = async (
-    args: Record<string, unknown>,
-  ): Promise<ToolResult> => {
-    try {
-      // Read the latest spec so deps-driven handler updates take effect without
-      // re-registering against the polyfill.
-      const result = await entry.spec.handler(args as never);
-      return { content: [{ type: 'text', text: stringify(result) }] };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return {
-        content: [{ type: 'text', text: `Error: ${message}` }],
-        isError: true,
-      };
-    }
-  };
+  // WebMCP JSON-serializes whatever execute resolves to and treats a
+  // rejection as a failed call, so return the handler's own result and let
+  // errors throw. A bridge that needs an MCP CallToolResult builds one: the
+  // MCP-B bridge wraps a plain result (text + structuredContent) and turns a
+  // throw into `isError: true`.
+  const execute = async (args: Record<string, unknown>): Promise<unknown> =>
+    // Read the latest spec so deps-driven handler updates take effect without
+    // re-registering against the polyfill.
+    entry.spec.handler(args as never);
 
   let pending: Promise<unknown>;
   try {

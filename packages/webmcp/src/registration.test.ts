@@ -160,3 +160,34 @@ describe('annotations', () => {
     release();
   });
 });
+
+describe('execute', () => {
+  it('resolves to the handler result itself, not an MCP content wrapper', async () => {
+    const ctx = installFakeContext();
+    const release = acquireToolRegistration(
+      spec('exec.ok', { handler: () => ({ selected: 'a', count: 2 }) }),
+    );
+    await flushMicrotasks();
+    await expect(ctx.tools.get('exec.ok')!.execute({})).resolves.toEqual({
+      selected: 'a',
+      count: 2,
+    });
+    release();
+  });
+
+  it('rejects when the handler throws', async () => {
+    const ctx = installFakeContext();
+    const release = acquireToolRegistration(
+      spec('exec.fail', {
+        handler: () => {
+          throw new Error('no such identity');
+        },
+      }),
+    );
+    await flushMicrotasks();
+    await expect(ctx.tools.get('exec.fail')!.execute({})).rejects.toThrow(
+      'no such identity',
+    );
+    release();
+  });
+});
