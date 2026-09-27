@@ -510,6 +510,23 @@ describe('tools/call result mapping', () => {
     expect(result['isError']).toBe(true);
     expect(result['content']).toEqual([{ type: 'text', text: 'no such item' }]);
   });
+
+  it('maps an empty result frame error to isError: true, not a success', async () => {
+    const { ws, callId, callPromise } = await startCall(SIMPLE_TOOL);
+    ws.send(
+      JSON.stringify({
+        type: 'result',
+        call_id: callId,
+        result: null,
+        error: '',
+      }),
+    );
+    const result = ((await callPromise)['result'] ?? {}) as Record<
+      string,
+      unknown
+    >;
+    expect(result['isError']).toBe(true);
+  });
 });
 
 describe('/mcp Streamable HTTP basics', () => {

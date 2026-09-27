@@ -250,9 +250,8 @@ export class SessionDO implements DurableObject {
         // disconnect) that reject.
         pending.resolve({
           result: msg['result'],
-          ...(typeof msg['error'] === 'string' && msg['error']
-            ? { error: msg['error'] }
-            : {}),
+          // Any string is an error, even an empty one; see toCallToolResult.
+          ...(typeof msg['error'] === 'string' ? { error: msg['error'] } : {}),
         });
       } else {
         // No pending call: a malformed/duplicate result, or one that already
