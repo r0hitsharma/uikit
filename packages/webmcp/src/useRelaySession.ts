@@ -157,8 +157,11 @@ export function useRelaySession({
         log(`-> ${JSON.stringify(result)?.slice(0, 160)}`);
       } catch (err) {
         // A failed call goes in the protocol's `error` field (the relay maps
-        // it to an MCP `isError` result), not dressed up as a success.
-        const message = err instanceof Error ? err.message : String(err);
+        // it to an MCP `isError` result), not dressed up as a success. Never
+        // send it empty: `throw new Error()` must still read as a failure.
+        const message =
+          (err instanceof Error ? err.message : String(err)) ||
+          `Tool "${spec.name}" failed without an error message.`;
         send({ type: 'result', call_id: callId, result: null, error: message });
         log(`-> error: ${message.slice(0, 160)}`);
       } finally {

@@ -171,6 +171,32 @@ describe('relay results', () => {
     );
   });
 
+  it('reports a throw with an empty message as an error, not a success', async () => {
+    mount([
+      tool('relay.silent', {
+        handler: () => {
+          throw new Error();
+        },
+      }),
+    ]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-empty',
+      tool_name: 'relay.silent',
+      args: {},
+    });
+    await vi.waitFor(() =>
+      expect(ws.framesOf('result')).toContainEqual({
+        type: 'result',
+        call_id: 'c-empty',
+        result: null,
+        error: 'Tool "relay.silent" failed without an error message.',
+      }),
+    );
+  });
+
   it('reports an unknown tool in the error field', async () => {
     mount([]);
     const ws = await openedSocket();
