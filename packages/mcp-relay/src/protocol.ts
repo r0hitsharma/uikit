@@ -10,6 +10,10 @@
  * so the existing browser client interoperates with no changes.
  *
  * MVP subset: connect + tool-activity only (NO mutation-confirmation).
+ *
+ * Every field added after the MVP is optional, so older browsers and relays
+ * interoperate: a relay ignores what it does not know, and fills defaults
+ * (e.g. from `mutation`) for what an older browser does not send.
  */
 
 // ---------------------------------------------------------------------------
@@ -23,11 +27,26 @@ export interface ToolInputSchema {
   [key: string]: unknown;
 }
 
+/**
+ * WebMCP tool annotations, as the browser registered them. The hint names are
+ * WebMCP identifiers, kept verbatim rather than snake-cased.
+ */
+export interface ToolAnnotations {
+  readOnlyHint?: boolean;
+  untrustedContentHint?: boolean;
+  consequentialHint?: boolean;
+}
+
 export interface ToolDefinition {
   name: string;
+  /** Human-readable display name. */
+  title?: string;
   description: string;
   /** Snake-case per MCP spec and the Python ToolDefinition model. */
   input_schema: ToolInputSchema;
+  /** JSON Schema of the tool's result object (MCP `outputSchema`). */
+  output_schema?: Record<string, unknown>;
+  annotations?: ToolAnnotations;
   mutation?: boolean;
   confirmation_summary_template?: string;
 }

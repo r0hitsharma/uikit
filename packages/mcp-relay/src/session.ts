@@ -33,6 +33,54 @@ import type {
   ToolDefinition,
 } from './protocol.js';
 
+/** An entry of an MCP `tools/list` result. */
+export interface McpTool {
+  name: string;
+  title?: string;
+  description: string;
+  inputSchema: ToolDefinition['input_schema'];
+  outputSchema?: Record<string, unknown>;
+  annotations?: {
+    title?: string;
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+  };
+}
+
+/**
+ * Map a browser tool definition to an MCP `tools/list` entry.
+ *
+ * MCP has readOnlyHint and destructiveHint; WebMCP has readOnlyHint and
+ * consequentialHint. A tool is destructive to MCP when the browser marked it
+ * consequential or as a mutation. Definitions from browsers that predate
+ * annotations carry only `mutation`, which maps to readOnlyHint: false +
+ * destructiveHint: true. With nothing to go on, no annotations are emitted
+ * (MCP's defaults then apply). WebMCP's untrustedContentHint has no MCP
+ * counterpart and is not forwarded.
+ */
+export function toMcpTool(def: ToolDefinition): McpTool {
+  const hints = def.annotations ?? {};
+  const destructive = hints.consequentialHint ?? def.mutation;
+  const readOnly = hints.readOnlyHint ?? (def.mutation ? false : undefined);
+  const annotations: NonNullable<McpTool['annotations']> = {
+    ...(readOnly !== undefined ? { readOnlyHint: readOnly } : {}),
+    // Only meaningful for a tool that is not read-only.
+    ...(destructive !== undefined && readOnly !== true
+      ? { destructiveHint: destructive }
+      : {}),
+  };
+  return {
+    name: def.name,
+    ...(def.title !== undefined ? { title: def.title } : {}),
+    description: def.description,
+    inputSchema: def.input_schema,
+    ...(def.output_schema !== undefined
+      ? { outputSchema: def.output_schema }
+      : {}),
+    ...(Object.keys(annotations).length > 0 ? { annotations } : {}),
+  };
+}
+
 /** State machine states, mirroring the Python SessionRecord. */
 export type SessionState = 'pending' | 'connected' | 'disconnected';
 
@@ -211,11 +259,7 @@ export class RelaySession {
       jsonrpc: '2.0',
       id: jsonRpcId,
       result: {
-        tools: this.toolsCatalogue.map((t) => ({
-          name: t.name,
-          description: t.description,
-          inputSchema: t.input_schema,
-        })),
+        tools: this.toolsCatalogue.map(toMcpTool),
       },
     };
   }
