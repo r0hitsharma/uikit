@@ -953,6 +953,9 @@
     "packages/webmcp/dist/mcp-b-optout.js": [
       "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
     ],
+    "packages/webmcp/dist/mcp-b.js": [
+      "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
+    ],
     "packages/webmcp/dist/provider.js": [
       "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
     ],
