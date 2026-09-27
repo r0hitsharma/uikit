@@ -96,7 +96,8 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 /**
  * Map a browser `result` frame's payload to an MCP `tools/call` result.
  *
- * - `error` set: the tool failed; `isError: true` with the message.
+ * - `error` is a string (even empty): the tool failed; `isError: true` with
+ *   the message.
  * - an object: JSON text for older clients, plus the object as
  *   `structuredContent` (MCP only allows an object there).
  * - anything else: text (a string as-is, other values as JSON).
@@ -108,8 +109,13 @@ export function toCallToolResult(
   result: unknown,
   error?: string | null,
 ): McpCallToolResult {
-  if (typeof error === 'string' && error.length > 0) {
-    return { content: [{ type: 'text', text: error }], isError: true };
+  // Any error string marks a failure, even an empty one (a browser that sent
+  // `throw new Error()` through): only null/undefined means success.
+  if (typeof error === 'string') {
+    return {
+      content: [{ type: 'text', text: error || 'The tool call failed.' }],
+      isError: true,
+    };
   }
   if (isPlainObject(result) && Array.isArray(result['content'])) {
     return result as McpCallToolResult;

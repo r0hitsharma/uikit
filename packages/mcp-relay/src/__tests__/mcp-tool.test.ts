@@ -94,6 +94,13 @@ describe('toCallToolResult', () => {
     });
   });
 
+  it('maps an empty error to isError: true, not a success', () => {
+    expect(toCallToolResult(null, '')).toEqual({
+      content: [{ type: 'text', text: 'The tool call failed.' }],
+      isError: true,
+    });
+  });
+
   it('passes an object result through as structuredContent', () => {
     expect(toCallToolResult({ selected: 'a' })).toEqual({
       content: [{ type: 'text', text: '{"selected":"a"}' }],
