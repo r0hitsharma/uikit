@@ -36,6 +36,17 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "vite": "^8.0.0"
   },
+  "peerDependenciesMeta": {
+    "@rolldown/plugin-babel": {
+      "optional": true
+    },
+    "@vitejs/plugin-react": {
+      "optional": true
+    },
+    "babel-plugin-react-compiler": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@r0hitsharma/oxfmt-config": "*",
     "@r0hitsharma/oxlint-config": "*",

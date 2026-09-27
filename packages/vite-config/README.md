@@ -5,14 +5,27 @@ Shared Vite build presets, so that wiring every app needs is written once.
 ## Installation
 
 ```bash
-npm install --save-dev @r0hitsharma/vite-config \
-  vite @vitejs/plugin-react @rolldown/plugin-babel babel-plugin-react-compiler
+npm install --save-dev @r0hitsharma/vite-config vite
 ```
 
-The four packages are peer dependencies: the preset composes them, it does not
-vendor them, so the app decides which versions its build runs on. Vite 8 is
-required: the preset is built on rolldown's plugin API. The
-[code-splitting](#code-splitting) export uses only `vite`.
+`vite` is the one required peer dependency, and Vite 8 specifically: both
+presets are built on rolldown. The rest depend on the export:
+
+| Export | Peer dependencies |
+| --- | --- |
+| `./code-splitting` | `vite` |
+| `./react-compiler` | `vite`, `@vitejs/plugin-react`, `@rolldown/plugin-babel`, `babel-plugin-react-compiler` |
+
+The React Compiler's three are marked optional, so an app that only splits
+chunks is not made to install Babel. An app using `./react-compiler` installs
+them itself:
+
+```bash
+npm install --save-dev @vitejs/plugin-react @rolldown/plugin-babel babel-plugin-react-compiler
+```
+
+The presets compose these packages rather than vendor them, so the app decides
+which versions its build runs on.
 
 ## React Compiler
 
