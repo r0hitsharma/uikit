@@ -5,6 +5,7 @@
  *   POST /api/sessions         - mint a session + connection JWT
  *   GET  /ws/sessions/:id      - WebSocket upgrade, forwarded to SessionDO
  *   POST /mcp                  - harness MCP endpoint, forwarded to SessionDO
+ *                                (other methods on /mcp: 405)
  *
  * The JWT secret is read from env.WEBMCP_RELAY_JWT_SECRET.
  * Set it in .dev.vars locally and via `wrangler secret put` in production.
@@ -94,8 +95,20 @@ export default {
     }
 
     // POST /mcp  (harness entry)
-    if (request.method === 'POST' && url.pathname === '/mcp') {
-      return withCors(await handleMcpEntry(request, env), request, env);
+    if (url.pathname === '/mcp') {
+      if (request.method === 'POST') {
+        return withCors(await handleMcpEntry(request, env), request, env);
+      }
+      // No SSE stream (GET) or session teardown (DELETE): Streamable HTTP
+      // says answer 405 so the client stays on plain POST.
+      return withCors(
+        new Response('Method not allowed', {
+          status: 405,
+          headers: { Allow: 'POST' },
+        }),
+        request,
+        env,
+      );
     }
 
     return withCors(new Response('Not found', { status: 404 }), request, env);

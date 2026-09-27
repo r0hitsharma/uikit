@@ -512,6 +512,70 @@ describe('tools/call result mapping', () => {
   });
 });
 
+describe('/mcp Streamable HTTP basics', () => {
+  it('answers a notification with 202 and no body', async () => {
+    const session = await createSession();
+    const res = await SELF.fetch('http://localhost/mcp', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${session.connection_token}`,
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'notifications/initialized',
+      }),
+    });
+    expect(res.status).toBe(202);
+    expect(await res.text()).toBe('');
+  });
+
+  it('answers GET with 405 and Allow: POST', async () => {
+    const session = await createSession();
+    const res = await SELF.fetch('http://localhost/mcp', {
+      headers: {
+        accept: 'text/event-stream',
+        authorization: `Bearer ${session.connection_token}`,
+      },
+    });
+    expect(res.status).toBe(405);
+    expect(res.headers.get('Allow')).toBe('POST');
+  });
+
+  it('echoes a supported protocol version', async () => {
+    const session = await createSession();
+    for (const version of ['2025-03-26', '2025-06-18']) {
+      const init = await mcpCall(session.connection_token, 'initialize', {
+        protocolVersion: version,
+      });
+      expect(
+        (init['result'] as Record<string, unknown>)['protocolVersion'],
+      ).toBe(version);
+    }
+  });
+
+  it('offers its latest version for an unsupported request', async () => {
+    const session = await createSession();
+    const init = await mcpCall(session.connection_token, 'initialize', {
+      protocolVersion: '1999-01-01',
+    });
+    expect((init['result'] as Record<string, unknown>)['protocolVersion']).toBe(
+      '2025-06-18',
+    );
+  });
+
+  it('does not advertise tools.listChanged', async () => {
+    const session = await createSession();
+    const init = await mcpCall(session.connection_token, 'initialize', {
+      protocolVersion: '2025-06-18',
+    });
+    const capabilities = (init['result'] as Record<string, unknown>)[
+      'capabilities'
+    ] as { tools?: Record<string, unknown> };
+    expect(capabilities.tools).toEqual({});
+  });
+});
+
 describe('POST /mcp parse error', () => {
   it('returns a JSON-RPC -32700 for a malformed body (not an opaque 500)', async () => {
     const session = await createSession();

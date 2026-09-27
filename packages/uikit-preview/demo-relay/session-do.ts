@@ -45,6 +45,21 @@ interface PendingCall {
 
 const ALARM_INTERVAL_MS = 30_000;
 
+/**
+ * MCP protocol revisions this relay answers, newest first. 2025-06-18 is the
+ * first with tool titles, outputSchema and structuredContent, which the relay
+ * now forwards; 2025-03-26 clients get the same payloads and ignore the rest.
+ */
+const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26'] as const;
+
+/** Echo the client's requested revision when supported, else offer our latest. */
+function negotiateProtocolVersion(requested: unknown): string {
+  return typeof requested === 'string' &&
+    (SUPPORTED_PROTOCOL_VERSIONS as readonly string[]).includes(requested)
+    ? requested
+    : SUPPORTED_PROTOCOL_VERSIONS[0];
+}
+
 export class SessionDO implements DurableObject {
   private readonly state: DurableObjectState;
   private session: RelaySession | null = null;
@@ -291,6 +306,16 @@ export class SessionDO implements DurableObject {
       });
     }
 
+    // A notification (no id) or a client's response to us (no method) gets
+    // 202 Accepted with no body, per Streamable HTTP; there is nothing to
+    // answer. Harness liveness is still recorded.
+    if (!('id' in body) || typeof body['method'] !== 'string') {
+      const frame = this.session.touch(Date.now());
+      this.broadcastToAccepted(JSON.stringify(frame));
+      await this.persist();
+      return new Response(null, { status: 202 });
+    }
+
     const method = body['method'] as string;
     const id = body['id'];
     const params = (body['params'] as Record<string, unknown>) ?? {};
@@ -309,9 +334,11 @@ export class SessionDO implements DurableObject {
         jsonrpc: '2.0',
         id,
         result: {
-          protocolVersion: '2025-03-26',
+          protocolVersion: negotiateProtocolVersion(params['protocolVersion']),
           serverInfo: { name: 'mcp-relay-cf', version: '1' },
-          capabilities: { tools: { listChanged: true } },
+          // No listChanged: there is no server-to-client stream to send
+          // notifications/tools/list_changed on. Clients re-list instead.
+          capabilities: { tools: {} },
           _relay: { session_id: this.session.sessionId },
         },
       });
