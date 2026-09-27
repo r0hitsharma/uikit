@@ -294,9 +294,9 @@ export class SessionDO implements DurableObject {
       return jsonResponse({ error: 'Token does not match session.' }, 401);
     }
 
-    let body: Record<string, unknown>;
+    let parsed: unknown;
     try {
-      body = (await request.json()) as Record<string, unknown>;
+      parsed = await request.json();
     } catch {
       return jsonResponse({
         jsonrpc: '2.0',
@@ -304,6 +304,26 @@ export class SessionDO implements DurableObject {
         error: { code: -32700, message: 'Parse error' },
       });
     }
+    // One JSON-RPC message per POST. A batch (allowed by 2025-03-26, removed
+    // in 2025-06-18) is refused explicitly rather than mistaken for a
+    // notification and dropped; any other non-object is not JSON-RPC at all.
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      return jsonResponse({
+        jsonrpc: '2.0',
+        id: null,
+        error: {
+          code: -32600,
+          message: Array.isArray(parsed)
+            ? 'Invalid Request: JSON-RPC batches are not supported; send one message per request.'
+            : 'Invalid Request: expected a JSON-RPC message object.',
+        },
+      });
+    }
+    const body = parsed as Record<string, unknown>;
 
     // A notification (no id) or a client's response to us (no method) gets
     // 202 Accepted with no body, per Streamable HTTP; there is nothing to

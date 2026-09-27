@@ -611,6 +611,41 @@ describe('POST /mcp parse error', () => {
   });
 });
 
+describe('POST /mcp invalid requests', () => {
+  async function post(body: string) {
+    const session = await createSession();
+    const res = await SELF.fetch('http://localhost/mcp', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${session.connection_token}`,
+      },
+      body,
+    });
+    return {
+      status: res.status,
+      body: (await res.json()) as { error?: { code?: number } },
+    };
+  }
+
+  it('refuses a batch with -32600 instead of dropping it as a notification', async () => {
+    const { status, body } = await post(
+      JSON.stringify([{ jsonrpc: '2.0', id: 1, method: 'tools/list' }]),
+    );
+    expect(status).toBe(200);
+    expect(body.error?.code).toBe(-32600);
+  });
+
+  it.each(['null', '42', '"text"'])(
+    'answers a non-object body %s with -32600, not a 500',
+    async (raw) => {
+      const { status, body } = await post(raw);
+      expect(status).toBe(200);
+      expect(body.error?.code).toBe(-32600);
+    },
+  );
+});
+
 describe('POST /mcp auth', () => {
   it('returns 401 for a missing bearer', async () => {
     const res = await SELF.fetch('http://localhost/mcp', {
