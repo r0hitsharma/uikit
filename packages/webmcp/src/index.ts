@@ -11,6 +11,7 @@
  *   - useTool                      observe a single tool's spec by name
  *   - useToolRegistry              read the full registry (listTools / getViewState)
  *   - useContributeViewState       contribute a partial view-state slice
+ *   - useToolConfirmation          drive a mutation-confirmation dialog
  *   - useRelaySession              drive a relay back-channel from the registry
  *   - listTools / getViewState     imperative helpers for non-React callers
  *   - ToolSpec / ViewState / etc.  shared types
@@ -45,11 +46,12 @@ export {
   useTool,
   useToolRegistry,
   useContributeViewState,
+  useToolConfirmation,
   listTools,
   getViewState,
   useToolRegistryRef,
 } from './hooks.js';
-export type { ToolRegistryRef } from './hooks.js';
+export type { ToolConfirmation, ToolRegistryRef } from './hooks.js';
 
 // Relay session: connects the registry to a relay back-channel.
 export { useRelaySession } from './useRelaySession.js';

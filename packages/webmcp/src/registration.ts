@@ -15,6 +15,7 @@
  * unregister (signal abort) only fires once the last holder is gone, deferred
  * to a microtask so a StrictMode remount can cancel it.
  */
+import { denialResult, type RequestConfirmation } from './confirmation.js';
 import { resolveAnnotations, type ToolSpec } from './types.js';
 
 type ModelContext = {
@@ -42,7 +43,14 @@ type Entry = {
   // without re-registering (which the polyfill would reject as a duplicate).
   spec: ToolSpec;
   binding?: Binding;
+  // Latest holder's confirmation gate for mutation calls.
+  requestConfirmation?: RequestConfirmation;
 };
+
+export interface AcquireOptions {
+  /** Approval gate for `mutation: true` tools; without one they are denied. */
+  requestConfirmation?: RequestConfirmation;
+}
 
 const REGISTRY = new Map<string, Entry>();
 
@@ -63,18 +71,27 @@ function isDuplicateError(error: unknown): boolean {
  * unmount. Idempotent per tool name: concurrent holders share one underlying
  * polyfill registration.
  */
-export function acquireToolRegistration(spec: ToolSpec): () => void {
+export function acquireToolRegistration(
+  spec: ToolSpec,
+  options: AcquireOptions = {},
+): () => void {
   const existing = REGISTRY.get(spec.name);
   if (existing) {
     existing.count += 1;
     existing.spec = spec; // keep the freshest handler/description
+    existing.requestConfirmation =
+      options.requestConfirmation ?? existing.requestConfirmation;
     // Re-bind if the context changed underneath (e.g. the provider re-created
     // the polyfill); a no-op when already bound to the current one.
     bind(spec.name, existing);
     return makeRelease(spec.name);
   }
 
-  const entry: Entry = { count: 1, spec };
+  const entry: Entry = {
+    count: 1,
+    spec,
+    requestConfirmation: options.requestConfirmation,
+  };
   REGISTRY.set(spec.name, entry);
   bind(spec.name, entry);
   return makeRelease(spec.name);
@@ -133,7 +150,20 @@ function bind(name: string, entry: Entry): void {
       : controller.signal;
     // Read the latest spec so deps-driven handler updates take effect without
     // re-registering against the polyfill.
-    return entry.spec.handler(args as never, { signal });
+    const current = entry.spec;
+    if (current.mutation) {
+      // Same gate as the relay path: nothing runs without the user's approval.
+      // No gate available fails closed.
+      const decision = entry.requestConfirmation
+        ? await entry.requestConfirmation(current, args, { signal })
+        : 'denied';
+      if (decision === 'cancelled') {
+        signal.throwIfAborted();
+        throw new Error('The confirmation request was withdrawn.');
+      }
+      if (decision !== 'approved') return denialResult(decision);
+    }
+    return current.handler(args as never, { signal });
   };
 
   let pending: Promise<unknown>;

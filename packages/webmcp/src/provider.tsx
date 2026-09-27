@@ -14,10 +14,12 @@ import {
   useContext,
   useEffect,
   useRef,
+  useState,
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
 
+import { ConfirmationQueue, type RequestConfirmation } from './confirmation.js';
 import {
   cleanupWebModelContext,
   initializeWebModelContext,
@@ -66,6 +68,18 @@ export interface ToolRegistryContextValue {
    * Returns a cleanup function that removes the contribution.
    */
   _contributeViewState: (partial: ViewState) => () => void;
+
+  /**
+   * The provider's mutation-confirmation queue, shared by every invocation
+   * path (document.modelContext and the relay).
+   */
+  _confirmationQueue: ConfirmationQueue;
+
+  /**
+   * Ask the user to approve a mutation. Resolves with the decision; the
+   * window defaults to the provider's `confirmationWindowSeconds`.
+   */
+  _requestConfirmation: RequestConfirmation;
 }
 
 const ToolRegistryContext = createContext<ToolRegistryContextValue | null>(
@@ -120,6 +134,13 @@ export interface WebMCPProviderProps {
    * Changing it re-initializes the polyfill.
    */
   transport?: WebMCPTransportOptions;
+  /**
+   * Seconds a mutation confirmation stays open before it expires and the call
+   * is denied. Applies to calls made through document.modelContext;
+   * useRelaySession passes its own (shorter) window for relay calls.
+   * @default 60
+   */
+  confirmationWindowSeconds?: number;
 }
 
 /** Resolve the provider's transport prop to @mcp-b/global's configuration. */
@@ -156,6 +177,7 @@ export function WebMCPProvider({
   children,
   initPolyfill = true,
   transport,
+  confirmationWindowSeconds = 60,
 }: WebMCPProviderProps) {
   // Stable refs so the context value object is referentially stable.
   const toolMapRef = useRef<Map<string, ToolSpec>>(new Map());
@@ -203,6 +225,19 @@ export function WebMCPProvider({
       cleanupWebModelContext();
     };
   }, [initPolyfill, transportKey]);
+
+  // One queue per provider, alive for its lifetime; prompts still open when
+  // the provider unmounts are withdrawn so their callers settle.
+  const [confirmationQueue] = useState(() => new ConfirmationQueue());
+  useEffect(() => () => confirmationQueue.cancelAll(), [confirmationQueue]);
+  const _requestConfirmation = useCallback<RequestConfirmation>(
+    (spec, args, options) =>
+      confirmationQueue.request(spec, args, {
+        ...options,
+        windowSeconds: options?.windowSeconds ?? confirmationWindowSeconds,
+      }),
+    [confirmationQueue, confirmationWindowSeconds],
+  );
 
   const _addSpec = useCallback(
     (spec: ToolSpec): (() => void) => {
@@ -255,6 +290,8 @@ export function WebMCPProvider({
     getViewState,
     _addSpec,
     _contributeViewState,
+    _confirmationQueue: confirmationQueue,
+    _requestConfirmation,
   };
 
   return (

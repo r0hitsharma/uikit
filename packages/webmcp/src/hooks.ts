@@ -5,11 +5,22 @@
  * All hooks require <WebMCPProvider> in the component tree.
  * None of them import @mcp-b/* directly, that coupling lives in provider.tsx.
  */
-import { useEffect, useMemo, useRef, type DependencyList } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+  type DependencyList,
+} from 'react';
 
 import { useToolRegistryContext } from './provider.js';
 import { acquireToolRegistration } from './registration.js';
-import type { ToolHandlerContext, ToolSpec, ViewState } from './types.js';
+import type {
+  PendingCallPrompt,
+  ToolHandlerContext,
+  ToolSpec,
+  ViewState,
+} from './types.js';
 
 // ---------------------------------------------------------------------------
 // useRegisterTool
@@ -124,8 +135,11 @@ export function useRegisterTool<
   // microtask-synced McpServer and throws "Tool <name> is already registered".
   // The manager registers each name once, refcounted, with AbortSignal-based
   // unregister.
+  // Mutations are gated on the provider's confirmation queue (the same one the
+  // relay path uses), so every invocation path needs the user's approval.
+  const requestConfirmation = registry._requestConfirmation;
   useEffect(() => {
-    return acquireToolRegistration(stableSpec);
+    return acquireToolRegistration(stableSpec, { requestConfirmation });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec.name]);
 }
@@ -146,6 +160,49 @@ export function useRegisterTool<
 export function useTool(toolName: string): ToolSpec | null {
   const registry = useToolRegistryContext();
   return registry.tools.find((t) => t.name === toolName) ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// useToolConfirmation
+// ---------------------------------------------------------------------------
+
+/** The mutation-confirmation queue, as a confirmation dialog needs it. */
+export interface ToolConfirmation {
+  /** The mutation awaiting approval (head of the queue), or null. */
+  pendingConfirmation: PendingCallPrompt | null;
+  /** Number of mutations waiting (including the active one). */
+  pendingQueueLength: number;
+  /** Approve the active mutation: its handler runs and returns the result. */
+  approve: () => void;
+  /** Deny the active mutation: the agent receives a denial result. */
+  deny: () => void;
+}
+
+/**
+ * Drive a confirmation dialog (e.g. `ConfirmToolCallDialog` from
+ * `@r0hitsharma/mcp-connect`) from the provider's queue.
+ *
+ * Every call to a `mutation: true` tool waits here for approval, whether it
+ * came through document.modelContext or the relay. Mount a dialog wired to
+ * this hook in any app that registers mutations: with nothing to answer
+ * them, calls are denied when the confirmation window expires.
+ */
+export function useToolConfirmation(): ToolConfirmation {
+  const queue = useToolRegistryContext()._confirmationQueue;
+  const pending = useSyncExternalStore(
+    queue.subscribe,
+    queue.getSnapshot,
+    queue.getSnapshot,
+  );
+  return useMemo(
+    () => ({
+      pendingConfirmation: pending[0] ?? null,
+      pendingQueueLength: pending.length,
+      approve: () => queue.resolveHead('approved'),
+      deny: () => queue.resolveHead('denied'),
+    }),
+    [pending, queue],
+  );
 }
 
 // ---------------------------------------------------------------------------

@@ -190,3 +190,75 @@ describe('relay results', () => {
     );
   });
 });
+
+describe('relay confirmation through the shared queue', () => {
+  const mutation = (handler = vi.fn(() => ({ changed: true }))) =>
+    tool('relay.gated', {
+      mutation: true,
+      confirmationSummary: () => 'Change it.',
+      handler,
+    });
+
+  it('runs the handler and returns its result once approved', async () => {
+    const handler = vi.fn(() => ({ changed: true }));
+    mount([mutation(handler)]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-ok',
+      tool_name: 'relay.gated',
+      args: {},
+    });
+    await vi.waitFor(() =>
+      expect(latest.session?.pendingConfirmation?.callId).toBe('c-ok'),
+    );
+    expect(handler).not.toHaveBeenCalled();
+    act(() => latest.session!.approve());
+    await vi.waitFor(() =>
+      expect(ws.framesOf('result')).toContainEqual({
+        type: 'result',
+        call_id: 'c-ok',
+        result: { changed: true },
+      }),
+    );
+  });
+
+  it('returns a denial result when denied', async () => {
+    const handler = vi.fn();
+    mount([mutation(handler)]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-no',
+      tool_name: 'relay.gated',
+      args: {},
+    });
+    await vi.waitFor(() => expect(latest.session?.pendingQueueLength).toBe(1));
+    act(() => latest.session!.deny());
+    await vi.waitFor(() =>
+      expect(ws.framesOf('result')).toContainEqual({
+        type: 'result',
+        call_id: 'c-no',
+        result: expect.objectContaining({ denied: true }),
+      }),
+    );
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it('withdraws an open prompt when the back-channel closes', async () => {
+    mount([mutation()]);
+    const ws = await openedSocket();
+    await ws.serverOpen();
+    await ws.serverSend({
+      type: 'invoke',
+      call_id: 'c-gone',
+      tool_name: 'relay.gated',
+      args: {},
+    });
+    await vi.waitFor(() => expect(latest.session?.pendingQueueLength).toBe(1));
+    await act(async () => ws.close());
+    await vi.waitFor(() => expect(latest.session?.pendingQueueLength).toBe(0));
+  });
+});
