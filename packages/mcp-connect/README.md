@@ -43,7 +43,7 @@ The four `indicatorStatus` values map to:
 
 ### `ConfirmToolCallDialog`
 
-A guarded write from a harness must be approved by the user. The confirmation state is owned by `useRelaySession` (from `@r0hitsharma/webmcp`), which surfaces the active `PendingCallPrompt` (as `pendingConfirmation`), a `pendingQueueLength`, and `approve` / `deny`; `ConfirmToolCallDialog` renders it (tool name, summary, arguments, a countdown to expiry, and a queue badge). The dialog takes the richer `PendingCallRecord` shape, so map the prompt onto it. Render the dialog at the app root so it works regardless of the connection modal.
+A guarded write (a `mutation: true` tool) must be approved by the user, whichever agent called it: a harness over the relay, a native browser agent, or an MCP-B client. The confirmation queue is owned by `WebMCPProvider` (from `@r0hitsharma/webmcp`) and read with `useToolConfirmation()`, or with `useRelaySession()`, which returns the same queue. Either surfaces the active `PendingCallPrompt` (as `pendingConfirmation`), a `pendingQueueLength`, and `approve` / `deny`; `ConfirmToolCallDialog` renders it (tool name, summary, arguments, a countdown to expiry, and a queue badge). The dialog takes the richer `PendingCallRecord` shape, so map the prompt onto it. Render the dialog at the app root so it works regardless of the connection modal.
 
 ```tsx
 import {
@@ -86,7 +86,7 @@ function ConfirmationSurface() {
 - `ConfirmToolCallDialog` (+ `ConfirmToolCallDialogProps`)
 - Types: `HarnessIndicatorStatus`, `PendingCallRecord`, `PendingCallStatus`
 
-The confirmation-queue hook that fed `ConfirmToolCallDialog` lives in `@r0hitsharma/webmcp` as `useRelaySession` — this package intentionally exports only presentational components.
+The confirmation queue that feeds `ConfirmToolCallDialog` lives in `@r0hitsharma/webmcp` (`useToolConfirmation`, also surfaced by `useRelaySession`); this package intentionally exports only presentational components. In an app without a relay, wire the dialog to `useToolConfirmation()` the same way: with no dialog mounted, mutation calls are denied when their confirmation window expires.
 
 ## Preview
 

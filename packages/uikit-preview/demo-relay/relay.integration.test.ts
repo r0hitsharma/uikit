@@ -429,6 +429,170 @@ describe('tools/call failure paths', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Helper: attach a browser with one tool and start a tools/call
+// ---------------------------------------------------------------------------
+
+async function startCall(
+  tool: Record<string, unknown>,
+  args: Record<string, unknown> = {},
+) {
+  const session = await createSession();
+  const { ws, nextMessage } = await openBrowserSocket(
+    session.session_id,
+    session.connection_token,
+  );
+  expect(JSON.parse(await nextMessage())).toMatchObject({
+    type: 'hello/accepted',
+  });
+  ws.send(JSON.stringify({ type: 'tools/list', tools: [tool] }));
+  await Promise.all([
+    mcpCall(session.connection_token, 'initialize'),
+    nextMessage(),
+  ]);
+  await Promise.race([nextMessage(), new Promise((r) => setTimeout(r, 30))]);
+
+  const callPromise = mcpCall(
+    session.connection_token,
+    'tools/call',
+    { name: tool['name'], arguments: args },
+    11,
+  );
+  let callId: string | null = null;
+  for (let i = 0; i < 6 && !callId; i++) {
+    const raw = await Promise.race([
+      nextMessage(),
+      new Promise<null>((r) => setTimeout(() => r(null), 200)),
+    ]);
+    if (raw === null) break;
+    const frame = JSON.parse(raw) as { type: string; call_id?: string };
+    if (frame.type === 'invoke') callId = frame.call_id ?? null;
+  }
+  expect(callId).not.toBeNull();
+  return { session, ws, callId: callId!, callPromise };
+}
+
+const SIMPLE_TOOL = {
+  name: 'select_item',
+  description: 'Selects an item',
+  input_schema: { type: 'object', properties: {}, required: [] },
+};
+
+describe('tools/call result mapping', () => {
+  it('passes an object result through as structuredContent', async () => {
+    const { ws, callId, callPromise } = await startCall(SIMPLE_TOOL);
+    ws.send(
+      JSON.stringify({ type: 'result', call_id: callId, result: { id: 7 } }),
+    );
+    const result = ((await callPromise)['result'] ?? {}) as Record<
+      string,
+      unknown
+    >;
+    expect(result['isError']).toBeUndefined();
+    expect(result['structuredContent']).toEqual({ id: 7 });
+    expect(result['content']).toEqual([{ type: 'text', text: '{"id":7}' }]);
+  });
+
+  it('maps a result frame error to isError: true', async () => {
+    const { ws, callId, callPromise } = await startCall(SIMPLE_TOOL);
+    ws.send(
+      JSON.stringify({
+        type: 'result',
+        call_id: callId,
+        result: null,
+        error: 'no such item',
+      }),
+    );
+    const result = ((await callPromise)['result'] ?? {}) as Record<
+      string,
+      unknown
+    >;
+    expect(result['isError']).toBe(true);
+    expect(result['content']).toEqual([{ type: 'text', text: 'no such item' }]);
+  });
+
+  it('maps an empty result frame error to isError: true, not a success', async () => {
+    const { ws, callId, callPromise } = await startCall(SIMPLE_TOOL);
+    ws.send(
+      JSON.stringify({
+        type: 'result',
+        call_id: callId,
+        result: null,
+        error: '',
+      }),
+    );
+    const result = ((await callPromise)['result'] ?? {}) as Record<
+      string,
+      unknown
+    >;
+    expect(result['isError']).toBe(true);
+  });
+});
+
+describe('/mcp Streamable HTTP basics', () => {
+  it('answers a notification with 202 and no body', async () => {
+    const session = await createSession();
+    const res = await SELF.fetch('http://localhost/mcp', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${session.connection_token}`,
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'notifications/initialized',
+      }),
+    });
+    expect(res.status).toBe(202);
+    expect(await res.text()).toBe('');
+  });
+
+  it('answers GET with 405 and Allow: POST', async () => {
+    const session = await createSession();
+    const res = await SELF.fetch('http://localhost/mcp', {
+      headers: {
+        accept: 'text/event-stream',
+        authorization: `Bearer ${session.connection_token}`,
+      },
+    });
+    expect(res.status).toBe(405);
+    expect(res.headers.get('Allow')).toBe('POST');
+  });
+
+  it('echoes a supported protocol version', async () => {
+    const session = await createSession();
+    for (const version of ['2025-03-26', '2025-06-18']) {
+      const init = await mcpCall(session.connection_token, 'initialize', {
+        protocolVersion: version,
+      });
+      expect(
+        (init['result'] as Record<string, unknown>)['protocolVersion'],
+      ).toBe(version);
+    }
+  });
+
+  it('offers its latest version for an unsupported request', async () => {
+    const session = await createSession();
+    const init = await mcpCall(session.connection_token, 'initialize', {
+      protocolVersion: '1999-01-01',
+    });
+    expect((init['result'] as Record<string, unknown>)['protocolVersion']).toBe(
+      '2025-06-18',
+    );
+  });
+
+  it('does not advertise tools.listChanged', async () => {
+    const session = await createSession();
+    const init = await mcpCall(session.connection_token, 'initialize', {
+      protocolVersion: '2025-06-18',
+    });
+    const capabilities = (init['result'] as Record<string, unknown>)[
+      'capabilities'
+    ] as { tools?: Record<string, unknown> };
+    expect(capabilities.tools).toEqual({});
+  });
+});
+
 describe('POST /mcp parse error', () => {
   it('returns a JSON-RPC -32700 for a malformed body (not an opaque 500)', async () => {
     const session = await createSession();
@@ -445,6 +609,41 @@ describe('POST /mcp parse error', () => {
     };
     expect(body.error?.code).toBe(-32700);
   });
+});
+
+describe('POST /mcp invalid requests', () => {
+  async function post(body: string) {
+    const session = await createSession();
+    const res = await SELF.fetch('http://localhost/mcp', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${session.connection_token}`,
+      },
+      body,
+    });
+    return {
+      status: res.status,
+      body: (await res.json()) as { error?: { code?: number } },
+    };
+  }
+
+  it('refuses a batch with -32600 instead of dropping it as a notification', async () => {
+    const { status, body } = await post(
+      JSON.stringify([{ jsonrpc: '2.0', id: 1, method: 'tools/list' }]),
+    );
+    expect(status).toBe(200);
+    expect(body.error?.code).toBe(-32600);
+  });
+
+  it.each(['null', '42', '"text"'])(
+    'answers a non-object body %s with -32600, not a 500',
+    async (raw) => {
+      const { status, body } = await post(raw);
+      expect(status).toBe(200);
+      expect(body.error?.code).toBe(-32600);
+    },
+  );
 });
 
 describe('POST /mcp auth', () => {

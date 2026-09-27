@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle -- the registry exposes internal-by-convention members (_requestConfirmation) that this hook wraps. */
 /**
  * useRelaySession
  *
@@ -10,18 +11,25 @@
  *   - advertises the registered tools (`tools/list`) and re-advertises when the
  *     registry changes;
  *   - on `invoke`, runs the registered tool's handler and returns a `result`;
- *   - gates any tool declared `mutation: true` behind a local confirmation: the
- *     invoke is held until the user approves (handler runs, result returned) or
- *     denies (a denial result is returned). The relay stays a dumb pipe — no
- *     confirmation frames cross the wire.
+ *   - gates any tool declared `mutation: true` behind the provider's shared
+ *     confirmation queue (the same one document.modelContext calls use): the
+ *     invoke is held until the user approves (handler runs, result returned),
+ *     denies, or lets it expire (a denial error is returned). The relay stays
+ *     a dumb pipe — no confirmation frames cross the wire.
  *
  * Must be called inside <WebMCPProvider>.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { denialMessage } from './confirmation.js';
+import { useToolConfirmation } from './hooks.js';
 import type { ToolDefinition } from './protocol.js';
 import { useToolRegistryContext } from './provider.js';
-import type { PendingCallPrompt, ToolSpec } from './types.js';
+import {
+  resolveAnnotations,
+  type PendingCallPrompt,
+  type ToolSpec,
+} from './types.js';
 
 /** Connection state surfaced to the connect UI (mirrors the indicator states). */
 export type RelaySessionStatus =
@@ -37,8 +45,10 @@ export interface UseRelaySessionOptions {
   storageKey: string;
   /** Human-readable title sent in the `hello` frame. */
   title?: string;
-  /** Seconds a mutation confirmation stays open before it self-expires.
-   *  Kept under the relay's invoke timeout so a late approval is not wasted. */
+  /** Seconds a relay mutation confirmation stays open before it expires (and
+   *  the call fails with a denial error). Kept under the relay's invoke timeout so a late
+   *  approval is not wasted. Calls through document.modelContext use the
+   *  provider's `confirmationWindowSeconds` instead. */
   confirmationWindowSeconds?: number;
 }
 
@@ -48,13 +58,17 @@ export interface UseRelaySessionResult {
   connectionToken: string | null;
   /** Most-recent-first activity log lines, capped. */
   activity: string[];
-  /** The mutation awaiting approval (head of the queue), or null. */
+  /**
+   * The mutation awaiting approval (head of the provider's queue), or null.
+   * The queue is shared with document.modelContext calls, so this includes
+   * mutations a native or MCP-B agent requested; same as useToolConfirmation.
+   */
   pendingConfirmation: PendingCallPrompt | null;
   /** Number of mutations waiting (including the active one). */
   pendingQueueLength: number;
   /** Approve the active mutation: run its handler and return the result. */
   approve: () => void;
-  /** Deny the active mutation: return a denial result to the harness. */
+  /** Deny the active mutation: the caller gets a denial error. */
   deny: () => void;
 }
 
@@ -64,17 +78,17 @@ type StoredSession = {
   expires: number;
 };
 
-type HeldInvoke = {
-  prompt: PendingCallPrompt;
-  spec: ToolSpec;
-  args: Record<string, unknown>;
-};
-
 function toWireTool(spec: ToolSpec): ToolDefinition {
   return {
     name: spec.name,
+    ...(spec.title !== undefined ? { title: spec.title } : {}),
     description: spec.description,
     input_schema: spec.schema,
+    ...(spec.outputSchema !== undefined
+      ? { output_schema: spec.outputSchema }
+      : {}),
+    // The same hints document.modelContext gets; the relay maps them to MCP.
+    annotations: resolveAnnotations(spec),
     ...(spec.mutation ? { mutation: true } : {}),
   };
 }
@@ -90,17 +104,24 @@ export function useRelaySession({
   const [status, setStatus] = useState<RelaySessionStatus>('disconnected');
   const [connectionToken, setConnectionToken] = useState<string | null>(null);
   const [activity, setActivity] = useState<string[]>([]);
-  const [pendingQueue, setPendingQueue] = useState<PendingCallPrompt[]>([]);
+  // The provider's queue: shows every mutation awaiting approval, whichever
+  // path it arrived on, so one dialog wired to this hook covers them all.
+  const { pendingConfirmation, pendingQueueLength, approve, deny } =
+    useToolConfirmation();
 
   const wsRef = useRef<WebSocket | null>(null);
   const acceptedRef = useRef(false);
-  // Invokes held awaiting a confirmation decision, keyed by call_id.
-  const heldRef = useRef<Map<string, HeldInvoke>>(new Map());
+  // One controller per running handler or open confirmation, aborted when the
+  // back-channel closes (the relay can no longer take the result, and the
+  // call_id dies with the socket) or the hook unmounts.
+  const runningRef = useRef<Set<AbortController>>(new Set());
   // Always read the freshest registry accessor from the WS handler. Synced
   // in an effect, not during render: refs are read-only during render.
   const listToolsRef = useRef(registry.listTools);
+  const requestConfirmationRef = useRef(registry._requestConfirmation);
   useEffect(() => {
     listToolsRef.current = registry.listTools;
+    requestConfirmationRef.current = registry._requestConfirmation;
   });
 
   const log = useCallback((line: string) => {
@@ -109,11 +130,15 @@ export function useRelaySession({
     );
   }, []);
 
-  const send = useCallback((frame: unknown) => {
+  // Returns whether the frame went out: nothing is sent once the socket has
+  // closed (the relay has already failed that call_id).
+  const send = useCallback((frame: unknown): boolean => {
     const ws = wsRef.current;
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(frame));
+      return true;
     }
+    return false;
   }, []);
 
   const advertiseTools = useCallback(() => {
@@ -126,50 +151,49 @@ export function useRelaySession({
   // Run a (non-mutation, or already-approved) tool and return its result frame.
   const runAndRespond = useCallback(
     async (callId: string, spec: ToolSpec, args: Record<string, unknown>) => {
-      let result: unknown;
+      const controller = new AbortController();
+      runningRef.current.add(controller);
       try {
-        result = await spec.handler(args as never);
+        const result = await spec.handler(args as never, {
+          signal: controller.signal,
+        });
+        log(
+          send({ type: 'result', call_id: callId, result })
+            ? `-> ${JSON.stringify(result)?.slice(0, 160)}`
+            : `result for ${spec.name} dropped: the back-channel closed`,
+        );
       } catch (err) {
-        result = { error: (err as Error).message };
+        // A failed call goes in the protocol's `error` field (the relay maps
+        // it to an MCP `isError` result), not dressed up as a success. Never
+        // send it empty: `throw new Error()` must still read as a failure.
+        const message =
+          (err instanceof Error ? err.message : String(err)) ||
+          `Tool "${spec.name}" failed without an error message.`;
+        log(
+          send({
+            type: 'result',
+            call_id: callId,
+            result: null,
+            error: message,
+          })
+            ? `-> error: ${message.slice(0, 160)}`
+            : `error for ${spec.name} dropped: the back-channel closed`,
+        );
+      } finally {
+        runningRef.current.delete(controller);
       }
-      send({ type: 'result', call_id: callId, result });
-      log(`-> ${JSON.stringify(result).slice(0, 160)}`);
     },
     [send, log],
   );
 
-  const resolveHead = useCallback(
-    (decision: 'approved' | 'denied') => {
-      setPendingQueue((prev) => {
-        const head = prev[0];
-        if (!head) return prev;
-        const held = heldRef.current.get(head.callId);
-        heldRef.current.delete(head.callId);
-        if (held) {
-          if (decision === 'approved') {
-            log(`approved ${held.spec.name}`);
-            void runAndRespond(head.callId, held.spec, held.args);
-          } else {
-            log(`denied ${held.spec.name}`);
-            send({
-              type: 'result',
-              call_id: head.callId,
-              result: { denied: true, message: 'The user denied this call.' },
-            });
-          }
-        }
-        return prev.slice(1);
-      });
-    },
-    [log, runAndRespond, send],
-  );
-
-  const approve = useCallback(() => resolveHead('approved'), [resolveHead]);
-  const deny = useCallback(() => resolveHead('denied'), [resolveHead]);
-
   // Connect + keep the back-channel open, reconnecting with backoff.
   useEffect(() => {
     let closed = false;
+    const running = runningRef.current;
+    const abortRunning = () => {
+      for (const controller of running) controller.abort();
+      running.clear();
+    };
     let attempt = 0;
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -238,7 +262,8 @@ export function useRelaySession({
         send({
           type: 'result',
           call_id: callId,
-          result: { error: `Unknown tool: ${toolName}` },
+          result: null,
+          error: `Unknown tool: ${toolName}`,
         });
         return;
       }
@@ -246,30 +271,54 @@ export function useRelaySession({
         void runAndRespond(callId, spec, args);
         return;
       }
-      // Mutation: hold the invoke and surface a confirmation prompt.
-      const now = new Date();
-      const prompt: PendingCallPrompt = {
-        callId,
-        toolName,
-        summary: spec.confirmationSummary?.(args as never) ?? toolName,
-        argsPreview: args,
-        createdAt: now.toISOString(),
-        expiresAt: new Date(
-          now.getTime() + confirmationWindowSeconds * 1000,
-        ).toISOString(),
-      };
-      heldRef.current.set(callId, { prompt, spec, args });
-      setPendingQueue((prev) =>
-        prev.some((p) => p.callId === callId) ? prev : [...prev, prompt],
-      );
+      // Mutation: hold the invoke until the user decides.
+      const controller = new AbortController();
+      running.add(controller);
       log(`awaiting confirmation for ${toolName}`);
-      // Self-expire so a never-answered prompt does not wedge the dialog.
-      setTimeout(() => {
-        if (!heldRef.current.has(callId)) return;
-        heldRef.current.delete(callId);
-        setPendingQueue((prev) => prev.filter((p) => p.callId !== callId));
-        log(`confirmation for ${toolName} expired`);
-      }, confirmationWindowSeconds * 1000);
+      void requestConfirmationRef
+        .current(spec, args, {
+          callId,
+          windowSeconds: confirmationWindowSeconds,
+          signal: controller.signal,
+        })
+        .then((decision) => {
+          running.delete(controller);
+          if (decision === 'approved') {
+            log(`approved ${toolName}`);
+            void runAndRespond(callId, spec, args);
+          } else if (decision === 'denied' || decision === 'expired') {
+            // Answer now: an unanswered harness would otherwise wait for the
+            // relay's invoke timeout and get a generic error.
+            log(
+              decision === 'denied'
+                ? `denied ${toolName}`
+                : `confirmation for ${toolName} expired`,
+            );
+            send({
+              type: 'result',
+              call_id: callId,
+              result: null,
+              error: denialMessage(decision),
+            });
+          }
+          // cancelled: the back-channel closed or the call was re-delivered
+          // (the original prompt answers it); there is no one to answer here.
+        })
+        .catch((err: unknown) => {
+          // The prompt could not open (e.g. an invalid confirmation window):
+          // fail the call now rather than let the harness time out.
+          running.delete(controller);
+          const message =
+            (err instanceof Error ? err.message : String(err)) ||
+            `Confirmation for "${toolName}" failed.`;
+          log(`-> error: ${message.slice(0, 160)}`);
+          send({
+            type: 'result',
+            call_id: callId,
+            result: null,
+            error: message,
+          });
+        });
     }
 
     async function connect() {
@@ -355,6 +404,7 @@ export function useRelaySession({
 
         ws.onclose = () => {
           acceptedRef.current = false;
+          abortRunning();
           if (!closed) scheduleReconnect();
         };
       } catch (err) {
@@ -367,6 +417,7 @@ export function useRelaySession({
 
     return () => {
       closed = true;
+      abortRunning();
       if (reconnectTimer) clearTimeout(reconnectTimer);
       wsRef.current?.close();
     };
@@ -394,8 +445,8 @@ export function useRelaySession({
     status,
     connectionToken,
     activity,
-    pendingConfirmation: pendingQueue[0] ?? null,
-    pendingQueueLength: pendingQueue.length,
+    pendingConfirmation,
+    pendingQueueLength,
     approve,
     deny,
   };

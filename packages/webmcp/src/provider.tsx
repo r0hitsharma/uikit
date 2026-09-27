@@ -1,8 +1,4 @@
 /* eslint-disable no-underscore-dangle -- the registry exposes internal-by-convention methods (_addSpec, _contributeViewState) that the public hooks wrap. */
-import {
-  cleanupWebModelContext,
-  initializeWebModelContext,
-} from '@mcp-b/global';
 /**
  * WebMCPProvider
  *
@@ -18,10 +14,19 @@ import {
   useContext,
   useEffect,
   useRef,
+  useState,
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
 
+import { ConfirmationQueue, type RequestConfirmation } from './confirmation.js';
+import {
+  cleanupWebModelContext,
+  hostModelContextOptions,
+  initializeWebModelContext,
+  type TransportConfiguration,
+} from './mcp-b.js';
+import { flushToolRegistrations, getModelContext } from './registration.js';
 import type { ToolSpec, ViewState } from './types.js';
 
 // ---------------------------------------------------------------------------
@@ -64,6 +69,18 @@ export interface ToolRegistryContextValue {
    * Returns a cleanup function that removes the contribution.
    */
   _contributeViewState: (partial: ViewState) => () => void;
+
+  /**
+   * The provider's mutation-confirmation queue, shared by every invocation
+   * path (document.modelContext and the relay).
+   */
+  _confirmationQueue: ConfirmationQueue;
+
+  /**
+   * Ask the user to approve a mutation. Resolves with the decision; the
+   * window defaults to the provider's `confirmationWindowSeconds`.
+   */
+  _requestConfirmation: RequestConfirmation;
 }
 
 const ToolRegistryContext = createContext<ToolRegistryContextValue | null>(
@@ -74,6 +91,37 @@ const ToolRegistryContext = createContext<ToolRegistryContextValue | null>(
 // WebMCPProvider
 // ---------------------------------------------------------------------------
 
+/** Origins allowed to talk to one MCP-B postMessage transport. */
+export interface WebMCPTransportEndpoint {
+  /**
+   * Origins allowed to connect. `['*']` disables origin validation; pass it
+   * only deliberately.
+   */
+  allowedOrigins: readonly string[];
+  /** Channel name; MCP-B's default when omitted. */
+  channelId?: string;
+}
+
+/**
+ * Which MCP-B transports the polyfill exposes tools on, and to whom. This
+ * governs the MCP-B bridge only: a browser's native `document.modelContext`
+ * (and its own agent) is not affected.
+ */
+export interface WebMCPTransportOptions {
+  /**
+   * Same-window transport, used by the MCP-B browser extension.
+   * `false` disables it.
+   * @default { allowedOrigins: [window.location.origin] }
+   */
+  tabServer?: WebMCPTransportEndpoint | false;
+  /**
+   * Transport to a parent frame, used instead of `tabServer` when the page is
+   * embedded in an iframe. Off unless configured: name the embedding origins.
+   * @default false
+   */
+  iframeServer?: WebMCPTransportEndpoint | false;
+}
+
 export interface WebMCPProviderProps {
   children: ReactNode;
   /**
@@ -81,6 +129,59 @@ export interface WebMCPProviderProps {
    * @default true
    */
   initPolyfill?: boolean;
+  /**
+   * MCP-B transport configuration. The default accepts connections from the
+   * page's own origin only; @mcp-b/global's own default accepts any origin.
+   * When unset, a transport the host page set in
+   * `window.__webModelContextOptions` applies instead. Changing it
+   * re-initializes the polyfill.
+   */
+  transport?: WebMCPTransportOptions;
+  /**
+   * Seconds a mutation confirmation stays open before it expires and the call
+   * is denied. Applies to calls made through document.modelContext;
+   * useRelaySession passes its own (shorter) window for relay calls. The
+   * default stays under the MCP SDK's 60 s request timeout, so an MCP-B client
+   * gets the denial instead of timing out while a late approval still runs.
+   * @default 50
+   */
+  confirmationWindowSeconds?: number;
+}
+
+/**
+ * Resolve the provider's transport prop to @mcp-b/global's configuration. The
+ * host page's own transport applies when the prop is not set.
+ */
+function resolveTransport(
+  transport: WebMCPTransportOptions | undefined,
+  hostTransport: TransportConfiguration | undefined,
+): TransportConfiguration {
+  if (transport === undefined && hostTransport !== undefined) {
+    return hostTransport;
+  }
+  return {
+    tabServer:
+      transport?.tabServer === undefined
+        ? { allowedOrigins: [window.location.origin] }
+        : transport.tabServer,
+    iframeServer: transport?.iframeServer ?? false,
+  };
+}
+
+let warnedNoModelContext = false;
+
+/**
+ * Tools are still listed locally (listTools, the relay) when nothing is
+ * installed, so say once why browser agents cannot see them.
+ */
+function warnNoModelContext(): void {
+  if (warnedNoModelContext) return;
+  warnedNoModelContext = true;
+  console.warn(
+    globalThis.isSecureContext === false
+      ? "[webmcp] no document.modelContext: WebMCP and the MCP-B polyfill need a secure context (https or localhost), so browser agents cannot see this page's tools. The relay back-channel is not affected."
+      : "[webmcp] no document.modelContext after initializing the polyfill, so browser agents cannot see this page's tools.",
+  );
 }
 
 /**
@@ -103,6 +204,8 @@ export interface WebMCPProviderProps {
 export function WebMCPProvider({
   children,
   initPolyfill = true,
+  transport,
+  confirmationWindowSeconds = 50,
 }: WebMCPProviderProps) {
   // Stable refs so the context value object is referentially stable.
   const toolMapRef = useRef<Map<string, ToolSpec>>(new Map());
@@ -124,14 +227,62 @@ export function WebMCPProvider({
     for (const listener of listenersRef.current) listener();
   }, []);
 
-  // Initialize the document.modelContext polyfill on mount.
+  // Initialize the document.modelContext polyfill on mount. This effect runs
+  // after the children's registration effects, so flush the registrations
+  // they already hold onto the (possibly new) context.
+  //
+  // Keyed on the serialized transport so an inline `transport={{...}}` object
+  // does not tear the polyfill down on every render.
+  const transportKey = JSON.stringify(transport ?? null);
   useEffect(() => {
     if (!initPolyfill) return;
-    initializeWebModelContext({ autoInitialize: true });
+    const configured = JSON.parse(
+      transportKey,
+    ) as WebMCPTransportOptions | null;
+    const host = hostModelContextOptions();
+    if (host?.autoInitialize === true) {
+      // The host page opted in to @mcp-b/global's import-time start, so it
+      // owns that instance: do not re-configure or tear it down.
+      if (configured) {
+        console.warn(
+          "[webmcp] window.__webModelContextOptions.autoInitialize is true, so @mcp-b/global started itself with the host page's transport; WebMCPProvider's transport prop has no effect.",
+        );
+      }
+      flushToolRegistrations();
+      return undefined;
+    }
+    try {
+      initializeWebModelContext({
+        ...(host?.installTestingShim !== undefined
+          ? { installTestingShim: host.installTestingShim }
+          : {}),
+        transport: resolveTransport(configured ?? undefined, host?.transport),
+      });
+    } catch (error) {
+      // e.g. every transport disabled: @mcp-b/global refuses to start, after
+      // installing its polyfill. Tools still register on that polyfill's
+      // document.modelContext, but no MCP-B transport serves them.
+      console.error('[webmcp] polyfill initialization failed:', error);
+    }
+    if (!getModelContext()) warnNoModelContext();
+    flushToolRegistrations();
     return () => {
       cleanupWebModelContext();
     };
-  }, [initPolyfill]);
+  }, [initPolyfill, transportKey]);
+
+  // One queue per provider, alive for its lifetime; prompts still open when
+  // the provider unmounts are withdrawn so their callers settle.
+  const [confirmationQueue] = useState(() => new ConfirmationQueue());
+  useEffect(() => () => confirmationQueue.cancelAll(), [confirmationQueue]);
+  const _requestConfirmation = useCallback<RequestConfirmation>(
+    (spec, args, options) =>
+      confirmationQueue.request(spec, args, {
+        ...options,
+        windowSeconds: options?.windowSeconds ?? confirmationWindowSeconds,
+      }),
+    [confirmationQueue, confirmationWindowSeconds],
+  );
 
   const _addSpec = useCallback(
     (spec: ToolSpec): (() => void) => {
@@ -184,6 +335,8 @@ export function WebMCPProvider({
     getViewState,
     _addSpec,
     _contributeViewState,
+    _confirmationQueue: confirmationQueue,
+    _requestConfirmation,
   };
 
   return (

@@ -13,6 +13,9 @@ authenticated browser session. The standard is young and moving: build against
 
 - Mount `WebMCPProvider` once, near the app root. It initializes the polyfill
   and the tool registry.
+- The provider's MCP-B transport accepts the page's own origin only; the
+  iframe transport is off. Widen it only with an explicit `transport` prop
+  naming origins (`tabServer` / `iframeServer`), never `['*']`.
 - Define tools with `defineTool` and register them with `useRegisterTool` inside
   the component that owns the state the tool reads or changes. The tool lives
   exactly as long as that component is mounted.
@@ -28,13 +31,24 @@ authenticated browser session. The standard is young and moving: build against
 - Make tools task-level ("filter the table by owner"), not click-level
   ("click button 3").
 - Name: stable, namespaced `area.verb` (e.g. `explorer.selectIdentity`), only
-  `[A-Za-z0-9_.-]`, 30 characters or fewer. Renaming a tool breaks agents.
-- Description: written for a model, 500 characters or fewer. State
-  preconditions and what the tool changes.
+  `[A-Za-z0-9_.-]`, 30 characters or fewer. `defineTool` throws on an invalid
+  name. Renaming a tool breaks agents.
+- `title`: a short human-readable name ("Select identity") for tool pickers.
+- Description: written for a model, 500 characters or fewer (`defineTool`
+  warns above that). State preconditions and what the tool changes.
 - `schema`: a JSON Schema object. List `required` fields and give each property
   a description of 150 characters or fewer.
-- Handler result: small (about 1.5K characters), JSON-serializable data. Throw
-  on failure; do not return error-shaped success values.
+- Handler result: small (about 1.5K characters), JSON-serializable data. Return
+  it plain, never an MCP `{ content: [...] }` wrapper: the browser serializes it
+  and the bridges build the MCP result. Throw on failure; do not return
+  error-shaped success values (a throw reaches MCP clients as `isError`).
+- Declare `outputSchema` when the result has a stable object shape; MCP
+  clients (via MCP-B and the relay) receive it and the result as
+  `structuredContent`.
+- Handlers get `(args, { signal })`. Pass `signal` to `fetch()` and other
+  cancellable work: it aborts when the tool unmounts mid-call or the relay
+  disconnects. Do not rely on it for an agent's cancellation: the MCP-B
+  polyfill and the relay do not forward one.
 - Treat every argument as untrusted input. Validate it before acting on it.
 
 ## Safety
@@ -42,11 +56,21 @@ authenticated browser session. The standard is young and moving: build against
 - Any tool that changes state sets `mutation: true` and a `confirmationSummary`
   (one plain-English sentence built from the args). `defineTool` throws if the
   summary is missing.
-- The confirmation dialog runs on the relay path (`useRelaySession` with
-  `ConfirmToolCallDialog`). A native browser agent calling the tool directly may
-  skip it, so a handler must never assume a human approved it.
-- Tools that return user-generated or third-party content must say so in the
-  description; the agent treats that output as untrusted.
+- Every call to a mutation waits for the user's approval on every path (native
+  agent, MCP-B client, relay): the provider owns one confirmation queue. Mount
+  `ConfirmToolCallDialog` wired to `useToolConfirmation()` (or
+  `useRelaySession()`, which returns the same queue) at the app root. Without
+  a dialog, mutations are denied when the window expires, and a denied call
+  fails with an error saying the user declined, without running the handler.
+- Still validate in the handler: confirmation proves a human agreed to the
+  summary, not that the arguments are safe.
+- Annotations come from `mutation`: a mutation registers
+  `consequentialHint: true`, anything else `readOnlyHint: true`. Override with
+  `annotations` only when that is wrong. There is no `destructiveHint` in
+  WebMCP.
+- Tools that return user-generated or third-party content set
+  `annotations: { untrustedContentHint: true }`, so the agent does not follow
+  instructions found in the output.
 
 ## Connecting an agent
 
@@ -62,15 +86,17 @@ authenticated browser session. The standard is young and moving: build against
 
 - Render with `<WebMCPProvider initPolyfill={false}>` and assert on the
   registry (`useToolRegistry`, `listTools`) rather than on the browser global.
-- Call handlers directly for unit tests. Exercise one end-to-end invoke through
-  the relay for anything with `mutation: true`.
+- Call handlers directly for unit tests. For anything with `mutation: true`,
+  also test approve and deny through `useToolConfirmation`.
 
 ## Spec status (check before relying on it)
 
 - Spec: https://webmachinelearning.github.io/webmcp/ (W3C Web Machine Learning
-  Community Group draft). The entry point is `document.modelContext`. Tools are
-  unregistered by aborting the signal passed to `registerTool`.
-  `provideContext` and `clearContext` were removed.
+  Community Group draft). The entry point is `document.modelContext`.
+  `registerTool` returns a Promise; tools are unregistered by aborting the
+  signal passed to it. `provideContext`, `clearContext` and `unregisterTool`
+  do not exist. Annotations: `readOnlyHint`, `untrustedContentHint`,
+  `consequentialHint`. Events: `toolchange`, `toolactivated`, `toolcancel`.
 - Browsers: origin trials in Chrome and Edge only. Mozilla is neutral and WebKit
   opposes. Tools must degrade to no-ops where the API is missing.
 - Declarative, form-based tools (`toolname` attributes) are not specified yet.
