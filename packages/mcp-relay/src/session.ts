@@ -81,6 +81,47 @@ export function toMcpTool(def: ToolDefinition): McpTool {
   };
 }
 
+/** An MCP `tools/call` result. */
+export interface McpCallToolResult {
+  content: Array<{ type: 'text'; text: string }>;
+  structuredContent?: Record<string, unknown>;
+  isError?: boolean;
+  [key: string]: unknown;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Map a browser `result` frame's payload to an MCP `tools/call` result.
+ *
+ * - `error` set: the tool failed; `isError: true` with the message.
+ * - an object: JSON text for older clients, plus the object as
+ *   `structuredContent` (MCP only allows an object there).
+ * - anything else: text (a string as-is, other values as JSON).
+ *
+ * A payload that already is a CallToolResult (has a `content` array) passes
+ * through unchanged, for browsers that build their own.
+ */
+export function toCallToolResult(
+  result: unknown,
+  error?: string | null,
+): McpCallToolResult {
+  if (typeof error === 'string' && error.length > 0) {
+    return { content: [{ type: 'text', text: error }], isError: true };
+  }
+  if (isPlainObject(result) && Array.isArray(result['content'])) {
+    return result as McpCallToolResult;
+  }
+  const text =
+    typeof result === 'string' ? result : (JSON.stringify(result) ?? 'null');
+  return {
+    content: [{ type: 'text', text }],
+    ...(isPlainObject(result) ? { structuredContent: result } : {}),
+  };
+}
+
 /** State machine states, mirroring the Python SessionRecord. */
 export type SessionState = 'pending' | 'connected' | 'disconnected';
 
@@ -261,6 +302,19 @@ export class RelaySession {
       result: {
         tools: this.toolsCatalogue.map(toMcpTool),
       },
+    };
+  }
+
+  /** Build the JSON-RPC `tools/call` response for a browser `result` frame. */
+  callToolResult(
+    jsonRpcId: unknown,
+    result: unknown,
+    error?: string | null,
+  ): object {
+    return {
+      jsonrpc: '2.0',
+      id: jsonRpcId,
+      result: toCallToolResult(result, error),
     };
   }
 

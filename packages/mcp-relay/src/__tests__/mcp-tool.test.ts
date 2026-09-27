@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ToolDefinition } from '../protocol.js';
-import { RelaySession, toMcpTool } from '../session.js';
+import { RelaySession, toCallToolResult, toMcpTool } from '../session.js';
 
 const schema = { type: 'object' as const, properties: {} };
 
@@ -82,6 +82,47 @@ describe('listToolsResult', () => {
     expect(result.result.tools[0]?.annotations).toEqual({
       readOnlyHint: false,
       destructiveHint: true,
+    });
+  });
+});
+
+describe('toCallToolResult', () => {
+  it('maps an error to isError: true', () => {
+    expect(toCallToolResult(null, 'no such identity')).toEqual({
+      content: [{ type: 'text', text: 'no such identity' }],
+      isError: true,
+    });
+  });
+
+  it('passes an object result through as structuredContent', () => {
+    expect(toCallToolResult({ selected: 'a' })).toEqual({
+      content: [{ type: 'text', text: '{"selected":"a"}' }],
+      structuredContent: { selected: 'a' },
+    });
+  });
+
+  it('keeps strings as text and arrays out of structuredContent', () => {
+    expect(toCallToolResult('done')).toEqual({
+      content: [{ type: 'text', text: 'done' }],
+    });
+    expect(toCallToolResult([1, 2])).toEqual({
+      content: [{ type: 'text', text: '[1,2]' }],
+    });
+  });
+
+  it('passes a ready-made CallToolResult through', () => {
+    const ready = { content: [{ type: 'text', text: 'x' }], isError: false };
+    expect(toCallToolResult(ready)).toBe(ready);
+  });
+
+  it('frames a JSON-RPC response', () => {
+    expect(new RelaySession('s').callToolResult(7, { ok: true })).toEqual({
+      jsonrpc: '2.0',
+      id: 7,
+      result: {
+        content: [{ type: 'text', text: '{"ok":true}' }],
+        structuredContent: { ok: true },
+      },
     });
   });
 });
