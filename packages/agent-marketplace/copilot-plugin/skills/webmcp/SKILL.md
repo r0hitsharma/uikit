@@ -46,8 +46,9 @@ authenticated browser session. The standard is young and moving: build against
   clients (via MCP-B and the relay) receive it and the result as
   `structuredContent`.
 - Handlers get `(args, { signal })`. Pass `signal` to `fetch()` and other
-  cancellable work: it aborts when the agent cancels, the tool unmounts
-  mid-call, or the relay disconnects.
+  cancellable work: it aborts when the tool unmounts mid-call or the relay
+  disconnects. Do not rely on it for an agent's cancellation: the MCP-B
+  polyfill and the relay do not forward one.
 - Treat every argument as untrusted input. Validate it before acting on it.
 
 ## Safety
@@ -60,7 +61,7 @@ authenticated browser session. The standard is young and moving: build against
   `ConfirmToolCallDialog` wired to `useToolConfirmation()` (or
   `useRelaySession()`, which returns the same queue) at the app root. Without
   a dialog, mutations are denied when the window expires, and a denied call
-  returns `{ denied: true }` without running the handler.
+  fails with an error saying the user declined, without running the handler.
 - Still validate in the handler: confirmation proves a human agreed to the
   summary, not that the arguments are safe.
 - Annotations come from `mutation`: a mutation registers
