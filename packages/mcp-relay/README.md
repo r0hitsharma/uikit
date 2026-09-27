@@ -34,6 +34,26 @@ The core (`RelaySession`) owns:
 - `sweep` -> reverts `harnessAttached` on TTL expiry, returns frame or null.
 - `toSnapshot` / `RelaySession.fromSnapshot` -> persist and rehydrate the
   durable state, so a host survives eviction/hibernation.
+- `listToolsResult` / `callToolResult` -> the JSON-RPC `tools/list` and
+  `tools/call` responses (see below).
+
+## Tools and results over MCP
+
+A browser advertises each tool as a `ToolDefinition`: `name`, `description`,
+`input_schema`, and the optional `title`, `output_schema`, `annotations`
+(WebMCP's `readOnlyHint`, `consequentialHint`, `untrustedContentHint`) and
+`mutation`. The optional fields are additive: an older browser that sends none
+of them still works, and an older relay ignores them.
+
+`toMcpTool` (used by `listToolsResult`) maps a definition to an MCP tool:
+`title` and `outputSchema` are forwarded, `readOnlyHint` is kept, and
+`consequentialHint` (or, from an older browser, `mutation`) becomes
+`destructiveHint`. `untrustedContentHint` has no MCP counterpart.
+
+The browser answers an `invoke` with a `result` frame: the handler's value in
+`result`, or a failure message in `error`. `toCallToolResult` (used by
+`callToolResult`) maps an `error` to `isError: true`, and an object result to
+JSON text plus `structuredContent`.
 
 ## Exports
 
@@ -44,8 +64,8 @@ export type { ToolDefinition, HelloMessage, InvokeMessage, ... }
 // Token helpers (JWT mint/verify via Web Crypto, plus pairing codes)
 export { mintConnectionToken, sessionIdFromToken, decodeConnectionToken, parseBearer, newPairingToken, ... }
 
-// State machine
-export { RelaySession, HARNESS_LIVENESS_TTL_MS, INVOKE_TIMEOUT_MS }
+// State machine and MCP mapping
+export { RelaySession, HARNESS_LIVENESS_TTL_MS, INVOKE_TIMEOUT_MS, toMcpTool, toCallToolResult }
 ```
 
 ## Build
