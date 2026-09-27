@@ -121,9 +121,11 @@ import { Drawer } from '@r0hitsharma/design-system/drawer';
 | Prop | Default | |
 | --- | --- | --- |
 | `resizable` | `false` | Adds the resize handle. Without it nothing below applies and the drawer renders exactly as before. |
-| `defaultWidth` | pixel width of `size` (352 / 448 / 640) | Starting width in px when nothing is stored. |
+| `width` | none | Controlled width in px. When set, the drawer renders it (clamped) and a drag or key press only calls `onWidthChange`. |
+| `defaultWidth` | pixel width of `size` (352 / 448 / 640) | Uncontrolled starting width in px when nothing is stored. |
+| `onWidthChange` | none | `(width) => void`, called with the clamped width on every change (each pointer move during a drag), controlled or not. |
 | `minWidth` / `maxWidth` | `320` / `960` | Bounds in px for dragging, the keyboard, and any stored value. |
-| `storageKey` | none | Persist the width under this key. Omit to keep it in memory only. |
+| `storageKey` | none | Uncontrolled only: persist the width under this key. Omit to keep it in memory only. |
 | `storage` | `localStorage` | Any `{ getItem, setItem }` (the `DrawerWidthStorage` type), such as `sessionStorage` or your own settings store. |
 | `resizeLabel` | `'Resize drawer'` | Accessible name of the handle. |
 
@@ -133,6 +135,25 @@ so that a missing `window` (SSR), blocked storage, or a full quota falls back
 to the default width without throwing. The width is written when a drag ends
 and on each key press, not on every pointer move. The panel's `maxWidth: 100vw`
 still applies, so it never grows past the viewport.
+
+To own the width yourself, pass `width` with `onWidthChange`, the same
+`value` / `defaultValue` / `onValueChange` convention as `SearchInput`:
+
+```tsx
+const [width, setWidth] = useState(480);
+
+<Drawer.Content resizable width={width} onWidthChange={setWidth}>
+  {/* ... */}
+</Drawer.Content>;
+```
+
+A controlled drawer moves only when `width` changes. A `width` outside
+`minWidth`/`maxWidth` renders clamped, and that correction is not reported
+through `onWidthChange`, which only reports changes the user makes. Storage
+belongs to whoever owns the width: with `width` set, `storageKey` and `storage`
+are ignored (never read or written), and a dev-only console warning says so.
+`onWidthChange` also fires in uncontrolled mode, so you can observe changes
+without taking over the width.
 
 ### Use design tokens
 

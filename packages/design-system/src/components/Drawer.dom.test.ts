@@ -36,29 +36,31 @@ afterEach(() => {
 
 type ContentProps = ComponentProps<typeof Drawer.Content>;
 
-function renderDrawer(
-  contentProps: Partial<ContentProps> = {},
-  locale = 'en-US',
-) {
-  return render(
+function drawerTree(contentProps: Partial<ContentProps>, locale = 'en-US') {
+  return createElement(
+    LocaleProvider,
+    { locale },
     createElement(
-      LocaleProvider,
-      { locale },
+      Drawer.Root,
+      { open: true },
       createElement(
-        Drawer.Root,
-        { open: true },
+        Drawer.Positioner,
+        null,
         createElement(
-          Drawer.Positioner,
-          null,
-          createElement(
-            Drawer.Content,
-            contentProps as ContentProps,
-            createElement(Drawer.Title, null, 'Details'),
-          ),
+          Drawer.Content,
+          contentProps as ContentProps,
+          createElement(Drawer.Title, null, 'Details'),
         ),
       ),
     ),
   );
+}
+
+function renderDrawer(
+  contentProps: Partial<ContentProps> = {},
+  locale = 'en-US',
+) {
+  return render(drawerTree(contentProps, locale));
 }
 
 function content(): HTMLElement {
@@ -288,5 +290,104 @@ describe('Drawer.Content persisted width', () => {
     expect(content().style.width).toBe('448px');
     fireEvent.keyDown(handle(), { key: 'ArrowLeft' });
     expect(content().style.width).toBe('464px');
+  });
+});
+
+describe('Drawer.Content onWidthChange (uncontrolled)', () => {
+  it('reports each drag and key change, deduping moves clamped to a bound', () => {
+    const onWidthChange = vi.fn();
+    const { storage, values } = memoryStorage();
+    renderDrawer({ resizable: true, onWidthChange, storageKey: 'w', storage });
+
+    fireEvent.pointerDown(handle(), { button: 0, pointerId: 1, clientX: 500 });
+    fireEvent.pointerMove(handle(), { pointerId: 1, clientX: 450 });
+    fireEvent.pointerMove(handle(), { pointerId: 1, clientX: -1000 });
+    fireEvent.pointerMove(handle(), { pointerId: 1, clientX: -2000 });
+    fireEvent.pointerUp(handle(), { pointerId: 1, clientX: -2000 });
+    expect(onWidthChange.mock.calls).toEqual([[498], [960]]);
+    expect(content().style.width).toBe('960px');
+    expect(values.get('w')).toBe('960');
+
+    fireEvent.keyDown(handle(), { key: 'ArrowRight' });
+    expect(onWidthChange).toHaveBeenLastCalledWith(944);
+    // Already at the bound: no change, so no call and no write.
+    fireEvent.keyDown(handle(), { key: 'Home' });
+    onWidthChange.mockClear();
+    fireEvent.keyDown(handle(), { key: 'Home' });
+    expect(onWidthChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('Drawer.Content controlled width', () => {
+  it('renders the prop and only reports drags until the prop changes', () => {
+    const onWidthChange = vi.fn();
+    const props = { resizable: true, width: 500, onWidthChange };
+    const { rerender } = renderDrawer(props);
+    expect(content().style.width).toBe('500px');
+
+    drag(500, 400);
+    expect(onWidthChange).toHaveBeenLastCalledWith(600);
+    expect(content().style.width).toBe('500px');
+    expect(handle().getAttribute('aria-valuenow')).toBe('500');
+
+    rerender(drawerTree({ ...props, width: 600 }));
+    expect(content().style.width).toBe('600px');
+  });
+
+  it('reports key presses from the controlled width without moving', () => {
+    const onWidthChange = vi.fn();
+    renderDrawer({ resizable: true, width: 500, onWidthChange });
+    fireEvent.keyDown(handle(), { key: 'ArrowLeft' });
+    fireEvent.keyDown(handle(), { key: 'ArrowLeft' });
+    // Both steps start from the prop, which never changed.
+    expect(onWidthChange.mock.calls).toEqual([[516], [516]]);
+    fireEvent.keyDown(handle(), { key: 'End' });
+    expect(onWidthChange).toHaveBeenLastCalledWith(960);
+    expect(content().style.width).toBe('500px');
+  });
+
+  it('renders an out-of-bounds width clamped, without reporting the correction', () => {
+    const onWidthChange = vi.fn();
+    const { rerender } = renderDrawer({
+      resizable: true,
+      width: 5000,
+      onWidthChange,
+    });
+    expect(content().style.width).toBe('960px');
+    rerender(drawerTree({ resizable: true, width: 10, onWidthChange }));
+    expect(content().style.width).toBe('320px');
+    expect(onWidthChange).not.toHaveBeenCalled();
+    // A drag reports a clamped width too.
+    drag(500, -5000);
+    expect(onWidthChange).toHaveBeenLastCalledWith(960);
+  });
+
+  it('ignores storageKey: no read, no write, one dev warning', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const getItem = vi.fn(() => '700');
+    const setItem = vi.fn();
+    const props = {
+      resizable: true,
+      width: 500,
+      storageKey: 'w',
+      storage: { getItem, setItem },
+    };
+    const { rerender } = renderDrawer(props);
+    expect(content().style.width).toBe('500px');
+
+    drag(500, 400);
+    fireEvent.keyDown(handle(), { key: 'ArrowLeft' });
+    rerender(drawerTree({ ...props, width: 520 }));
+
+    expect(getItem).not.toHaveBeenCalled();
+    expect(setItem).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]?.[0]).toContain('`width` and `storageKey`');
+  });
+
+  it('does not warn for an uncontrolled drawer with storageKey', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    renderDrawer({ resizable: true, storageKey: 'w' });
+    expect(warn).not.toHaveBeenCalled();
   });
 });

@@ -1,11 +1,15 @@
 import { Drawer as ArkDrawer } from '@ark-ui/react/drawer';
 import { Portal } from '@ark-ui/react/portal';
 import {
+  useEffect,
+  useRef,
   useState,
   type ComponentPropsWithoutRef,
   type KeyboardEvent,
   type PointerEvent,
 } from 'react';
+
+import { IS_DEV_WARNING_ENABLED } from '../hooks/devWarning.js';
 
 /**
  * Class names emitted by the `drawer` slot recipe (registered in the preset).
@@ -130,18 +134,33 @@ type DrawerContentProps = ComponentPropsWithoutRef<typeof ArkDrawer.Content> & {
    */
   resizable?: boolean;
   /**
-   * Starting width in px when nothing is persisted. Defaults to the pixel
-   * width of `size`. Only read when `resizable`.
+   * Controlled width in px. When set, it is the source of truth: dragging and
+   * the keyboard only call `onWidthChange`, and the panel moves when this prop
+   * does. A value outside `minWidth`/`maxWidth` renders clamped. Storage is
+   * neither read nor written. Omit for an uncontrolled drawer.
+   */
+  width?: number;
+  /**
+   * Uncontrolled starting width in px when nothing is persisted. Defaults to
+   * the pixel width of `size`. Ignored when `width` is set.
    */
   defaultWidth?: number;
+  /**
+   * Called with the new, clamped width whenever a drag or key press changes
+   * it (on every pointer move during a drag), in controlled and uncontrolled
+   * mode alike.
+   */
+  onWidthChange?: (width: number) => void;
   /** Smallest width in px the handle allows. Defaults to `320`. */
   minWidth?: number;
   /** Largest width in px the handle allows. Defaults to `960`. */
   maxWidth?: number;
   /**
-   * Persists the resized width under this key and restores it on mount. Omit
-   * to keep the width in memory only. A stored width is clamped to the current
-   * `minWidth`/`maxWidth`.
+   * Uncontrolled only: persists the width under this key (when a drag ends and
+   * on each key press) and restores it on mount. Omit to keep the width in
+   * memory only. A stored width is clamped to the current
+   * `minWidth`/`maxWidth`. Ignored, with a dev-only warning, when `width` is
+   * set: the owner of a controlled width owns its persistence too.
    */
   storageKey?: string;
   /** Where `storageKey` is read and written. Defaults to `localStorage`. */
@@ -154,7 +173,9 @@ function DrawerContent({
   className,
   size = 'md',
   resizable = false,
+  width: widthProp,
   defaultWidth,
+  onWidthChange,
   minWidth = DEFAULT_MIN_WIDTH,
   maxWidth = DEFAULT_MAX_WIDTH,
   storageKey,
@@ -164,13 +185,35 @@ function DrawerContent({
   children,
   ...props
 }: DrawerContentProps) {
-  // Read once per mount: a drawer that unmounts on close (`lazyMount` +
-  // `unmountOnExit`) restores the persisted width when it reopens, and one
-  // that stays mounted keeps its in-memory width.
+  const controlled = widthProp !== undefined;
+  // Uncontrolled only, and read once per mount: a drawer that unmounts on
+  // close (`lazyMount` + `unmountOnExit`) restores the persisted width when it
+  // reopens, and one that stays mounted keeps its in-memory width.
   const [chosenWidth, setChosenWidth] = useState(() =>
-    resizable ? readStoredWidth(storage, storageKey) : undefined,
+    resizable && !controlled ? readStoredWidth(storage, storageKey) : undefined,
   );
   const [dragging, setDragging] = useState(false);
+
+  // Warn once, dev-only, when `storageKey` is passed alongside a controlled
+  // `width` it can never apply to. The latch is only touched in the effect: a
+  // ref is not readable or writable during render.
+  const storageIgnoredWarned = useRef(false);
+  const storageIgnored = resizable && controlled && storageKey !== undefined;
+  useEffect(() => {
+    if (
+      !IS_DEV_WARNING_ENABLED ||
+      !storageIgnored ||
+      storageIgnoredWarned.current
+    ) {
+      return;
+    }
+    storageIgnoredWarned.current = true;
+    console.warn(
+      '[uikit] `Drawer.Content` was given both `width` and `storageKey`. A ' +
+        'controlled width is never read from or written to storage; persist ' +
+        'it where you hold `width`, or drop `width` to let the drawer do it.',
+    );
+  }, [storageIgnored]);
   const contentClassName = cx(
     slots.content,
     `drawer__content--size_${size}`,
@@ -185,17 +228,24 @@ function DrawerContent({
     );
   }
 
-  // Clamped at render rather than when stored, so a persisted width always
-  // honours the bounds the drawer is rendered with now.
+  // Clamped at render rather than when stored, so a persisted or controlled
+  // width always honours the bounds the drawer is rendered with now. A
+  // controlled width that is out of bounds is rendered clamped but not
+  // reported back: `onWidthChange` reports user changes, not corrections.
   const width = clampWidth(
-    chosenWidth ?? defaultWidth ?? SIZE_WIDTHS[size],
+    widthProp ?? chosenWidth ?? defaultWidth ?? SIZE_WIDTHS[size],
     minWidth,
     maxWidth,
   );
 
-  const commit = (next: number) => {
+  // One path for every user change. Controlled: only report it. Uncontrolled:
+  // apply it too, and persist it when asked (`persist` is false mid-drag so
+  // storage is written once per gesture, not per pointer move).
+  const change = (next: number, persist: boolean) => {
+    onWidthChange?.(next);
+    if (controlled) return;
     setChosenWidth(next);
-    writeStoredWidth(storage, storageKey, next);
+    if (persist) writeStoredWidth(storage, storageKey, next);
   };
 
   // The whole drag lives in this handler's closure: the start point and the
@@ -219,14 +269,19 @@ function DrawerContent({
     // inline-start edge: moving towards the inline start widens it.
     const direction = isRtl(handle) ? 1 : -1;
     let latest = startWidth;
+    let moved = false;
 
     const handleMove = (moveEvent: globalThis.PointerEvent) => {
-      latest = clampWidth(
+      const next = clampWidth(
         startWidth + direction * (moveEvent.clientX - startX),
         minWidth,
         maxWidth,
       );
-      setChosenWidth(latest);
+      // Moves past a bound clamp to the same width: report each width once.
+      if (next === latest) return;
+      latest = next;
+      moved = true;
+      change(next, false);
     };
     const handleEnd = (endEvent: globalThis.PointerEvent) => {
       handle.removeEventListener('pointermove', handleMove);
@@ -236,7 +291,7 @@ function DrawerContent({
         handle.releasePointerCapture(endEvent.pointerId);
       }
       setDragging(false);
-      commit(latest);
+      if (moved && !controlled) writeStoredWidth(storage, storageKey, latest);
     };
 
     handle.setPointerCapture?.(event.pointerId);
@@ -256,7 +311,8 @@ function DrawerContent({
     else if (event.key === 'End') next = maxWidth;
     else return;
     event.preventDefault();
-    commit(clampWidth(next, minWidth, maxWidth));
+    const clamped = clampWidth(next, minWidth, maxWidth);
+    if (clamped !== width) change(clamped, true);
   };
 
   return (
