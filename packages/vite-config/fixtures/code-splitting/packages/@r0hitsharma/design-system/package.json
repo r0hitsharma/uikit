@@ -1,0 +1,6 @@
+{
+  "name": "@r0hitsharma/design-system",
+  "type": "module",
+  "sideEffects": false,
+  "exports": { ".": "./index.js", "./drawer": "./drawer.js" }
+}

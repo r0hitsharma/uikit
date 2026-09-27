@@ -1,0 +1,1 @@
+{ "name": "geo-lib", "type": "module", "sideEffects": false, "exports": { ".": "./index.js" } }
