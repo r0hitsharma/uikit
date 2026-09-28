@@ -573,4 +573,12 @@ export const designSystemComponentManifest = [
     contractScope: 'collapsible',
     recipeKey: 'collapsible',
   },
+  {
+    exportName: 'ProgressBar',
+    behaviorSource: 'ark-ui',
+    styleOwner: 'design-system-preset',
+    storyBucket: 'molecules',
+    contractScope: 'progressBar',
+    recipeKey: 'progressBar',
+  },
 ] as const satisfies readonly DesignSystemComponentManifestEntry[];

@@ -138,6 +138,12 @@ export {
 } from './components/TextInput.js';
 export { Drawer, type DrawerWidthStorage } from './components/Drawer.js';
 export {
+  ProgressBar,
+  type ProgressBarProps,
+  type ProgressBarTone,
+  type ProgressBarSize,
+} from './components/ProgressBar.js';
+export {
   Collapsible,
   type CollapsibleRootProps,
   type CollapsibleTriggerProps,

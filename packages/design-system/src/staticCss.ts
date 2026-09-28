@@ -67,4 +67,5 @@ export const designSystemStaticCssRecipes = {
   keyValueTable: ['*'],
   steps: ['*'],
   collapsible: ['*'],
+  progressBar: ['*'],
 } satisfies Record<string, ['*']>;
