@@ -10,6 +10,9 @@ on:
       - reopened
       - synchronize
   merge_group:
+  # Manual full run: every suite, and the full visual-snapshot suite, on the
+  # dispatched ref.
+  workflow_dispatch:
 
 permissions:
   actions: read
@@ -17,8 +20,9 @@ permissions:
 
 jobs:
   detect-changes:
-    # Skipped on merge_group so queue runs execute every suite unconditionally.
-    if: github.event_name != 'merge_group'
+    # Skipped on merge_group and workflow_dispatch, which execute every suite
+    # unconditionally.
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       lint: ${{ steps.changed-files.outputs.lint_any_changed }}
@@ -42,7 +46,9 @@ jobs:
     needs: detect-changes
     if: |
       !cancelled() &&
-      (github.event_name == 'merge_group' || needs.detect-changes.outputs.lint == 'true')
+      (github.event_name == 'merge_group' ||
+       github.event_name == 'workflow_dispatch' ||
+       needs.detect-changes.outputs.lint == 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -81,7 +87,9 @@ jobs:
     needs: detect-changes
     if: |
       !cancelled() &&
-      (github.event_name == 'merge_group' || needs.detect-changes.outputs.agent_marketplace == 'true')
+      (github.event_name == 'merge_group' ||
+       github.event_name == 'workflow_dispatch' ||
+       needs.detect-changes.outputs.agent_marketplace == 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -107,6 +115,7 @@ jobs:
     if: |
       !cancelled() &&
       (github.event_name == 'merge_group' ||
+       github.event_name == 'workflow_dispatch' ||
        needs.detect-changes.outputs.demo_relay == 'true' ||
        needs.detect-changes.outputs.vitest == 'true')
     runs-on: ubuntu-latest
@@ -149,7 +158,12 @@ jobs:
     if: |
       !cancelled() &&
       needs.lint.result == 'success' &&
-      (github.event_name == 'merge_group' || needs.detect-changes.outputs.snapshot_files != '')
+      (github.event_name == 'merge_group' ||
+       github.event_name == 'workflow_dispatch' ||
+       needs.detect-changes.outputs.snapshot_files != '')
+    # Scope: pull requests check a subset of stories (see the scoping step
+    # below). Every other event checks the full suite: push to main, manual
+    # dispatch, and the merge queue.
     # Pinned to macos-26 (not macos-latest) so the runner matches the macOS
     # version snapshots are generated on. CoreText font metrics differ between
     # macOS major versions, so a mismatch reflows text and fails comparisons.
@@ -190,10 +204,11 @@ jobs:
 
       # Pull requests only re-render the stories whose PNGs changed (derived from
       # the snapshot filenames "<story-id>-chromium-darwin.png"). SNAPSHOT_STORY_IDS
-      # is consumed by tests/snapshot.spec.ts. The merge_group run skips this step,
-      # leaving the env unset so the full suite runs as the merge gate.
+      # is consumed by tests/snapshot.spec.ts. Every other event skips this step,
+      # leaving the env unset so the full suite runs: push to main re-verifies
+      # every baseline after each merge instead of only the PNGs it changed.
       - name: Scope snapshots to changed PNGs (pull requests only)
-        if: github.event_name != 'merge_group'
+        if: github.event_name == 'pull_request'
         env:
           CHANGED_SNAPSHOTS: ${{ needs.detect-changes.outputs.snapshot_files }}
         run: |
@@ -242,7 +257,10 @@ jobs:
     steps:
       - name: Check all jobs succeeded
         run: |
-          if [[ "${{ github.event_name }}" != "merge_group" && "${{ needs.detect-changes.result }}" != "success" ]]; then
+          # detect-changes only runs on pull_request and push; merge_group and
+          # workflow_dispatch skip it by design.
+          event="${{ github.event_name }}"
+          if [[ ( "$event" == "pull_request" || "$event" == "push" ) && "${{ needs.detect-changes.result }}" != "success" ]]; then
             echo "detect-changes did not succeed (result: '${{ needs.detect-changes.result }}')"
             exit 1
           fi
