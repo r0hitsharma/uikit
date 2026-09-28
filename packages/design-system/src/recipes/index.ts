@@ -40,3 +40,4 @@ export { popoverRecipe } from './popover.recipe.js';
 export { keyValueTableRecipe } from './keyValueTable.recipe.js';
 export { stepsRecipe } from './steps.recipe.js';
 export { collapsibleRecipe } from './collapsible.recipe.js';
+export { progressBarRecipe } from './progressBar.recipe.js';

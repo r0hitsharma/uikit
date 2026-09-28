@@ -25,6 +25,7 @@ import { panelActionRecipe } from './panelAction.recipe.js';
 import { panelSectionRecipe } from './panelSection.recipe.js';
 import { playbackBarRecipe } from './playbackBar.recipe.js';
 import { popoverRecipe } from './popover.recipe.js';
+import { progressBarRecipe } from './progressBar.recipe.js';
 import { rangeSliderRecipe } from './rangeSlider.recipe.js';
 import { searchInputRecipe } from './searchInput.recipe.js';
 import { sectionHeadingRecipe } from './sectionHeading.recipe.js';
@@ -106,4 +107,5 @@ export const designSystemSlotRecipes = {
   keyValueTable: keyValueTableRecipe,
   steps: stepsRecipe,
   collapsible: collapsibleRecipe,
+  progressBar: progressBarRecipe,
 };
