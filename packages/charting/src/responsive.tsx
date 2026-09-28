@@ -48,7 +48,7 @@ const deriveHeight = (
  * measured from the moment it attaches until it detaches, including one that
  * mounts after the component does.
  */
-export type MeasuredRef = RefCallback<HTMLDivElement> &
+type MeasuredRef = RefCallback<HTMLDivElement> &
   RefObject<HTMLDivElement | null>;
 
 /**
