@@ -13,7 +13,8 @@
 //      chunk graph includes it. Tree-shaking is what gives per-component
 //      granularity through the shared design-system barrel.
 //   2. Diff the working tree (+ branch vs base) and map each changed file to the
-//      stories that depend on it.
+//      stories that depend on it (story-mapping.ts, the same mapping CI uses to
+//      scope pull requests).
 //   3. Run `playwright test --update-snapshots` scoped to those stories via
 //      SNAPSHOT_STORY_IDS (see tests/snapshot.spec.ts).
 //
@@ -29,15 +30,12 @@ import net from 'node:net';
 import path from 'node:path';
 import process from 'node:process';
 
-/** `dist/story-deps.json`: built module (repo-rel) -> story files using it. */
-type StoryDeps = {
-  modules: Record<string, string[]>;
-};
-
-/** The slice of Ladle's `dist/meta.json` this script reads. */
-type PreviewMeta = {
-  stories: Record<string, { filePath: string }>;
-};
+import {
+  isPreviewMeta,
+  isStoryDeps,
+  parseArtifact,
+  scopeStories,
+} from './story-mapping.ts';
 
 const packageDir = process.cwd();
 const repoRoot = path.resolve(packageDir, '..', '..');
@@ -45,8 +43,6 @@ const PREVIEW_PKG_DIR = path
   .relative(repoRoot, packageDir)
   .split(path.sep)
   .join('/'); // packages/uikit-preview
-const PREVIEW_PKG_NAME = PREVIEW_PKG_DIR.slice('packages/'.length); // uikit-preview
-const PREVIEW_PREFIX = `${PREVIEW_PKG_DIR}/`;
 
 const git = (args: string[]): string | null => {
   const result = spawnSync('git', args, { cwd: repoRoot, encoding: 'utf8' });
@@ -300,34 +296,11 @@ const runPlaywright = async (storyIds: string[] | null) => {
   }
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
-
-const isStoryDeps = (value: unknown): value is StoryDeps =>
-  isRecord(value) &&
-  isRecord(value.modules) &&
-  Object.values(value.modules).every(
-    (stories) =>
-      Array.isArray(stories) &&
-      stories.every((story) => typeof story === 'string'),
-  );
-
-const isPreviewMeta = (value: unknown): value is PreviewMeta =>
-  isRecord(value) &&
-  isRecord(value.stories) &&
-  Object.values(value.stories).every(
-    (story) => isRecord(story) && typeof story.filePath === 'string',
-  );
-
-/** Parse a build artifact, failing loudly if it is not the shape we expect. */
+/** Read a build artifact, failing loudly if it is not the shape we expect. */
 const readArtifact = <T>(
   file: string,
   isValid: (value: unknown) => value is T,
-): T => {
-  const parsed: unknown = JSON.parse(readFileSync(file, 'utf8'));
-  if (!isValid(parsed)) throw new Error(`Unexpected shape in ${file}`);
-  return parsed;
-};
+): T => parseArtifact(readFileSync(file, 'utf8'), file, isValid);
 
 // --- main -----------------------------------------------------------------
 
@@ -354,107 +327,22 @@ if (!existsSync(depsPath) || !existsSync(metaPath)) {
 const deps = readArtifact(depsPath, isStoryDeps);
 const meta = readArtifact(metaPath, isPreviewMeta);
 
-// story file (repo-rel) -> story ids
-const idsByStoryFile = new Map<string, string[]>();
-for (const [id, story] of Object.entries(meta.stories)) {
-  const file = `${PREVIEW_PREFIX}${story.filePath}`;
-  const ids = idsByStoryFile.get(file) ?? [];
-  ids.push(id);
-  idsByStoryFile.set(file, ids);
-}
+// The file -> story mapping lives in story-mapping.ts, shared with CI's
+// pull-request scoping (.github/scripts/snapshot-scope.ts).
+const scope = scopeStories(changed, deps, meta, PREVIEW_PKG_DIR);
 
-// Packages that appear in the dependency graph at all — a change to any other
-// package cannot affect a snapshot.
-const graphPackages = new Set<string>();
-for (const moduleId of Object.keys(deps.modules)) {
-  const m = moduleId.match(/^packages\/([^/]+)\//);
-  if (m?.[1]) graphPackages.add(m[1]);
-}
-
-const CODE_EXT = /\.(tsx?|jsx?|mts|cts|mjs|cjs)$/;
-const affected = new Set<string>();
-let fullRun = false;
-const unmatched: string[] = [];
-
-for (const file of changed) {
-  if (fullRun) break;
-
-  // A changed story file → exactly its stories.
-  if (idsByStoryFile.has(file)) {
-    for (const id of idsByStoryFile.get(file) ?? []) affected.add(id);
-    continue;
-  }
-
-  const pkg = file.match(/^packages\/([^/]+)\/(.*)$/);
-  if (!pkg) {
-    // Repo-root files (.github, docs, tooling) don't affect rendered stories.
-    continue;
-  }
-  const [, pkgName, rest] = pkg;
-  // Both groups are non-optional in the pattern above, so a match carries them.
-  if (pkgName === undefined || rest === undefined) continue;
-
-  if (pkgName === PREVIEW_PKG_NAME) {
-    // uikit-preview: a non-story source/config change is broad (shared provider,
-    // panda config, vite/playwright config, the spec itself, styled-system…).
-    if (rest.startsWith('src/stories/')) continue; // deleted/renamed story, no id
-    fullRun = true;
-    continue;
-  }
-
-  if (!graphPackages.has(pkgName)) continue; // package no story depends on
-
-  // Panda preset inputs (recipes + the preset itself) compile into the
-  // globally-generated styled-system CSS, which every story consumes by stable
-  // class name — not through the JS module graph. So a change here can restyle
-  // any story (e.g. a DataTable recipe tweak repaints the table embedded in the
-  // filter-primitives story) while mapping to zero modules in story-deps, which
-  // the per-module lookup below would silently skip. Attribute conservatively.
-  // The set is `uikit-preview/panda.config.ts`'s own `dependencies` list, not a
-  // guess: `src/tokens/` and `src/staticCss.ts` are Panda inputs too.
-  // `sharedThemeTokens.ts` is not re-exported from the tokens barrel and
-  // `staticCss.ts` is tree-shaken out of every story chunk, so neither appears
-  // in story-deps at all — both fell through to `unmatched` and updated ZERO
-  // baselines for a change that repaints every story. (`panda.shared.ts` is
-  // safe only by accident: it sits at the package root, misses `^src/`, and
-  // hits the catch-all `fullRun` at the bottom of the loop.)
-  if (/^src\/(recipes\/|tokens\/|panda-preset\.|staticCss\.)/.test(rest)) {
-    fullRun = true;
-    continue;
-  }
-
-  // Consumed package: map a source file to its built module and look it up.
-  const srcMatch = rest.match(/^src\/(.+)$/);
-  if (srcMatch?.[1] && CODE_EXT.test(rest)) {
-    const distRel = srcMatch[1].replace(CODE_EXT, '.js');
-    const distId = `packages/${pkgName}/dist/${distRel}`;
-    const stories = deps.modules[distId];
-    if (stories) {
-      for (const s of stories)
-        for (const id of idsByStoryFile.get(s) ?? []) affected.add(id);
-    } else {
-      unmatched.push(file); // built module exists but no story uses it → skip
-    }
-    continue;
-  }
-
-  // Non-code source, package.json, panda-preset, tsconfig… inside a consumed
-  // package: could change many built outputs. Be safe.
-  fullRun = true;
-}
-
-if (unmatched.length > 0 && !fullRun) {
+if (scope.kind === 'stories' && scope.unmatched.length > 0) {
   console.log(
-    `› ${unmatched.length} changed file(s) map to no rendered story (skipped):`,
+    `› ${scope.unmatched.length} changed file(s) map to no rendered story (skipped):`,
   );
-  for (const f of unmatched) console.log(`  ${f}`);
+  for (const f of scope.unmatched) console.log(`  ${f}`);
 }
 
-if (fullRun) {
+if (scope.kind === 'all') {
   await runPlaywright(null);
-} else if (affected.size === 0) {
+} else if (scope.ids.length === 0) {
   console.log('No changed files affect any snapshot — nothing to update.');
   process.exit(0);
 } else {
-  await runPlaywright([...affected].sort());
+  await runPlaywright(scope.ids);
 }

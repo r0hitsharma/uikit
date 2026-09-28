@@ -9,6 +9,7 @@ lint:
   - .node-version
   - .github/workflows/ci.yml
   - .github/changed-files.yml
+  - .github/scripts/**
 
 agent_marketplace:
   - packages/agent-marketplace/**
@@ -37,8 +38,26 @@ vitest:
   - packages/uikit-cli/**
   - packages/webmcp/**
 
-# Only the committed snapshot PNGs. On pull requests the visual-snapshots job
-# checks exactly the stories whose PNGs changed here; the merge-queue run is
-# unconditional and re-checks the full suite (see ci.yml).
-visual_snapshot_files:
-  - packages/uikit-preview/tests/snapshot.spec.ts-snapshots/**
+# Everything a rendered story can depend on: the packages whose `dist/` the
+# stories bundle, the committed baselines, the lockfile, and the job's own
+# wiring. Matching only starts the visual-snapshots job; which stories it then
+# checks on a pull request is decided after the build by
+# .github/scripts/scope-snapshots.ts, which maps the diff through the preview's
+# story-deps graph and fails if a package the stories render is missing here.
+# Push to main, manual dispatch and the merge queue run the full suite
+# regardless (see ci.yml).
+visual_snapshots:
+  - packages/uikit-preview/**
+  - '!packages/uikit-preview/demo-relay/**'
+  - packages/design-system/**
+  - packages/charting/**
+  - packages/dashboard-kit/**
+  - packages/mcp-connect/**
+  - packages/webmcp/**
+  - package-lock.json
+  - .github/workflows/ci.yml
+  - .github/changed-files.yml
+  - .github/scripts/scope-snapshots.ts
+  - .github/scripts/snapshot-scope.ts
+  - .github/scripts/lockfile-affected.ts
+  - .github/scripts/snapshot-scope.test.ts
