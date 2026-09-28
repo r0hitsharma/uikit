@@ -1,6 +1,14 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
-import { useEffect } from 'react';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { useEffect, useRef } from 'react';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 
 import {
   FALLBACK_CHART_WIDTH,
@@ -66,13 +74,14 @@ afterAll(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
   StubResizeObserver.instances = [];
 });
 
 const watching = (element: Element) =>
   StubResizeObserver.instances.filter((o) => o.observed.has(element));
 
-/** The shape the hook exists for: an empty state first, the container later. */
+/** A widget that renders an empty state first and its container later. */
 function Widget({ loading }: { loading: boolean }) {
   const [ref, width] = useContainerWidth();
   if (loading) return <p data-testid="width">{width}</p>;
@@ -113,6 +122,33 @@ describe('useContainerWidth', () => {
     expect(watching(container)).toHaveLength(0);
     // The last measurement is kept rather than snapping back to the fallback.
     expect(screen.getByTestId('width').textContent).toBe('1054');
+  });
+
+  it('observes an element assigned through ref.current by a merged ref', () => {
+    function Merged() {
+      const [ref, width] = useContainerWidth();
+      const other = useRef<HTMLDivElement | null>(null);
+      return (
+        <div
+          ref={(node) => {
+            ref.current = node;
+            other.current = node;
+          }}
+          data-testid="merged"
+          data-width="820"
+        >
+          <p data-testid="width">{width}</p>
+        </div>
+      );
+    }
+    render(<Merged />);
+    const merged = screen.getByTestId('merged');
+    expect(watching(merged)).toHaveLength(1);
+    expect(screen.getByTestId('width').textContent).toBe('820');
+
+    merged.dataset.width = '410';
+    act(() => watching(merged)[0]!.trigger());
+    expect(screen.getByTestId('width').textContent).toBe('410');
   });
 
   it('keeps the attached element readable as ref.current', () => {
