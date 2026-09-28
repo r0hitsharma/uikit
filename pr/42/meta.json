@@ -89,14 +89,26 @@
       "namedExport": "IconOnly",
       "meta": {}
     },
+    "atoms--button--icon-only-compact": {
+      "name": "Icon only compact",
+      "levels": [
+        "Atoms",
+        "Button"
+      ],
+      "locStart": 204,
+      "locEnd": 226,
+      "filePath": "src/stories/atoms/button.stories.tsx",
+      "namedExport": "IconOnlyCompact",
+      "meta": {}
+    },
     "atoms--button--icon-only-in-toolbar": {
       "name": "Icon only in toolbar",
       "levels": [
         "Atoms",
         "Button"
       ],
-      "locStart": 163,
-      "locEnd": 198,
+      "locStart": 164,
+      "locEnd": 199,
       "filePath": "src/stories/atoms/button.stories.tsx",
       "namedExport": "IconOnlyInToolbar",
       "meta": {}
@@ -2075,8 +2087,8 @@
         "Organisms",
         "Harness connect"
       ],
-      "locStart": 82,
-      "locEnd": 94,
+      "locStart": 84,
+      "locEnd": 96,
       "filePath": "src/stories/organisms/harness-connect.stories.tsx",
       "namedExport": "Connected",
       "meta": {}
@@ -2087,8 +2099,8 @@
         "Organisms",
         "Harness connect"
       ],
-      "locStart": 53,
-      "locEnd": 66,
+      "locStart": 55,
+      "locEnd": 68,
       "filePath": "src/stories/organisms/harness-connect.stories.tsx",
       "namedExport": "Disconnected",
       "meta": {}
@@ -2099,8 +2111,8 @@
         "Organisms",
         "Harness connect"
       ],
-      "locStart": 171,
-      "locEnd": 184,
+      "locStart": 173,
+      "locEnd": 186,
       "filePath": "src/stories/organisms/harness-connect.stories.tsx",
       "namedExport": "ModalOpenNoToken",
       "meta": {}
@@ -2111,8 +2123,8 @@
         "Organisms",
         "Harness connect"
       ],
-      "locStart": 156,
-      "locEnd": 169,
+      "locStart": 158,
+      "locEnd": 171,
       "filePath": "src/stories/organisms/harness-connect.stories.tsx",
       "namedExport": "ModalOpenWithToken",
       "meta": {}
@@ -2123,8 +2135,8 @@
         "Organisms",
         "Harness connect"
       ],
-      "locStart": 68,
-      "locEnd": 80,
+      "locStart": 70,
+      "locEnd": 82,
       "filePath": "src/stories/organisms/harness-connect.stories.tsx",
       "namedExport": "Ready",
       "meta": {}
@@ -2135,8 +2147,8 @@
         "Organisms",
         "Harness connect"
       ],
-      "locStart": 96,
-      "locEnd": 108,
+      "locStart": 98,
+      "locEnd": 110,
       "filePath": "src/stories/organisms/harness-connect.stories.tsx",
       "namedExport": "Reconnecting",
       "meta": {}
@@ -2147,8 +2159,8 @@
         "Organisms",
         "Harness connect"
       ],
-      "locStart": 118,
-      "locEnd": 150,
+      "locStart": 120,
+      "locEnd": 152,
       "filePath": "src/stories/organisms/harness-connect.stories.tsx",
       "namedExport": "Sizes",
       "meta": {}
