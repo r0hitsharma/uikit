@@ -19,40 +19,45 @@ const LABELS = ['Source', 'Schema', 'Review'];
 
 type RootProps = ComponentProps<typeof Steps.Root>;
 
+function stepsTree(
+  props: Partial<RootProps> = {},
+  progressProps: ComponentProps<typeof Steps.Progress> = {},
+) {
+  return createElement(
+    Steps.Root,
+    { count: LABELS.length, ...props } as RootProps,
+    createElement(
+      Steps.List,
+      null,
+      LABELS.map((label, index) =>
+        createElement(
+          Steps.Item,
+          { key: label, index },
+          createElement(
+            Steps.Trigger,
+            null,
+            createElement(Steps.Indicator),
+            label,
+          ),
+          createElement(Steps.Separator),
+        ),
+      ),
+    ),
+    createElement(Steps.Progress, progressProps),
+    LABELS.map((label, index) =>
+      createElement(Steps.Content, { key: label, index }, `${label} body`),
+    ),
+    createElement(Steps.CompletedContent, null, 'All done'),
+    createElement(Steps.PrevTrigger, null, 'Back'),
+    createElement(Steps.NextTrigger, null, 'Next'),
+  );
+}
+
 function renderSteps(
   props: Partial<RootProps> = {},
   progressProps: ComponentProps<typeof Steps.Progress> = {},
 ) {
-  return render(
-    createElement(
-      Steps.Root,
-      { count: LABELS.length, ...props } as RootProps,
-      createElement(
-        Steps.List,
-        null,
-        LABELS.map((label, index) =>
-          createElement(
-            Steps.Item,
-            { key: label, index },
-            createElement(
-              Steps.Trigger,
-              null,
-              createElement(Steps.Indicator),
-              label,
-            ),
-            createElement(Steps.Separator),
-          ),
-        ),
-      ),
-      createElement(Steps.Progress, progressProps),
-      LABELS.map((label, index) =>
-        createElement(Steps.Content, { key: label, index }, `${label} body`),
-      ),
-      createElement(Steps.CompletedContent, null, 'All done'),
-      createElement(Steps.PrevTrigger, null, 'Back'),
-      createElement(Steps.NextTrigger, null, 'Next'),
-    ),
-  );
+  return render(stepsTree(props, progressProps));
 }
 
 const items = (container: HTMLElement) => [
@@ -171,6 +176,45 @@ describe('Steps', () => {
     expect(
       container.querySelector<HTMLElement>('.steps__completedContent')?.hidden,
     ).toBe(false);
+  });
+
+  it('steps back on PrevTrigger, including out of CompletedContent', async () => {
+    const { container, getByText } = renderSteps({
+      defaultStep: LABELS.length,
+    });
+
+    await click(getByText('Back'));
+    expect(currentIndex(container)).toBe(2);
+
+    await click(getByText('Back'));
+    expect(currentIndex(container)).toBe(1);
+  });
+
+  it('jumps to a step when its trigger is clicked', async () => {
+    const { container, getByText } = renderSteps();
+
+    await click(getByText('Review'));
+
+    expect(currentIndex(container)).toBe(2);
+  });
+
+  it('leaves a controlled step to the parent, reporting the change', async () => {
+    const onStepChange = vi.fn();
+    const { container, getByText, rerender } = renderSteps({
+      step: 0,
+      onStepChange,
+    });
+
+    await click(getByText('Next'));
+
+    expect(onStepChange).toHaveBeenCalledWith(
+      expect.objectContaining({ step: 1 }),
+    );
+    expect(currentIndex(container)).toBe(0);
+
+    rerender(stepsTree({ step: 1, onStepChange }));
+
+    expect(currentIndex(container)).toBe(1);
   });
 
   it('blocks forward navigation while isStepValid rejects the step', async () => {
