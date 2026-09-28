@@ -23,11 +23,6 @@ name: snapshot-update
 #     leave `commit` off and add the artifact's files to the branch locally.
 
 on:
-  # Temporary: registers this workflow so it can be dispatched before it
-  # exists on main. Runs the full render with no commit. Removed before merge.
-  push:
-    branches:
-      - rohit/visual-snapshot-ci-coverage
   workflow_dispatch:
     inputs:
       scope:
