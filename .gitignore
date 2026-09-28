@@ -4,6 +4,7 @@ node_modules/
 .DS_Store
 packages/*/dist/
 packages/*/styled-system/
+packages/design-system/consumer-check/styled-system/
 packages/*/.turbo/
 packages/uikit-preview/static/tokens/spec/
 packages/uikit-preview/build/
