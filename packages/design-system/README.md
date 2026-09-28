@@ -178,7 +178,7 @@ focus back from something the user focused elsewhere on the page.
 | --- | --- | --- |
 | `restoreFocus` | `true` | Return focus on close, modal or not. `false` leaves focus where it is. |
 | `finalFocusEl` | the opener, else the trigger | `() => HTMLElement \| null`: where focus goes on close instead of the opener. |
-| `initialFocusEl` | first focusable in the drawer | `() => HTMLElement \| null`: where focus lands on open, such as the title (give it `tabIndex={-1}`). |
+| `initialFocusEl` | first focusable in the drawer (Ark's default) | `() => HTMLElement \| null`: where focus lands on open, such as the title (give it `tabIndex={-1}`). |
 
 ```tsx
 <Drawer.Root

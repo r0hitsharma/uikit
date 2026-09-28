@@ -174,7 +174,7 @@ export const Resizable = () => {
 };
 
 // Non-modal: no scrim, no focus trap, and the page behind stays usable. Ark
-// lands focus on the title (`initialFocusEl`), and `Root` returns it to the
+// lands focus on the title, as `initialFocusEl` asks, and `Root` returns it to the
 // button that opened the drawer on close, as a modal drawer does. Focus the
 // input, press Escape, and the "Open refine drawer" button is focused again.
 export const NonModal = () => {
