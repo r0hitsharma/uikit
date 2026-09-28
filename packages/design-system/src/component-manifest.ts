@@ -565,4 +565,12 @@ export const designSystemComponentManifest = [
     contractScope: 'steps',
     recipeKey: 'steps',
   },
+  {
+    exportName: 'Collapsible',
+    behaviorSource: 'ark-ui',
+    styleOwner: 'design-system-preset',
+    storyBucket: 'molecules',
+    contractScope: 'collapsible',
+    recipeKey: 'collapsible',
+  },
 ] as const satisfies readonly DesignSystemComponentManifestEntry[];

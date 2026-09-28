@@ -2,6 +2,7 @@ import { badgeRecipe } from './badge.recipe.js';
 import { buttonRecipe } from './button.recipe.js';
 import { chipRecipe } from './chip.recipe.js';
 import { codeRecipe } from './code.recipe.js';
+import { collapsibleRecipe } from './collapsible.recipe.js';
 import { dataTableRecipe } from './dataTable.recipe.js';
 import { drawerRecipe } from './drawer.recipe.js';
 import { emptyStateRecipe } from './emptyState.recipe.js';
@@ -104,4 +105,5 @@ export const designSystemSlotRecipes = {
   popover: popoverRecipe,
   keyValueTable: keyValueTableRecipe,
   steps: stepsRecipe,
+  collapsible: collapsibleRecipe,
 };
