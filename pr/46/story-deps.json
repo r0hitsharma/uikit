@@ -304,7 +304,8 @@
     ],
     "packages/design-system/dist/components/TextInput.js": [
       "packages/uikit-preview/src/stories/atoms/text-input.stories.tsx",
-      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx"
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx",
+      "packages/uikit-preview/src/stories/organisms/drawer.stories.tsx"
     ],
     "packages/design-system/dist/components/ThemeToggle.js": [
       "packages/uikit-preview/src/stories/molecules/theme-toggle.stories.tsx",
