@@ -88,6 +88,10 @@ type XYChartDataContext = {
   margin?: { top: number; left: number; right: number; bottom: number };
 };
 
+function isFiniteCursor(value: number | null | undefined): value is number {
+  return value != null && Number.isFinite(value);
+}
+
 /**
  * A snap-to-datum crosshair with per-series readout dots and a positioned
  * tooltip (via render prop), usable as a child of `<XYChart>`.
@@ -127,9 +131,16 @@ export function ChartCursorLayer({
   );
   const [pinned, setPinned] = useState(false);
 
-  const activeX = isControlled ? cursor : internal;
+  // A non-finite cursor is no cursor, however it arrives (a controlled
+  // `cursor`, a `defaultCursor`, or an unsnapped pointer whose `invert` has no
+  // usable domain) and whether or not the layer snaps. Normalising it here and
+  // in `updateCursor` keeps `NaN`/`Infinity` out of `onCursorChange`,
+  // `onCommit`, keyboard stepping and the drawn crosshair alike.
+  const rawActiveX = isControlled ? cursor : internal;
+  const activeX = isFiniteCursor(rawActiveX) ? rawActiveX : null;
 
-  const updateCursor = (next: number | null) => {
+  const updateCursor = (value: number | null) => {
+    const next = isFiniteCursor(value) ? value : null;
     if (!isControlled) setInternal(next);
     onCursorChange?.(next);
   };
@@ -220,7 +231,9 @@ export function ChartCursorLayer({
     }
   };
 
-  const cx = drawX === undefined ? undefined : xScale(drawX);
+  const drawPx = drawX === undefined ? undefined : xScale(drawX);
+  const cx =
+    drawPx !== undefined && Number.isFinite(drawPx) ? drawPx : undefined;
 
   const points: CursorPoint[] =
     drawX === undefined || cx === undefined

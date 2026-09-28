@@ -22,7 +22,13 @@ export function clamp(value: number, min: number, max: number): number {
 
 /**
  * The `stop` in `stops` closest to `value` — nearest by absolute difference,
- * ties resolving to the lower stop — or `undefined` when `stops` is empty.
+ * ties resolving to the lower stop — or `undefined` when `stops` is empty or
+ * `value` is not finite.
+ *
+ * A non-finite `value` has no nearest stop. Unguarded, `NaN` would fail every
+ * comparison in the search and fall through to an arbitrary stop, so a value
+ * that means "no x" (an accessor reading a datum without one) would select a
+ * real bucket; the infinities are refused with it.
  *
  * `stops` must be sorted ascending. The search is a binary one, so an unsorted
  * array yields an arbitrary element rather than the nearest; this is the same
@@ -41,7 +47,7 @@ export function clamp(value: number, min: number, max: number): number {
  */
 export function snapToStop(stops: number[], value: number): number | undefined {
   const n = stops.length;
-  if (n === 0) return undefined;
+  if (n === 0 || !Number.isFinite(value)) return undefined;
   if (value <= stops[0]!) return stops[0]!;
   if (value >= stops[n - 1]!) return stops[n - 1]!;
 
@@ -58,8 +64,9 @@ export function snapToStop(stops: number[], value: number): number | undefined {
 }
 
 /**
- * {@link snapToStop}, but reporting an empty `stops` as `NaN` instead of
- * `undefined`. Identical in every other case.
+ * {@link snapToStop}, but reporting "no stop" (an empty `stops`, or a
+ * non-finite `value`) as `NaN` instead of `undefined`. Identical in every
+ * other case.
  *
  * @deprecated Use {@link snapToStop}. `NaN` here is `number`-typed, so the
  * empty-`stops` case flows unchallenged into arithmetic, scale inputs and SVG

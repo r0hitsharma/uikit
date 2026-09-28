@@ -35,6 +35,16 @@ describe('snapToStop', () => {
     expect(snapToStop(irregular, 40)).toBe(3);
     expect(snapToStop(irregular, 60)).toBe(100);
   });
+
+  // Every comparison against `NaN` is false, so without a guard the search
+  // falls through to the last stop: a value that means "no x" selects a real
+  // bucket. The infinities are refused with it, since no stop is nearest to
+  // one either.
+  it('returns undefined for a non-finite value', () => {
+    expect(snapToStop(stops, NaN)).toBeUndefined();
+    expect(snapToStop(stops, Infinity)).toBeUndefined();
+    expect(snapToStop(stops, -Infinity)).toBeUndefined();
+  });
 });
 
 /**
@@ -46,6 +56,11 @@ describe('snapToStop', () => {
 describe('nearestStop (deprecated)', () => {
   it('returns NaN for an empty stop list', () => {
     expect(nearestStop([], 5)).toBeNaN();
+  });
+
+  it('returns NaN for a non-finite value', () => {
+    expect(nearestStop(stops, NaN)).toBeNaN();
+    expect(nearestStop(stops, Infinity)).toBeNaN();
   });
 
   it('agrees with snapToStop everywhere a stop exists', () => {
