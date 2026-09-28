@@ -89,33 +89,25 @@ function itemCap(maxItems: number | undefined): number {
 }
 
 type HeightReport = {
-  element: Element;
   listener: (height: number) => void;
   height: number;
 };
 
 /**
- * Passes `height` to `listener` unless this exact element/listener pair was
- * last told the same height. A new element or a new listener therefore always
- * gets its initial value, while repeat reports of an unchanged box are dropped.
+ * Passes `height` to `listener` unless that listener was last told the same
+ * height. A new listener therefore always gets its initial value, and
+ * `ChartLegend` clears the record on detach so the next attachment does too,
+ * while repeat reports of an unchanged box are dropped.
  */
 function reportHeight(
   last: RefObject<HeightReport | null>,
-  element: Element,
   listener: ((height: number) => void) | undefined,
   height: number,
 ) {
   if (!listener) return;
   const previous = last.current;
-  if (
-    previous &&
-    previous.element === element &&
-    previous.listener === listener &&
-    previous.height === height
-  ) {
-    return;
-  }
-  last.current = { element, listener, height };
+  if (previous?.listener === listener && previous.height === height) return;
+  last.current = { listener, height };
   listener(height);
 }
 
@@ -231,8 +223,7 @@ export function ChartLegend({
 }: ChartLegendProps) {
   const reported = useRef<HeightReport | null>(null);
   const measuredRef = useResizeObserverRef<HTMLDivElement>(
-    (element) =>
-      reportHeight(reported, element, onHeightChange, element.offsetHeight),
+    (element) => reportHeight(reported, onHeightChange, element.offsetHeight),
     () => {
       // The legend stopped rendering: it now takes no height, and whatever
       // attaches next starts fresh.
@@ -248,7 +239,7 @@ export function ChartLegend({
   useEffect(() => {
     const element = measuredRef.current;
     if (!element || typeof ResizeObserver === 'undefined') return;
-    reportHeight(reported, element, onHeightChange, element.offsetHeight);
+    reportHeight(reported, onHeightChange, element.offsetHeight);
   }, [measuredRef, onHeightChange]);
 
   if (items.length === 0) return null;
