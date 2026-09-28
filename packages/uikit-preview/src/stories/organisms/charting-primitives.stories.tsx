@@ -23,6 +23,7 @@ import {
   ZoomPanOverlay,
   chartTheme,
   seriesColor,
+  useContainerWidth,
   useHoveredTimestamp,
   useSyncedCursor,
   useSyncedCursorHandlers,
@@ -711,6 +712,94 @@ export const ColoredLegend = () => (
           },
         ]}
       />
+    </div>
+  </ThemeProvider>
+);
+
+// A legend's height is not fixed: five series in a 320px card wrap onto a
+// second row. Each card here has the same 220px budget and gives the plot
+// whatever the measured legend leaves, so nothing is clipped whether the legend
+// wraps (left) or is capped with `maxItems` (right).
+const NARROW_SERIES = [
+  { id: 'A', color: seriesColor.primary, offset: 0 },
+  { id: 'B', color: seriesColor.secondary, offset: -12 },
+  { id: 'C', color: seriesColor.tertiary, offset: 10 },
+  { id: 'D', color: seriesColor.quaternary, offset: -24 },
+  { id: 'E', color: seriesColor.quinary, offset: 22 },
+].map(({ id, color, offset }) => ({
+  id,
+  color,
+  data: SERIES.map((d) => ({ index: d.index, value: d.value + offset })),
+}));
+
+const NARROW_LEGEND_ITEMS = NARROW_SERIES.map(({ id, color }) => ({
+  label: `Series ${id}`,
+  color,
+}));
+
+const NARROW_CARD_HEIGHT = 220;
+
+function NarrowLegendCard({
+  title,
+  maxItems,
+}: {
+  title: string;
+  maxItems?: number;
+}) {
+  const [ref, width] = useContainerWidth(320);
+  const [legendHeight, setLegendHeight] = useState(0);
+  return (
+    <section className={panelClassName} style={{ width: 320 }}>
+      <p className={panelTitleClassName}>{title}</p>
+      <div
+        ref={ref}
+        style={{
+          height: NARROW_CARD_HEIGHT,
+          overflow: 'hidden',
+          display: 'grid',
+          alignContent: 'start',
+          gap: 8,
+        }}
+      >
+        <ChartLegend
+          shape="line"
+          items={NARROW_LEGEND_ITEMS}
+          maxItems={maxItems}
+          onHeightChange={setLegendHeight}
+        />
+        <XYChart
+          width={width}
+          height={Math.max(0, NARROW_CARD_HEIGHT - legendHeight - 8)}
+          theme={chartTheme}
+          margin={{ top: 8, right: 8, bottom: 24, left: 36 }}
+          xScale={{ type: 'linear' }}
+          yScale={{ type: 'linear', zero: false }}
+        >
+          <Axis orientation="bottom" numTicks={4} />
+          <Axis orientation="left" numTicks={4} />
+          {NARROW_SERIES.map((series) => (
+            <LineSeries
+              key={series.id}
+              dataKey={series.id}
+              data={series.data}
+              xAccessor={xAccessor}
+              yAccessor={yAccessor}
+              stroke={series.color}
+            />
+          ))}
+        </XYChart>
+      </div>
+    </section>
+  );
+}
+
+export const NarrowLegend = () => (
+  <ThemeProvider>
+    <div
+      className={css({ p: '6', display: 'flex', gap: '6', flexWrap: 'wrap' })}
+    >
+      <NarrowLegendCard title="Wrapped legend, measured" />
+      <NarrowLegendCard title="maxItems={2}" maxItems={2} />
     </div>
   </ThemeProvider>
 );
