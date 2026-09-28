@@ -49,8 +49,8 @@ const deriveHeight = (
  * measured from the moment it attaches until it detaches, including one that
  * mounts after the component does.
  */
-type MeasuredRef = RefCallback<HTMLDivElement> &
-  RefObject<HTMLDivElement | null>;
+type MeasuredRef<T extends Element = HTMLDivElement> = RefCallback<T> &
+  RefObject<T | null>;
 
 /**
  * Runs `onResize` with the element the returned ref holds: once when it
@@ -64,7 +64,7 @@ type MeasuredRef = RefCallback<HTMLDivElement> &
  */
 export function useResizeObserverRef<T extends Element>(
   onResize: (element: T) => void,
-): RefCallback<T> & RefObject<T | null> {
+): MeasuredRef<T> {
   const [element, setElement] = useState<T | null>(null);
   const [ref] = useState(() => {
     let current: T | null = null;
@@ -76,7 +76,7 @@ export function useResizeObserverRef<T extends Element>(
       get: () => current,
       set: attach,
       enumerable: true,
-    }) as RefCallback<T> & RefObject<T | null>;
+    }) as MeasuredRef<T>;
   });
   const onResizeRef = useLatest(onResize);
 
