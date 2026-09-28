@@ -100,6 +100,34 @@ describe('Checkbox', () => {
       expect.objectContaining({ checked: true }),
     );
   });
+
+  it('ignores clicks while disabled and marks every part', async () => {
+    const onCheckedChange = vi.fn();
+    const { part, input } = renderCheckbox({
+      children: 'Stablecoins',
+      disabled: true,
+      onCheckedChange,
+    });
+
+    await click(input);
+
+    expect(input.disabled).toBe(true);
+    expect(part('control')?.dataset.state).toBe('unchecked');
+    expect(onCheckedChange).not.toHaveBeenCalled();
+    for (const slot of ['root', 'control', 'label']) {
+      expect(part(slot)?.hasAttribute('data-disabled'), slot).toBe(true);
+    }
+  });
+
+  it('marks the control and the native input invalid', () => {
+    const { part, input } = renderCheckbox({
+      children: 'Stablecoins',
+      invalid: true,
+    });
+
+    expect(part('control')?.hasAttribute('data-invalid')).toBe(true);
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+  });
 });
 
 describe('CheckboxGroup', () => {
@@ -168,5 +196,34 @@ describe('CheckboxGroup', () => {
     await click(eth);
 
     expect(onValueChange).toHaveBeenLastCalledWith(['btc', 'eth']);
+  });
+
+  it('drops an unchecked child from the value', async () => {
+    const onValueChange = vi.fn();
+    const { container } = renderGroup({
+      defaultValue: ['eth', 'btc'],
+      onValueChange,
+    });
+    const btc = container.querySelectorAll<HTMLInputElement>(
+      'input[type="checkbox"]',
+    )[1];
+    if (!btc) throw new Error('no input rendered');
+
+    await click(btc);
+
+    expect(onValueChange).toHaveBeenLastCalledWith(['eth']);
+  });
+
+  it('disables every child when the group is disabled', async () => {
+    const onValueChange = vi.fn();
+    const { container } = renderGroup({ disabled: true, onValueChange });
+    const inputs = [
+      ...container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+    ];
+
+    for (const input of inputs) await click(input);
+
+    expect(inputs.map((input) => input.disabled)).toEqual([true, true]);
+    expect(onValueChange).not.toHaveBeenCalled();
   });
 });
