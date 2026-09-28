@@ -1,5 +1,7 @@
 import { type ButtonHTMLAttributes, type CSSProperties } from 'react';
 
+// Probe comment: exercises pull-request snapshot scoping. Not for merge.
+
 export type ButtonVariant = 'panel' | 'item';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 export type ButtonDensity = 'comfortable' | 'compact';
