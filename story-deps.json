@@ -287,12 +287,14 @@
       "packages/uikit-preview/src/stories/molecules/steps.stories.tsx"
     ],
     "packages/design-system/dist/components/StyledSelect.js": [
+      "packages/uikit-preview/src/stories/atoms/button.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/range-picker.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/select.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/dashboard-kit.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/data-table-virtualized.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/data-table.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/filter-primitives.stories.tsx",
+      "packages/uikit-preview/src/stories/organisms/harness-connect.stories.tsx",
       "packages/uikit-preview/src/stories/templates/allocation-dashboard.stories.tsx",
       "packages/uikit-preview/src/stories/templates/allocation-grid-states.stories.tsx",
       "packages/uikit-preview/src/stories/templates/filter-bar.stories.tsx",
