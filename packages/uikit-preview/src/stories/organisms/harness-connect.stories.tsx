@@ -14,7 +14,9 @@
  * open the modal.
  */
 
+import { Button, Select } from '@r0hitsharma/design-system';
 import { HarnessConnect } from '@r0hitsharma/mcp-connect';
+import { RefreshCw } from 'lucide-react';
 
 import { css } from '../../../styled-system/css';
 
@@ -102,6 +104,48 @@ export const Reconnecting = () => (
       relayBaseUrl={RELAY_BASE_URL}
       connectionToken={FAKE_TOKEN}
     />
+  </div>
+);
+
+const toolbarRowClassName = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+});
+
+const selectClassName = css({ width: '40' });
+
+export const Sizes = () => (
+  <div className={frameClassName}>
+    <p className={captionClassName}>
+      The trigger takes the design-system Button sizes, so it matches the
+      controls beside it in a toolbar. Each row pairs it with an icon-only
+      Button of the same size; the large row adds a Select, whose height matches
+      lg.
+    </p>
+    {(['sm', 'md', 'lg'] as const).map((size) => (
+      <div key={size} className={toolbarRowClassName}>
+        {size === 'lg' ? (
+          <Select
+            aria-label="Environment"
+            className={selectClassName}
+            defaultValue="staging"
+          >
+            <option value="staging">Staging</option>
+            <option value="production">Production</option>
+          </Select>
+        ) : null}
+        <Button iconOnly size={size} aria-label="Refresh">
+          <RefreshCw size={size === 'lg' ? 16 : 14} aria-hidden />
+        </Button>
+        <HarnessConnect
+          indicatorStatus="connected"
+          relayBaseUrl={RELAY_BASE_URL}
+          connectionToken={FAKE_TOKEN}
+          size={size}
+        />
+      </div>
+    ))}
   </div>
 );
 

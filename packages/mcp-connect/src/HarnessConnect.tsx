@@ -14,7 +14,13 @@
  *   reconnecting (WS dropped, retrying)        -> pending
  */
 
-import { Button, Dialog, Indicator, Tabs } from '@r0hitsharma/design-system';
+import {
+  Button,
+  Dialog,
+  Indicator,
+  Tabs,
+  type ButtonSize,
+} from '@r0hitsharma/design-system';
 import { Check, Copy, MessageCircle, X } from 'lucide-react';
 import { useState, type CSSProperties } from 'react';
 
@@ -117,6 +123,11 @@ export type HarnessConnectProps = {
    * Defaults to false.
    */
   defaultOpen?: boolean;
+  /**
+   * Size of the trigger button, matching the design-system `Button` sizes so
+   * it lines up with neighbouring controls. Defaults to "md".
+   */
+  size?: ButtonSize;
 };
 
 /**
@@ -130,6 +141,7 @@ export function HarnessConnect({
   connectionToken,
   serverName = 'uikit-preview',
   defaultOpen = false,
+  size = 'md',
 }: HarnessConnectProps) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -168,10 +180,11 @@ export function HarnessConnect({
           onClick={() => setOpen(true)}
           aria-label={`Open harness connect modal (${statusLabel})`}
           iconOnly
+          size={size}
         >
-          <MessageCircle size={14} aria-hidden />
+          <MessageCircle size={triggerIconSize[size]} aria-hidden />
         </Button>
-        <span style={dotOverlayStyle} aria-hidden>
+        <span style={dotOverlayStyles[size]} aria-hidden>
           <Indicator status={indicatorDsStatus} />
         </span>
       </div>
@@ -327,11 +340,28 @@ const triggerWrapStyle: CSSProperties = {
   flex: 'none',
 };
 
-const dotOverlayStyle: CSSProperties = {
+const triggerIconSize: Record<ButtonSize, number> = {
+  sm: 14,
+  md: 14,
+  lg: 16,
+};
+
+// Sits the status dot on the trigger's top-right corner. `display: flex`
+// sizes the overlay to the dot itself; as an inline box it would sit on a
+// line box of the inherited line height and drop the dot toward the middle
+// of the button's edge. The offset shrinks as the button grows so the dot
+// keeps the same place relative to the button (24, 32 and 36px square at sm,
+// md and lg).
+const dotOverlayBaseStyle: CSSProperties = {
   position: 'absolute',
-  top: -2,
-  right: -2,
+  display: 'flex',
   pointerEvents: 'none',
+};
+
+const dotOverlayStyles: Record<ButtonSize, CSSProperties> = {
+  sm: { ...dotOverlayBaseStyle, top: -3, right: -3 },
+  md: { ...dotOverlayBaseStyle, top: -2, right: -2 },
+  lg: { ...dotOverlayBaseStyle, top: -1, right: -1 },
 };
 
 const backdropStyle: CSSProperties = {
