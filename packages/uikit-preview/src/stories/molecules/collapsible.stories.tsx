@@ -59,9 +59,9 @@ export const Open = () => (
   </div>
 );
 
-// The indicator can trail the label too, and `disabled` dims the trigger and
-// ignores clicks.
-export const TrailingIndicatorAndDisabled = () => (
+// The indicator can trail the label too, which suits a trigger that reads as a
+// link.
+export const TrailingIndicator = () => (
   <div className={frameClassName}>
     <Collapsible.Root defaultOpen>
       <Collapsible.Trigger>
@@ -74,6 +74,12 @@ export const TrailingIndicatorAndDisabled = () => (
         </p>
       </Collapsible.Content>
     </Collapsible.Root>
+  </div>
+);
+
+// `disabled` dims the trigger and ignores clicks.
+export const Disabled = () => (
+  <div className={frameClassName}>
     <Collapsible.Root disabled>
       <Collapsible.Trigger>
         <Collapsible.Indicator />
