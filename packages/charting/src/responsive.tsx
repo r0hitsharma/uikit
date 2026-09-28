@@ -11,9 +11,10 @@ import { useLatest } from './use-latest.js';
 
 /**
  * Fallback width for a renderer with no `ResizeObserver` (jsdom / SSR / the
- * first paint before measurement, or before the measured element mounts). `XYChart` needs a pixel width, and a chart
- * in a fluid grid cell has none until measured; this keeps the first render and
- * non-browser renderers from collapsing to zero. Previously every consumer
+ * first paint before measurement, or before the measured element mounts).
+ * `XYChart` needs a pixel width, and a chart in a fluid grid cell has none
+ * until measured; this keeps the first render and non-browser renderers from
+ * collapsing to zero. Previously every consumer
  * declared its own `FALLBACK_WIDTH` — it belongs here, in the kit.
  */
 export const FALLBACK_CHART_WIDTH = 560;
