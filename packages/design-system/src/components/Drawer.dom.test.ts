@@ -82,6 +82,13 @@ function memoryStorage(initial: Record<string, string> = {}) {
   return { storage, values };
 }
 
+/** Stands in for layout: jsdom reports every element as 0px wide. */
+function stubRenderedWidth(width: number) {
+  vi.spyOn(content(), 'getBoundingClientRect').mockReturnValue({
+    width,
+  } as DOMRect);
+}
+
 function drag(from: number, to: number) {
   fireEvent.pointerDown(handle(), { button: 0, pointerId: 1, clientX: from });
   fireEvent.pointerMove(handle(), { pointerId: 1, clientX: to });
@@ -139,6 +146,14 @@ describe('Drawer.Content resizable', () => {
     // Listeners are gone after release: stray moves change nothing.
     fireEvent.pointerMove(handle(), { pointerId: 1, clientX: 100 });
     expect(content().style.width).toBe('548px');
+  });
+
+  it('steps the keyboard from the rendered width when CSS caps the panel', () => {
+    renderDrawer({ resizable: true, defaultWidth: 960 });
+    // A 800px viewport: `maxWidth: 100vw` holds the 960px panel at 800px.
+    stubRenderedWidth(800);
+    fireEvent.keyDown(handle(), { key: 'ArrowRight' });
+    expect(content().style.width).toBe('784px');
   });
 
   it('narrows when dragged towards the inline end, clamped to minWidth', () => {

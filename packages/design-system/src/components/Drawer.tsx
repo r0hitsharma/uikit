@@ -248,6 +248,14 @@ function DrawerContent({
     if (persist) writeStoredWidth(storage, storageKey, next);
   };
 
+  // Drag and keyboard start from the rendered width, which CSS can cap below
+  // `width` (the content's `maxWidth: 100vw`), so the first pixel of movement
+  // or the first key press resizes. Without layout it reads 0: use `width`.
+  const startingWidth = (handle: HTMLElement) => {
+    const rendered = handle.parentElement?.getBoundingClientRect().width ?? 0;
+    return clampWidth(rendered > 0 ? rendered : width, minWidth, maxWidth);
+  };
+
   // The whole drag lives in this handler's closure: the start point and the
   // latest width are locals, and the move/end listeners sit on the captured
   // handle until the pointer is released. Nothing is written to a ref, so the
@@ -256,14 +264,7 @@ function DrawerContent({
     if (event.button !== 0) return;
     event.preventDefault();
     const handle = event.currentTarget;
-    // Start from the rendered width, which CSS can cap below `width` (the
-    // content's `maxWidth: 100vw`), so the first pixel of movement resizes.
-    const rendered = handle.parentElement?.getBoundingClientRect().width ?? 0;
-    const startWidth = clampWidth(
-      rendered > 0 ? rendered : width,
-      minWidth,
-      maxWidth,
-    );
+    const startWidth = startingWidth(handle);
     const startX = event.clientX;
     // The panel is anchored to the inline end, so its handle is on the
     // inline-start edge: moving towards the inline start widens it.
@@ -305,9 +306,10 @@ function DrawerContent({
     const widenKey = isRtl(event.currentTarget) ? 'ArrowRight' : 'ArrowLeft';
     const narrowKey = widenKey === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
     let next: number;
-    if (event.key === widenKey) next = width + KEYBOARD_STEP;
-    else if (event.key === narrowKey) next = width - KEYBOARD_STEP;
-    else if (event.key === 'Home') next = minWidth;
+    if (event.key === widenKey || event.key === narrowKey) {
+      const step = event.key === widenKey ? KEYBOARD_STEP : -KEYBOARD_STEP;
+      next = startingWidth(event.currentTarget) + step;
+    } else if (event.key === 'Home') next = minWidth;
     else if (event.key === 'End') next = maxWidth;
     else return;
     event.preventDefault();
