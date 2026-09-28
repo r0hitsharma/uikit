@@ -73,6 +73,7 @@ export {
 export type {
   ResponsiveChartProps,
   ChartDimensions,
+  MeasuredRef,
   UseChartDimensionsOptions,
   DeriveLeftMarginOptions,
 } from './responsive.js';
