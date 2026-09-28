@@ -257,13 +257,15 @@ function DrawerContent({
   };
 
   // The whole drag lives in this handler's closure: the start point and the
-  // latest width are locals, and the move/end listeners sit on the captured
-  // handle until the pointer is released. Nothing is written to a ref, so the
-  // component stays React Compiler clean.
+  // latest width are locals, and the move/end listeners stay attached until
+  // the gesture ends. Nothing is written to a ref, so the component stays
+  // React Compiler clean.
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
     event.preventDefault();
     const handle = event.currentTarget;
+    const doc = handle.ownerDocument;
+    const { pointerId } = event;
     const startWidth = startingWidth(handle);
     const startX = event.clientX;
     // The panel is anchored to the inline end, so its handle is on the
@@ -284,21 +286,32 @@ function DrawerContent({
       moved = true;
       change(next, false);
     };
-    const handleEnd = (endEvent: globalThis.PointerEvent) => {
+    // Runs once, whichever end signal comes first: listeners are removed
+    // before capture is released, so the `lostpointercapture` that release
+    // fires finds nothing to call.
+    const handleEnd = () => {
       handle.removeEventListener('pointermove', handleMove);
       handle.removeEventListener('pointerup', handleEnd);
       handle.removeEventListener('pointercancel', handleEnd);
-      if (handle.hasPointerCapture?.(endEvent.pointerId)) {
-        handle.releasePointerCapture(endEvent.pointerId);
+      doc.removeEventListener('lostpointercapture', handleLostCapture);
+      if (handle.hasPointerCapture?.(pointerId)) {
+        handle.releasePointerCapture(pointerId);
       }
       setDragging(false);
       if (moved && !controlled) writeStoredWidth(storage, storageKey, latest);
     };
+    // Capture can also end with no `pointerup` or `pointercancel` reaching
+    // the handle: another element takes it, or the handle leaves the document
+    // mid-drag. Listened for on the document, which receives it in both cases.
+    const handleLostCapture = (lostEvent: globalThis.PointerEvent) => {
+      if (lostEvent.pointerId === pointerId) handleEnd();
+    };
 
-    handle.setPointerCapture?.(event.pointerId);
+    handle.setPointerCapture?.(pointerId);
     handle.addEventListener('pointermove', handleMove);
     handle.addEventListener('pointerup', handleEnd);
     handle.addEventListener('pointercancel', handleEnd);
+    doc.addEventListener('lostpointercapture', handleLostCapture);
     setDragging(true);
   };
 

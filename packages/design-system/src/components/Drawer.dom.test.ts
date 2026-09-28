@@ -148,6 +148,41 @@ describe('Drawer.Content resizable', () => {
     expect(content().style.width).toBe('548px');
   });
 
+  it.each([
+    [
+      'pointercancel',
+      () => fireEvent.pointerCancel(handle(), { pointerId: 1 }),
+    ],
+    [
+      'lostpointercapture on the handle',
+      () => fireEvent.lostPointerCapture(handle(), { pointerId: 1 }),
+    ],
+    [
+      'lostpointercapture on the document (handle removed)',
+      () => fireEvent.lostPointerCapture(document, { pointerId: 1 }),
+    ],
+  ])('ends the drag and persists on %s', (_, end) => {
+    const { storage, values } = memoryStorage();
+    renderDrawer({ resizable: true, storageKey: 'w', storage });
+    fireEvent.pointerDown(handle(), { button: 0, pointerId: 1, clientX: 500 });
+    fireEvent.pointerMove(handle(), { pointerId: 1, clientX: 450 });
+
+    end();
+    expect(handle().hasAttribute('data-dragging')).toBe(false);
+    expect(values.get('w')).toBe('498');
+    fireEvent.pointerMove(handle(), { pointerId: 1, clientX: 100 });
+    expect(content().style.width).toBe('498px');
+  });
+
+  it("ignores another pointer's lost capture", () => {
+    renderDrawer({ resizable: true });
+    fireEvent.pointerDown(handle(), { button: 0, pointerId: 1, clientX: 500 });
+    fireEvent.lostPointerCapture(document, { pointerId: 2 });
+    expect(handle().hasAttribute('data-dragging')).toBe(true);
+    fireEvent.pointerMove(handle(), { pointerId: 1, clientX: 450 });
+    expect(content().style.width).toBe('498px');
+  });
+
   it('steps the keyboard from the rendered width when CSS caps the panel', () => {
     renderDrawer({ resizable: true, defaultWidth: 960 });
     // A 800px viewport: `maxWidth: 100vw` holds the 960px panel at 800px.
