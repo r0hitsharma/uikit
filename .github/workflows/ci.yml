@@ -160,6 +160,11 @@ jobs:
       - name: Build charting
         run: npm run build --workspace packages/charting
 
+      # mcp-connect's HarnessConnect.test.tsx imports @r0hitsharma/design-system,
+      # whose exports resolve to dist/ as well.
+      - name: Build design-system
+        run: npm run build --workspace packages/design-system
+
       - name: Run all vitest specs (relay core unit + Worker/DO integration)
         run: npm test
 
