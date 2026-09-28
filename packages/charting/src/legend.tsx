@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 import { resolveChartColor, type ChartColor } from './chart-color.js';
 import { useResizeObserverRef } from './responsive.js';
@@ -69,10 +69,14 @@ export type ChartLegendProps = {
    * Fires with the legend's rendered height in px when it lays out, again
    * whenever that height changes (a wrap onto another row, a longer label),
    * and with `0` when the legend stops rendering (for example `items` becomes
-   * empty). A newly attached listener receives the current height straight
-   * away. The height is not fixed: it depends on the item count and the width
-   * the host grants, so a host that shares a height budget between the legend
-   * and the plot should subtract this rather than reserve a constant. Needs a
+   * empty). Repeat reports of an unchanged height are dropped, so an inline
+   * callback is safe. A listener added while none was set receives the current
+   * height straight away; replacing one listener function with another does not
+   * re-send the current height, and the new one receives the next change.
+   *
+   * The height is not fixed: it depends on the item count and the width the
+   * host grants, so a host that shares a height budget between the legend and
+   * the plot should subtract this rather than reserve a constant. Needs a
    * `ResizeObserver`.
    */
   onHeightChange?: (height: number) => void;
@@ -86,29 +90,6 @@ function itemCap(maxItems: number | undefined): number {
   return maxItems != null && Number.isFinite(maxItems)
     ? Math.max(0, Math.floor(maxItems))
     : Infinity;
-}
-
-type HeightReport = {
-  listener: (height: number) => void;
-  height: number;
-};
-
-/**
- * Passes `height` to `listener` unless that listener was last told the same
- * height. A new listener therefore always gets its initial value, and
- * `ChartLegend` clears the record on detach so the next attachment does too,
- * while repeat reports of an unchanged box are dropped.
- */
-function reportHeight(
-  last: RefObject<HeightReport | null>,
-  listener: ((height: number) => void) | undefined,
-  height: number,
-) {
-  if (!listener) return;
-  const previous = last.current;
-  if (previous?.listener === listener && previous.height === height) return;
-  last.current = { listener, height };
-  listener(height);
 }
 
 /** Resolves an item's interaction identity, falling back to its label. */
@@ -221,9 +202,18 @@ export function ChartLegend({
   maxItems,
   onHeightChange,
 }: ChartLegendProps) {
-  const reported = useRef<HeightReport | null>(null);
+  // The last height passed on, so a report of an unchanged box is dropped.
+  // Cleared on detach so the next attachment reports afresh.
+  const reported = useRef<number | null>(null);
+  // Both callbacks are held latest by the hook, so an inline listener (a new
+  // function every render) neither re-runs anything nor misses a report.
   const measuredRef = useResizeObserverRef<HTMLDivElement>(
-    (element) => reportHeight(reported, onHeightChange, element.offsetHeight),
+    (element) => {
+      const height = element.offsetHeight;
+      if (height === reported.current) return;
+      reported.current = height;
+      onHeightChange?.(height);
+    },
     () => {
       // The legend stopped rendering: it now takes no height, and whatever
       // attaches next starts fresh.
@@ -233,14 +223,6 @@ export function ChartLegend({
   );
   // Only observe when someone is listening; otherwise leave the node alone.
   const ref = onHeightChange ? measuredRef : undefined;
-
-  // A listener swapped in while the legend stays mounted gets no observer
-  // report until the box changes, so hand it the current height here.
-  useEffect(() => {
-    const element = measuredRef.current;
-    if (!element || typeof ResizeObserver === 'undefined') return;
-    reportHeight(reported, onHeightChange, element.offsetHeight);
-  }, [measuredRef, onHeightChange]);
 
   if (items.length === 0) return null;
 

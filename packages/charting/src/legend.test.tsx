@@ -1,4 +1,5 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
+import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveChartColor } from './chart-color.js';
@@ -245,7 +246,7 @@ describe('ChartLegend onHeightChange', () => {
     expect(liveObservers()).toHaveLength(1);
   });
 
-  it('hands a swapped-in listener the current height, and stops calling the old one', () => {
+  it('sends a swapped-in listener the next change, and the old one nothing', () => {
     laidOutHeight = 20;
     const first = vi.fn();
     const second = vi.fn();
@@ -253,13 +254,59 @@ describe('ChartLegend onHeightChange', () => {
       <ChartLegend items={FIVE} onHeightChange={first} />,
     );
     rerender(<ChartLegend items={FIVE} onHeightChange={second} />);
-    expect(second.mock.calls).toEqual([[20]]);
+    // Same height, same observer: nothing to re-send.
+    expect(second).not.toHaveBeenCalled();
     expect(liveObservers()).toHaveLength(1);
     expect(StubResizeObserver.instances).toHaveLength(1);
 
     resize(42);
     expect(first.mock.calls).toEqual([[20]]);
-    expect(second.mock.calls).toEqual([[20], [42]]);
+    expect(second.mock.calls).toEqual([[42]]);
+  });
+
+  it('does not loop on an inline listener that stores a fresh object', () => {
+    laidOutHeight = 20;
+    let calls = 0;
+    // `tick` only forces an unrelated host re-render.
+    function Host({ tick }: { tick: number }) {
+      const [, setLayout] = useState({ legend: 0 });
+      return (
+        <div data-tick={tick}>
+          <ChartLegend
+            items={FIVE}
+            onHeightChange={(height) => {
+              calls++;
+              // Bounded so a regression fails here instead of hanging.
+              if (calls < 50) setLayout({ legend: height });
+            }}
+          />
+        </div>
+      );
+    }
+    const { rerender } = render(<Host tick={0} />);
+    rerender(<Host tick={1} />);
+    rerender(<Host tick={2} />);
+    expect(calls).toBe(1);
+  });
+
+  it('reports once to an inline setter across unrelated host re-renders', () => {
+    laidOutHeight = 20;
+    const seen: number[] = [];
+    function Host({ tick }: { tick: number }) {
+      return (
+        <div data-tick={tick}>
+          <ChartLegend
+            items={FIVE}
+            onHeightChange={(height) => seen.push(height)}
+          />
+        </div>
+      );
+    }
+    const { rerender } = render(<Host tick={0} />);
+    rerender(<Host tick={1} />);
+    rerender(<Host tick={2} />);
+    rerender(<Host tick={3} />);
+    expect(seen).toEqual([20]);
   });
 
   it('observes nothing without a listener', () => {
