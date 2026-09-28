@@ -21,19 +21,27 @@ const slots = {
 const cx = (...classes: Array<string | false | null | undefined>): string =>
   classes.filter(Boolean).join(' ');
 
-function CollapsibleRoot({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkCollapsible.Root>) {
+/** Props of each styled part: Ark's own, plus the slot class composition. */
+export type CollapsibleRootProps = ComponentPropsWithoutRef<
+  typeof ArkCollapsible.Root
+>;
+export type CollapsibleTriggerProps = ComponentPropsWithoutRef<
+  typeof ArkCollapsible.Trigger
+>;
+export type CollapsibleIndicatorProps = ComponentPropsWithoutRef<
+  typeof ArkCollapsible.Indicator
+>;
+export type CollapsibleContentProps = ComponentPropsWithoutRef<
+  typeof ArkCollapsible.Content
+>;
+
+function CollapsibleRoot({ className, ...props }: CollapsibleRootProps) {
   return (
     <ArkCollapsible.Root {...props} className={cx(slots.root, className)} />
   );
 }
 
-function CollapsibleTrigger({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkCollapsible.Trigger>) {
+function CollapsibleTrigger({ className, ...props }: CollapsibleTriggerProps) {
   return (
     <ArkCollapsible.Trigger
       {...props}
@@ -51,7 +59,7 @@ function CollapsibleIndicator({
   className,
   children,
   ...props
-}: ComponentPropsWithoutRef<typeof ArkCollapsible.Indicator>) {
+}: CollapsibleIndicatorProps) {
   return (
     <ArkCollapsible.Indicator
       {...props}
@@ -62,10 +70,7 @@ function CollapsibleIndicator({
   );
 }
 
-function CollapsibleContent({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkCollapsible.Content>) {
+function CollapsibleContent({ className, ...props }: CollapsibleContentProps) {
   return (
     <ArkCollapsible.Content
       {...props}

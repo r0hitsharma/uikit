@@ -137,7 +137,13 @@ export {
   type TextareaProps,
 } from './components/TextInput.js';
 export { Drawer, type DrawerWidthStorage } from './components/Drawer.js';
-export { Collapsible } from './components/Collapsible.js';
+export {
+  Collapsible,
+  type CollapsibleRootProps,
+  type CollapsibleTriggerProps,
+  type CollapsibleIndicatorProps,
+  type CollapsibleContentProps,
+} from './components/Collapsible.js';
 export {
   Steps,
   type StepsRootProps,
