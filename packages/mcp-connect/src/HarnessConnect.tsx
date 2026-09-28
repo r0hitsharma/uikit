@@ -189,8 +189,12 @@ export function HarnessConnect({
         </span>
       </div>
 
-      {/* Connection modal */}
+      {/* Connection modal. `lazyMount` keeps the content (and with it the
+          bearer connection token) out of the DOM until the dialog first
+          opens; `unmountOnExit` removes it again on close. */}
       <Dialog.Root
+        lazyMount
+        unmountOnExit
         open={open}
         onOpenChange={(details: { open: boolean }) => setOpen(details.open)}
       >
