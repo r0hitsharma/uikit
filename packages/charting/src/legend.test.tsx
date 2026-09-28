@@ -49,6 +49,9 @@ const FIVE: ChartLegendItem[] = [
   'Echo',
 ].map((label) => ({ label, color: 'chart.series.primary' }));
 
+const entryText = () =>
+  screen.getAllByRole('listitem').map((entry) => entry.textContent);
+
 describe('ChartLegend maxItems', () => {
   it('renders every item when unset', () => {
     render(<ChartLegend items={FIVE} />);
@@ -58,25 +61,74 @@ describe('ChartLegend maxItems', () => {
 
   it('truncates to maxItems and names the rest in a "+n more" entry', () => {
     render(<ChartLegend items={FIVE} maxItems={3} />);
-    const entries = screen.getAllByRole('listitem');
-    expect(entries.map((entry) => entry.textContent)).toEqual([
-      'Alpha',
-      'Bravo',
-      'Charlie',
-      '+2 more',
-    ]);
-    expect(entries[3]?.getAttribute('title')).toBe('Delta, Echo');
+    expect(entryText()).toEqual(['Alpha', 'Bravo', 'Charlie', '+2 more']);
+    expect(screen.getByText('+2 more').getAttribute('title')).toBe(
+      'Delta, Echo',
+    );
   });
 
-  it('adds no entry when maxItems covers every item', () => {
-    render(<ChartLegend items={FIVE} maxItems={5} />);
-    expect(screen.getAllByRole('listitem')).toHaveLength(5);
+  it.each([
+    [0, 0],
+    [-1, 0],
+    [2.5, 2],
+    [FIVE.length, 5],
+    [FIVE.length + 1, 5],
+    [Number.NaN, 5],
+    [Number.POSITIVE_INFINITY, 5],
+  ])('maxItems=%s renders %s items', (maxItems, shown) => {
+    render(<ChartLegend items={FIVE} maxItems={maxItems} />);
+    const expected: Array<string | null> = FIVE.slice(0, shown).map(
+      (item) => item.label,
+    );
+    if (shown < FIVE.length) expected.push(`+${FIVE.length - shown} more`);
+    expect(entryText()).toEqual(expected);
   });
 
   it('truncates the interactive form too, leaving the overflow untoggleable', () => {
-    render(<ChartLegend items={FIVE} maxItems={2} interactive />);
+    const onToggle = vi.fn();
+    render(
+      <ChartLegend items={FIVE} maxItems={2} interactive onToggle={onToggle} />,
+    );
     expect(screen.getAllByRole('button')).toHaveLength(2);
-    expect(screen.getByText('+3 more').tagName).toBe('SPAN');
+    const more = screen.getByText('+3 more');
+    expect(more.tagName).toBe('SPAN');
+    expect(more.getAttribute('title')).toBe('Charlie, Delta, Echo');
+    more.click();
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  it('always renders hidden items in the interactive form, capping the rest', () => {
+    const onToggle = vi.fn();
+    const items = FIVE.map((item) =>
+      item.label === 'Delta' ? { ...item, hidden: true } : item,
+    );
+    render(
+      <ChartLegend
+        items={items}
+        maxItems={2}
+        interactive
+        onToggle={onToggle}
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.map((button) => button.textContent)).toEqual([
+      'Alpha',
+      'Bravo',
+      'Delta',
+    ]);
+    expect(screen.getByText('+2 more').getAttribute('title')).toBe(
+      'Charlie, Echo',
+    );
+    buttons[2]!.click();
+    expect(onToggle).toHaveBeenCalledWith('Delta');
+  });
+
+  it('caps hidden items like any other in the static form', () => {
+    const items = FIVE.map((item) =>
+      item.label === 'Delta' ? { ...item, hidden: true } : item,
+    );
+    render(<ChartLegend items={items} maxItems={2} />);
+    expect(entryText()).toEqual(['Alpha', 'Bravo', '+3 more']);
   });
 });
 

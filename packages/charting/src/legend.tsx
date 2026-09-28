@@ -56,8 +56,13 @@ export type ChartLegendProps = {
   /**
    * Render at most this many items, followed by a "+n more" entry naming the
    * rest in its tooltip. The legend wraps onto as many rows as its width needs,
-   * so on a narrow host the item count is what bounds its height. Unset (the
-   * default) renders every item.
+   * so on a narrow host the item count is what bounds its height.
+   *
+   * A fractional value rounds down and a negative one counts as `0` (every
+   * item collapses into "+n more"). Unset, `NaN` or `Infinity` renders every
+   * item. In the interactive form, items with `hidden: true` are exempt and
+   * always render, so a toggled-off series can always be toggled back on; the
+   * cap applies to the remaining items.
    */
   maxItems?: number;
   /**
@@ -72,6 +77,16 @@ export type ChartLegendProps = {
    */
   onHeightChange?: (height: number) => void;
 };
+
+/**
+ * `maxItems` as a count: a finite value floored and clamped at `0`, anything
+ * else (unset, `NaN`, `Infinity`) meaning no cap.
+ */
+function itemCap(maxItems: number | undefined): number {
+  return maxItems != null && Number.isFinite(maxItems)
+    ? Math.max(0, Math.floor(maxItems))
+    : Infinity;
+}
 
 type HeightReport = {
   element: Element;
@@ -238,12 +253,15 @@ export function ChartLegend({
 
   if (items.length === 0) return null;
 
-  const limit =
-    maxItems != null && maxItems >= 0 && maxItems < items.length
-      ? Math.floor(maxItems)
-      : items.length;
-  const shown = items.slice(0, limit);
-  const overflow = items.slice(limit);
+  const cap = itemCap(maxItems);
+  const shown: ChartLegendItem[] = [];
+  const overflow: ChartLegendItem[] = [];
+  let counted = 0;
+  for (const item of items) {
+    if (interactive && item.hidden) shown.push(item);
+    else if (counted++ < cap) shown.push(item);
+    else overflow.push(item);
+  }
 
   const containerStyle = {
     display: 'flex',
