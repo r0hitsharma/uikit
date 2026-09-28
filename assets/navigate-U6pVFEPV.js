@@ -1,0 +1,1 @@
+import{p as t}from"./runtime-DCULitrr.js";import{j as c}from"./event-D-MscZqw.js";import{q as n}from"./raf-gIu78Kzv.js";function p(e){const i=()=>{const o=t(e);e.dispatchEvent(new o.MouseEvent("click"))};c()?n(e,"keyup",i):queueMicrotask(i)}export{p as c};
