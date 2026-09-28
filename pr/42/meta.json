@@ -617,6 +617,102 @@
       "namedExport": "NestedRows",
       "meta": {}
     },
+    "molecules--checkbox--group": {
+      "name": "Group",
+      "levels": [
+        "Molecules",
+        "Checkbox"
+      ],
+      "locStart": 45,
+      "locEnd": 64,
+      "filePath": "src/stories/molecules/checkbox.stories.tsx",
+      "namedExport": "Group",
+      "meta": {}
+    },
+    "molecules--checkbox--horizontal-group": {
+      "name": "Horizontal group",
+      "levels": [
+        "Molecules",
+        "Checkbox"
+      ],
+      "locStart": 66,
+      "locEnd": 78,
+      "filePath": "src/stories/molecules/checkbox.stories.tsx",
+      "namedExport": "HorizontalGroup",
+      "meta": {}
+    },
+    "molecules--checkbox--select-all": {
+      "name": "Select all",
+      "levels": [
+        "Molecules",
+        "Checkbox"
+      ],
+      "locStart": 81,
+      "locEnd": 107,
+      "filePath": "src/stories/molecules/checkbox.stories.tsx",
+      "namedExport": "SelectAll",
+      "meta": {}
+    },
+    "molecules--checkbox--states": {
+      "name": "States",
+      "levels": [
+        "Molecules",
+        "Checkbox"
+      ],
+      "locStart": 28,
+      "locEnd": 39,
+      "filePath": "src/stories/molecules/checkbox.stories.tsx",
+      "namedExport": "States",
+      "meta": {}
+    },
+    "molecules--collapsible--closed": {
+      "name": "Closed",
+      "levels": [
+        "Molecules",
+        "Collapsible"
+      ],
+      "locStart": 29,
+      "locEnd": 43,
+      "filePath": "src/stories/molecules/collapsible.stories.tsx",
+      "namedExport": "Closed",
+      "meta": {}
+    },
+    "molecules--collapsible--disabled": {
+      "name": "Disabled",
+      "levels": [
+        "Molecules",
+        "Collapsible"
+      ],
+      "locStart": 81,
+      "locEnd": 91,
+      "filePath": "src/stories/molecules/collapsible.stories.tsx",
+      "namedExport": "Disabled",
+      "meta": {}
+    },
+    "molecules--collapsible--open": {
+      "name": "Open",
+      "levels": [
+        "Molecules",
+        "Collapsible"
+      ],
+      "locStart": 45,
+      "locEnd": 60,
+      "filePath": "src/stories/molecules/collapsible.stories.tsx",
+      "namedExport": "Open",
+      "meta": {}
+    },
+    "molecules--collapsible--trailing-indicator": {
+      "name": "Trailing indicator",
+      "levels": [
+        "Molecules",
+        "Collapsible"
+      ],
+      "locStart": 64,
+      "locEnd": 78,
+      "filePath": "src/stories/molecules/collapsible.stories.tsx",
+      "namedExport": "TrailingIndicator",
+      "meta": {}
+    },
     "molecules--heat-cell--all-steps": {
       "name": "All steps",
       "levels": [
@@ -843,6 +939,54 @@
       "locEnd": 44,
       "filePath": "src/stories/molecules/popover.stories.tsx",
       "namedExport": "Default",
+      "meta": {}
+    },
+    "molecules--progressbar--percentage": {
+      "name": "Percentage",
+      "levels": [
+        "Molecules",
+        "Progressbar"
+      ],
+      "locStart": 34,
+      "locEnd": 38,
+      "filePath": "src/stories/molecules/progress-bar.stories.tsx",
+      "namedExport": "Percentage",
+      "meta": {}
+    },
+    "molecules--progressbar--small-without-header": {
+      "name": "Small without header",
+      "levels": [
+        "Molecules",
+        "Progressbar"
+      ],
+      "locStart": 50,
+      "locEnd": 59,
+      "filePath": "src/stories/molecules/progress-bar.stories.tsx",
+      "namedExport": "SmallWithoutHeader",
+      "meta": {}
+    },
+    "molecules--progressbar--steps-of-total": {
+      "name": "Steps of total",
+      "levels": [
+        "Molecules",
+        "Progressbar"
+      ],
+      "locStart": 22,
+      "locEnd": 31,
+      "filePath": "src/stories/molecules/progress-bar.stories.tsx",
+      "namedExport": "StepsOfTotal",
+      "meta": {}
+    },
+    "molecules--progressbar--tones": {
+      "name": "Tones",
+      "levels": [
+        "Molecules",
+        "Progressbar"
+      ],
+      "locStart": 40,
+      "locEnd": 47,
+      "filePath": "src/stories/molecules/progress-bar.stories.tsx",
+      "namedExport": "Tones",
       "meta": {}
     },
     "molecules--proportionbar--allocation": {
@@ -1205,6 +1349,54 @@
       "namedExport": "ValueWrap",
       "meta": {}
     },
+    "molecules--steps--completed": {
+      "name": "Completed",
+      "levels": [
+        "Molecules",
+        "Steps"
+      ],
+      "locStart": 105,
+      "locEnd": 109,
+      "filePath": "src/stories/molecules/steps.stories.tsx",
+      "namedExport": "Completed",
+      "meta": {}
+    },
+    "molecules--steps--default": {
+      "name": "Default",
+      "levels": [
+        "Molecules",
+        "Steps"
+      ],
+      "locStart": 64,
+      "locEnd": 97,
+      "filePath": "src/stories/molecules/steps.stories.tsx",
+      "namedExport": "Default",
+      "meta": {}
+    },
+    "molecules--steps--vertical": {
+      "name": "Vertical",
+      "levels": [
+        "Molecules",
+        "Steps"
+      ],
+      "locStart": 99,
+      "locEnd": 103,
+      "filePath": "src/stories/molecules/steps.stories.tsx",
+      "namedExport": "Vertical",
+      "meta": {}
+    },
+    "molecules--steps--with-validation": {
+      "name": "With validation",
+      "levels": [
+        "Molecules",
+        "Steps"
+      ],
+      "locStart": 113,
+      "locEnd": 162,
+      "filePath": "src/stories/molecules/steps.stories.tsx",
+      "namedExport": "WithValidation",
+      "meta": {}
+    },
     "molecules--surface-message--body-only": {
       "name": "Body only",
       "levels": [
@@ -1355,8 +1547,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 677,
-      "locEnd": 716,
+      "locStart": 678,
+      "locEnd": 717,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "ColoredLegend",
       "meta": {}
@@ -1367,8 +1559,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 478,
-      "locEnd": 488,
+      "locStart": 479,
+      "locEnd": 489,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "Default",
       "meta": {}
@@ -1379,10 +1571,22 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 732,
-      "locEnd": 786,
+      "locStart": 821,
+      "locEnd": 875,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "Distribution",
+      "meta": {}
+    },
+    "organisms--charting-primitives--narrow-legend": {
+      "name": "Narrow legend",
+      "levels": [
+        "Organisms",
+        "Charting primitives"
+      ],
+      "locStart": 796,
+      "locEnd": 805,
+      "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
+      "namedExport": "NarrowLegend",
       "meta": {}
     },
     "organisms--charting-primitives--reader-layer": {
@@ -1391,8 +1595,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 547,
-      "locEnd": 673,
+      "locStart": 548,
+      "locEnd": 674,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "ReaderLayer",
       "meta": {}
@@ -1403,8 +1607,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 493,
-      "locEnd": 529,
+      "locStart": 494,
+      "locEnd": 530,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "Responsive",
       "meta": {}
@@ -1415,8 +1619,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 849,
-      "locEnd": 871,
+      "locStart": 938,
+      "locEnd": 960,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "SyncedCrosshair",
       "meta": {}
@@ -1427,8 +1631,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 942,
-      "locEnd": 964,
+      "locStart": 1031,
+      "locEnd": 1053,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "SyncedReadout",
       "meta": {}
@@ -1697,6 +1901,18 @@
       "namedExport": "Toolbar",
       "meta": {}
     },
+    "organisms--drawer--controlled-width": {
+      "name": "Controlled width",
+      "levels": [
+        "Organisms",
+        "Drawer"
+      ],
+      "locStart": 227,
+      "locEnd": 260,
+      "filePath": "src/stories/organisms/drawer.stories.tsx",
+      "namedExport": "ControlledWidth",
+      "meta": {}
+    },
     "organisms--drawer--default": {
       "name": "Default",
       "levels": [
@@ -1709,6 +1925,18 @@
       "namedExport": "Default",
       "meta": {}
     },
+    "organisms--drawer--non-modal": {
+      "name": "Non modal",
+      "levels": [
+        "Organisms",
+        "Drawer"
+      ],
+      "locStart": 180,
+      "locEnd": 216,
+      "filePath": "src/stories/organisms/drawer.stories.tsx",
+      "namedExport": "NonModal",
+      "meta": {}
+    },
     "organisms--drawer--open-by-default": {
       "name": "Open by default",
       "levels": [
@@ -1719,6 +1947,18 @@
       "locEnd": 126,
       "filePath": "src/stories/organisms/drawer.stories.tsx",
       "namedExport": "OpenByDefault",
+      "meta": {}
+    },
+    "organisms--drawer--resizable": {
+      "name": "Resizable",
+      "levels": [
+        "Organisms",
+        "Drawer"
+      ],
+      "locStart": 132,
+      "locEnd": 174,
+      "filePath": "src/stories/organisms/drawer.stories.tsx",
+      "namedExport": "Resizable",
       "meta": {}
     },
     "organisms--empty-state--compact-with-action": {
