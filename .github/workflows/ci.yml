@@ -88,7 +88,7 @@ jobs:
       # The preview above builds from `panda.shared.ts`, not the published
       # preset, so nothing else here generates CSS the way a consumer does. This
       # runs `panda codegen`/`cssgen` on a fixture configured exactly as the
-      # design-system README says (`presets: [designSystemPreset]` plus the
+      # design-system README says (`presets: [designSystemStandalonePreset]` plus the
       # `staticCss` spread), against the BUILT preset in `dist/`. Panda only
       # warns on an unresolved token, so the script greps for `Missing token`
       # and fails the job, then doctors the fixture's stylesheet too.

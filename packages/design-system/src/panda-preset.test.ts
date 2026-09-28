@@ -1,9 +1,12 @@
 import { preset as pandaBasePreset } from '@pandacss/preset-base';
 import { preset as pandaDefaultPreset } from '@pandacss/preset-panda';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { designSystemPandaConfig } from '../panda.shared.js';
-import { designSystemPreset } from './panda-preset.js';
+import {
+  designSystemPreset,
+  designSystemStandalonePreset,
+} from './panda-preset.js';
 import {
   designSystemRecipes,
   designSystemSlotRecipes,
@@ -41,9 +44,9 @@ describe('borderWidths token scale', () => {
   // all is the whole point: without it a consumer running `strictTokens` has to
   // write every border as an arbitrary `[value]`.
   it('is registered on the preset', () => {
-    expect(designSystemPreset.theme?.extend?.tokens?.borderWidths).toBe(
-      borderWidthTokens,
-    );
+    expect(
+      designSystemStandalonePreset.theme?.extend?.tokens?.borderWidths,
+    ).toBe(borderWidthTokens);
   });
 
   // The failure `tokens/sharedThemeTokens.ts` exists to prevent: a scale added
@@ -52,7 +55,7 @@ describe('borderWidths token scale', () => {
   // nothing — silently, exactly as `identity.*` once did.
   it('is registered identically on the internal shared config', () => {
     expect(designSystemPandaConfig.theme?.extend?.tokens?.borderWidths).toBe(
-      designSystemPreset.theme?.extend?.tokens?.borderWidths,
+      designSystemStandalonePreset.theme?.extend?.tokens?.borderWidths,
     );
   });
 
@@ -115,24 +118,25 @@ function hasToken(tree: unknown, path: string): boolean {
 
 describe('base presets', () => {
   // Panda drops its own default presets as soon as a consumer sets `presets`,
-  // so `presets: [designSystemPreset]` only resolves the base palette the
+  // so `presets: [designSystemStandalonePreset]` only resolves the base palette the
   // semantic tokens point into because the preset declares it itself.
   it('are declared on the preset', () => {
-    expect(designSystemPreset.presets).toEqual([
+    expect(designSystemStandalonePreset.presets).toEqual([
       pandaBasePreset,
       pandaDefaultPreset,
     ]);
   });
 
   it('define every token the semantic tokens reference', () => {
-    const extend = designSystemPreset.theme?.extend;
+    const extend = designSystemStandalonePreset.theme?.extend;
     // Resolve against what the preset itself carries (its own tokens plus the
-    // presets it declares), which is all a `presets: [designSystemPreset]`
+    // presets it declares), which is all a `presets: [designSystemStandalonePreset]`
     // consumer gets.
-    const nestedTokens = (designSystemPreset.presets ?? []).map((nested) =>
-      typeof nested === 'object' && !(nested instanceof Promise)
-        ? nested.theme?.tokens
-        : undefined,
+    const nestedTokens = (designSystemStandalonePreset.presets ?? []).map(
+      (nested) =>
+        typeof nested === 'object' && !(nested instanceof Promise)
+          ? nested.theme?.tokens
+          : undefined,
     );
     const trees = [...nestedTokens, extend?.tokens, extend?.semanticTokens];
     const references = collectTokenReferences(extend?.semanticTokens);
@@ -146,5 +150,37 @@ describe('base presets', () => {
         reference,
       ).toBe(true);
     }
+  });
+});
+
+describe('deprecated designSystemPreset', () => {
+  // Panda reads a preset's `presets` while resolving every config that lists
+  // it, so this is where a consumer on the old name gets the upgrade notice.
+  it('is the standalone preset, and warns once when Panda reads its presets', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      expect(designSystemPreset.theme).toBe(designSystemStandalonePreset.theme);
+      expect(warn).not.toHaveBeenCalled();
+
+      expect(designSystemPreset.presets).toBe(
+        designSystemStandalonePreset.presets,
+      );
+      void designSystemPreset.presets;
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0]?.[0])).toContain(
+        '`designSystemPreset` is deprecated',
+      );
+      // Consumer guards grep Panda's output for this phrase; the notice must
+      // not trip them.
+      expect(String(warn.mock.calls[0]?.[0])).not.toContain('Missing token');
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('keeps every key the standalone preset has', () => {
+    expect(Object.keys(designSystemPreset).sort()).toEqual(
+      Object.keys(designSystemStandalonePreset).sort(),
+    );
   });
 });

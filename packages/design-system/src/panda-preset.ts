@@ -62,7 +62,7 @@ import {
  * (`{colors.neutral.50}`, `{colors.white}`), and the recipes use its spacing,
  * radii and font scales. Panda adds that theme (`@pandacss/preset-panda`) only
  * when a config sets no `presets`, so a consumer writing
- * `presets: [designSystemPreset]` would otherwise lose every one of those base
+ * `presets: [designSystemStandalonePreset]` would otherwise lose every one of those base
  * tokens. This preset therefore declares it itself, together with
  * `@pandacss/preset-base` (utilities, conditions, patterns) so it also works
  * under `eject: true`. Panda resolves nested presets before the preset that
@@ -73,7 +73,7 @@ import {
  * normally the newest 1.x, which can be newer than their `@pandacss/dev`.
  */
 
-export const designSystemPreset = definePreset({
+export const designSystemStandalonePreset = definePreset({
   name: 'design-system',
   presets: [pandaBasePreset, pandaDefaultPreset],
   globalCss: colorSchemeGlobalCss,
@@ -182,3 +182,45 @@ export const designSystemPreset = definePreset({
     },
   },
 });
+
+const BASE_THEME_NOTICE = [
+  '[@r0hitsharma/design-system] `designSystemPreset` is deprecated: import',
+  '`designSystemStandalonePreset` from `@r0hitsharma/design-system/panda-preset`',
+  'instead. It now includes `@pandacss/preset-base` and `@pandacss/preset-panda`',
+  'itself, which changes how presets around it merge:',
+  '  - a preset of yours that sets `theme.tokens` and is listed BEFORE it now has',
+  "    its tokens replaced by Panda's defaults, with no warning;",
+  "  - listed AFTER it, it replaces Panda's whole default theme, and every",
+  '    reference to a default token goes unresolved.',
+  'Move such overrides to `theme.extend`, which works in any position, then switch',
+  'to the new name to silence this notice. Listing the two base presets yourself',
+  'is no longer needed.',
+].join('\n');
+
+let baseThemeNoticeShown = false;
+
+/**
+ * The deprecated name of {@link designSystemStandalonePreset}, identical except
+ * that the first time Panda resolves it, it prints the upgrade notice above.
+ * The notice is keyed to Panda reading the preset's `presets` (which it does
+ * for every config that lists it), so a consumer sees it on their next
+ * `panda codegen`/`cssgen` without reading a changelog, and switching the
+ * import to the new name is the acknowledgement that silences it.
+ *
+ * @deprecated Renamed to `designSystemStandalonePreset`, which now carries
+ * Panda's base presets itself. A preset of yours that sets `theme.tokens`
+ * loses those tokens when listed before it, and drops Panda's default theme
+ * when listed after it: move such overrides to `theme.extend`, then switch to
+ * the new name.
+ */
+export const designSystemPreset: typeof designSystemStandalonePreset =
+  Object.defineProperty({ ...designSystemStandalonePreset }, 'presets', {
+    enumerable: true,
+    get() {
+      if (!baseThemeNoticeShown) {
+        baseThemeNoticeShown = true;
+        console.warn(BASE_THEME_NOTICE);
+      }
+      return designSystemStandalonePreset.presets;
+    },
+  });

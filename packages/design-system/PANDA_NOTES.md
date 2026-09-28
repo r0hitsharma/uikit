@@ -14,28 +14,29 @@ before you file a "styles aren't applying" bug — the cause is almost always on
 **Cause:** Panda applies `@pandacss/preset-panda` (the default theme: palette, spacing, radii,
 fonts) only when a config sets **no** `presets`. The design-system semantic tokens resolve into
 that palette (`surface.canvas` is `{colors.neutral.50}` / `{colors.neutral.950}`), so a config
-that sets `presets: [designSystemPreset]` and nothing else used to leave every one of those
+that sets `presets: [designSystemStandalonePreset]` and nothing else used to leave every one of those
 references dangling.
 
-**Fix (built in):** `designSystemPreset` declares `@pandacss/preset-base` and
+**Fix (built in):** `designSystemStandalonePreset` (formerly `designSystemPreset`, which still
+works but is deprecated and prints an upgrade notice on every Panda run) declares `@pandacss/preset-base` and
 `@pandacss/preset-panda` as nested presets. Panda resolves a preset's own `presets` before the
-preset itself, so `presets: [designSystemPreset]` gets the full default theme with the
+preset itself, so `presets: [designSystemStandalonePreset]` gets the full default theme with the
 design-system layer on top. Both packages are peer dependencies of `@r0hitsharma/design-system`,
 and the preset uses whichever copy your install resolves for them. Under npm that is normally
 the newest 1.x, not necessarily the version your `@pandacss/dev` bundles; add both as direct
 dependencies at your `@pandacss/dev` version to pin them.
 
 - A config that already lists them
-  (`presets: ['@pandacss/preset-base', '@pandacss/preset-panda', designSystemPreset]`) still
+  (`presets: ['@pandacss/preset-base', '@pandacss/preset-panda', designSystemStandalonePreset]`) still
   works and generates byte-identical CSS. The two extra entries are now redundant and can be
   removed. (Committed codegen may still change: a few pattern files differ in bundler-renamed
   identifiers only.)
 - **Put token overrides under `theme.extend`.** In Panda, a later preset's `theme.tokens`
   replaces the whole token set merged before it, not single values. So a preset that sets
   `theme.tokens` (say, a brand `neutral` ramp) drops Panda's default theme when listed after
-  `designSystemPreset` (hundreds of `Missing token` warnings), and is itself replaced by the
+  `designSystemStandalonePreset` (hundreds of `Missing token` warnings), and is itself replaced by the
   nested Panda defaults, silently, when listed before it. Before this release a full token theme
-  listed before `designSystemPreset` survived, so move it into `theme.extend` when upgrading.
+  listed before `designSystemStandalonePreset` survived, so move it into `theme.extend` when upgrading.
   Extensions are applied after every preset's base theme, so they survive in any order.
 
 ---
@@ -103,7 +104,7 @@ runtime toggle always has a rule to hit. You can scope it tighter
   import { designSystemStaticCssRecipes } from '@r0hitsharma/design-system';
 
   export default defineConfig({
-    presets: [designSystemPreset],
+    presets: [designSystemStandalonePreset],
     staticCss: {
       recipes: {
         ...designSystemStaticCssRecipes,
