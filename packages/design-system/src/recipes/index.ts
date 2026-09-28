@@ -41,3 +41,4 @@ export { keyValueTableRecipe } from './keyValueTable.recipe.js';
 export { stepsRecipe } from './steps.recipe.js';
 export { collapsibleRecipe } from './collapsible.recipe.js';
 export { progressBarRecipe } from './progressBar.recipe.js';
+export { checkboxRecipe } from './checkbox.recipe.js';

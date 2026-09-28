@@ -138,6 +138,13 @@ export {
 } from './components/TextInput.js';
 export { Drawer, type DrawerWidthStorage } from './components/Drawer.js';
 export {
+  Checkbox,
+  CheckboxGroup,
+  type CheckboxProps,
+  type CheckboxGroupProps,
+  type CheckboxGroupOrientation,
+} from './components/Checkbox.js';
+export {
   ProgressBar,
   type ProgressBarProps,
   type ProgressBarTone,

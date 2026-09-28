@@ -68,4 +68,5 @@ export const designSystemStaticCssRecipes = {
   steps: ['*'],
   collapsible: ['*'],
   progressBar: ['*'],
+  checkbox: ['*'],
 } satisfies Record<string, ['*']>;

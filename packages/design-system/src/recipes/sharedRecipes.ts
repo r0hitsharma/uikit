@@ -1,5 +1,6 @@
 import { badgeRecipe } from './badge.recipe.js';
 import { buttonRecipe } from './button.recipe.js';
+import { checkboxRecipe } from './checkbox.recipe.js';
 import { chipRecipe } from './chip.recipe.js';
 import { codeRecipe } from './code.recipe.js';
 import { collapsibleRecipe } from './collapsible.recipe.js';
@@ -108,4 +109,5 @@ export const designSystemSlotRecipes = {
   steps: stepsRecipe,
   collapsible: collapsibleRecipe,
   progressBar: progressBarRecipe,
+  checkbox: checkboxRecipe,
 };
