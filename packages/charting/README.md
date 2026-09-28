@@ -91,6 +91,9 @@ Each name lives in exactly one subpath — the root barrel is their union, and
   Render as a child of `<XYChart>`; the consumer sets the matching domains.
 - `ChartLegend` — a provided, token-themed legend, plus `Swatch`, the small
   themed swatch SVG it renders per item, standalone for a hand-composed legend.
+  `maxItems` caps the rendered items behind a "+n more" entry and
+  `onHeightChange` reports the legend's measured height; see
+  [Legend height is not fixed](#legend-height-is-not-fixed).
 - `ChartCursorLayer` — a snap-to-datum crosshair with per-series readout dots
   and a positioned tooltip, keyboard-steppable between stops, plus the
   standalone `Crosshair` line it draws and the `snapToStop` helper. Prefer it
@@ -179,20 +182,56 @@ export function Example() {
 ### Legend height is not fixed
 
 `ChartLegend` wraps onto as many rows as its items need at the width it is
-given, so its height grows with the series count and shrinks with the host. A
+given, so it gets taller as the series count grows and as the host narrows. A
 layout that reserves a constant height for it clips the legend (or the plot) as
 soon as it wraps. Cap the item count with `maxItems` (the rest collapse into a
 "+n more" entry) and size the plot from the measured legend with
 `onHeightChange`:
 
 ```tsx
-function ChartCard({ height }: { height: number }) {
+import {
+  ChartLegend,
+  LineSeries,
+  XYChart,
+  chartTheme,
+  useContainerWidth,
+  type ChartLegendItem,
+} from '@r0hitsharma/charting';
+import { useState } from 'react';
+
+type Point = { x: number; y: number };
+
+export function ChartCard({
+  height,
+  items,
+  series,
+}: {
+  height: number;
+  items: ChartLegendItem[];
+  series: Record<string, Point[]>;
+}) {
   const [ref, width] = useContainerWidth();
   const [legendHeight, setLegendHeight] = useState(0);
   return (
     <div ref={ref} style={{ height, overflow: 'hidden' }}>
       <ChartLegend items={items} maxItems={4} onHeightChange={setLegendHeight} />
-      <XYChart width={width} height={height - legendHeight} /* … */ />
+      <XYChart
+        theme={chartTheme}
+        width={width}
+        height={Math.max(0, height - legendHeight)}
+        xScale={{ type: 'linear' }}
+        yScale={{ type: 'linear' }}
+      >
+        {Object.entries(series).map(([key, data]) => (
+          <LineSeries
+            key={key}
+            dataKey={key}
+            data={data}
+            xAccessor={(d) => d.x}
+            yAccessor={(d) => d.y}
+          />
+        ))}
+      </XYChart>
     </div>
   );
 }

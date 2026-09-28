@@ -362,8 +362,11 @@ Current (exported from the package root):
   and the host width; `maxItems` bounds it by count (a "+n more" entry names
   the rest) and `onHeightChange` reports it so a host can derive the plot
   height from what is left. A row cap (`maxRows`) was not chosen: which items
-  fit in N rows is only known after layout, so it would need a measure-then-
-  re-render pass, where a count cap is decided before render.
+  fit in N rows is only known after layout, so it would need a
+  measure-then-re-render pass, whereas a count cap is decided before render.
+  In the interactive form a `hidden` item is exempt from the cap, so a
+  toggled-off series never falls behind "+n more" where it could not be
+  toggled back on. `SyncedChartLegend` does not forward `maxItems` or `onHeightChange` yet.
 - **`EmphasisLayer` / `EmphasisSeries`** (`emphasis.tsx`): cross-chart
   dim-and-hide, applied as CSS on already-mounted nodes rather than as a
   re-render. `EmphasisSeries id="…"` wraps a mark in one stable
