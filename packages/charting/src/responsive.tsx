@@ -55,15 +55,18 @@ type MeasuredRef<T extends Element = HTMLDivElement> = RefCallback<T> &
 /**
  * Runs `onResize` with the element the returned ref holds: once when it
  * attaches, then on every `ResizeObserver` report, and not after it detaches.
- * Calling the ref and assigning its `.current` are the same operation, so an
- * element attached late, detached, or moved to a different node is tracked
- * each time. No-ops without a `ResizeObserver` (jsdom / SSR).
+ * `onDetach` runs when the ref is cleared (the element unmounted) rather than
+ * moved to another node. Calling the ref and assigning its `.current` are the
+ * same operation, so an element attached late, detached, or moved to a
+ * different node is tracked each time. No-ops without a `ResizeObserver`
+ * (jsdom / SSR).
  *
- * Internal: shared by the measuring hooks here, not re-exported from the
- * package barrels.
+ * Internal: shared by the measuring hooks here and `ChartLegend`'s
+ * `onHeightChange`, not re-exported from the package barrels.
  */
 export function useResizeObserverRef<T extends Element>(
   onResize: (element: T) => void,
+  onDetach?: () => void,
 ): MeasuredRef<T> {
   const [element, setElement] = useState<T | null>(null);
   const [ref] = useState(() => {
@@ -79,6 +82,7 @@ export function useResizeObserverRef<T extends Element>(
     }) as MeasuredRef<T>;
   });
   const onResizeRef = useLatest(onResize);
+  const onDetachRef = useLatest(onDetach);
 
   useEffect(() => {
     if (!element || typeof ResizeObserver === 'undefined') return;
@@ -86,8 +90,14 @@ export function useResizeObserverRef<T extends Element>(
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
-    return () => observer.disconnect();
-  }, [element, onResizeRef]);
+    return () => {
+      observer.disconnect();
+      // A cleanup also runs when the ref moves to a new node, or for
+      // StrictMode's simulated unmount; only an emptied ref is a detach.
+      // oxlint-disable-next-line react-hooks/exhaustive-deps -- both reads want the live value: `ref.current` tells a real detach from a move, and `onDetachRef` is a useLatest ref that holds the newest callback by design
+      if (ref.current === null) onDetachRef.current?.();
+    };
+  }, [element, onResizeRef, onDetachRef, ref]);
 
   return ref;
 }
