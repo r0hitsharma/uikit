@@ -30,7 +30,9 @@ import { HarnessConnect } from '@r0hitsharma/mcp-connect';
 />;
 ```
 
-`serverName` (default `uikit-preview`) names the MCP server in the generated add commands, and `defaultOpen` starts the modal open for static previews.
+`serverName` (default `uikit-preview`) names the MCP server in the generated add commands, and `defaultOpen` starts the modal open for static previews. `size` (`'sm' | 'md' | 'lg'`, default `'md'`) sizes the trigger to match design-system `Button` sizes, and scales its icon and status dot offset with it.
+
+The modal's content, including the connection token, is only mounted while the modal is open.
 
 The four `indicatorStatus` values map to:
 

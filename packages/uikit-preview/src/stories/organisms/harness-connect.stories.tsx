@@ -12,6 +12,8 @@
  * The "ModalOpen" variants use defaultOpen={true} to show the modal content
  * without requiring a click. For the plain icon stories, click the icon to
  * open the modal.
+ *
+ * "Sizes" shows the trigger at each `size` next to same-size controls.
  */
 
 import { Button, Select } from '@r0hitsharma/design-system';

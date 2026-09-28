@@ -125,7 +125,9 @@ export type HarnessConnectProps = {
   defaultOpen?: boolean;
   /**
    * Size of the trigger button, matching the design-system `Button` sizes so
-   * it lines up with neighbouring controls. Defaults to "md".
+   * it lines up with neighbouring controls. It also scales the chat icon
+   * (14px at sm and md, 16px at lg) and adjusts the status dot's offset so it
+   * stays on the trigger's corner. Defaults to "md".
    */
   size?: ButtonSize;
 };
@@ -350,12 +352,14 @@ const triggerIconSize: Record<ButtonSize, number> = {
   lg: 16,
 };
 
-// Sits the status dot on the trigger's top-right corner. `display: flex`
-// sizes the overlay to the dot itself; as an inline box it would sit on a
-// line box of the inherited line height and drop the dot toward the middle
-// of the button's edge. The offset shrinks as the button grows so the dot
-// keeps the same place relative to the button (24, 32 and 36px square at sm,
-// md and lg).
+// Puts the status dot on the trigger's top-right corner. The `Indicator` is
+// inline-level, so inside a block overlay it would sit on a line box of the
+// inherited line height, and the dot would land partway down the button's
+// right edge. `display: flex` makes the overlay exactly as big as the dot.
+//
+// The offsets pull the dot's box out past the corner by less as the trigger
+// grows, so the dot sits a little further inside a larger button (the square
+// sizes come from the design-system `button` recipe's `size` variant).
 const dotOverlayBaseStyle: CSSProperties = {
   position: 'absolute',
   display: 'flex',
