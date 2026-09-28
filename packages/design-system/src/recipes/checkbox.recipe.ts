@@ -63,11 +63,14 @@ export const checkboxRecipe = defineSlotRecipe({
       color: 'white',
       transitionDuration: 'fast',
       transitionProperty: 'background-color, border-color',
-      // Raw rather than `_hover`: Panda sorts a `:hover` condition after plain
-      // attribute selectors, which would let this border override the checked
-      // and invalid ones below. Ark sets `data-hover` for the whole root.
-      '&[data-hover]': {
-        borderColor: 'border.strong',
+      _hover: {
+        // Only an unchecked, valid box darkens its border. The hover rule
+        // ties on specificity with the checked and invalid ones and Panda
+        // may emit it after them, so it must not match those states at all.
+        '&:not([data-state="checked"], [data-state="indeterminate"], [data-invalid])':
+          {
+            borderColor: 'border.strong',
+          },
       },
       '&[data-state="checked"], &[data-state="indeterminate"]': {
         // `interactive.accent` is a theme-invariant fill that white marks are
