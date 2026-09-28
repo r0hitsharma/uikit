@@ -58,10 +58,17 @@ export const collapsibleRecipe = defineSlotRecipe({
       '&[data-state="open"]': {
         color: 'text.strong',
       },
-      '&[data-disabled]': {
+      _disabled: {
         color: 'text.muted',
         cursor: 'not-allowed',
         bg: 'transparent',
+        // `_hover` and `_disabled` tie on specificity and Panda emits the
+        // hover rule last, so without this more specific rule a disabled
+        // trigger would still take the hover fill.
+        _hover: {
+          bg: 'transparent',
+          color: 'text.muted',
+        },
       },
       _focusVisible: {
         outlineWidth: 'strong',
