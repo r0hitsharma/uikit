@@ -5,9 +5,11 @@
 #
 #   packages/design-system/consumer-check/check.sh
 #
-# Panda reports an unresolved token reference as a `Missing token` warning and
-# still exits 0, so the output is captured and grepped instead of trusting the
-# exit status. The generated stylesheet is then run through `uikit-cli doctor`.
+# The fixture sets `validation: 'error'`, so Panda exits non-zero on any config
+# validation problem. By default Panda only warns about those and exits 0, so
+# the output is also grepped for `Missing token`, in case a Panda upgrade
+# changes how `validation` behaves. The generated stylesheet is then run
+# through `uikit-cli doctor`.
 set -euo pipefail
 
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
