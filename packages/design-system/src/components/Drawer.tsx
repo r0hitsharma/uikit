@@ -186,8 +186,8 @@ type DrawerContentProps = ComponentPropsWithoutRef<typeof ArkDrawer.Content> & {
   defaultWidth?: number;
   /**
    * Called with the new, clamped width whenever a drag or key press changes
-   * it (on every pointer move during a drag), in controlled and uncontrolled
-   * mode alike.
+   * it (on each pointer move that changes it during a drag), in controlled and
+   * uncontrolled mode alike.
    */
   onWidthChange?: (width: number) => void;
   /** Smallest width in px the handle allows. Defaults to `320`. */

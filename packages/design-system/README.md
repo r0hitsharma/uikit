@@ -124,20 +124,22 @@ import { Drawer } from '@r0hitsharma/design-system/drawer';
 | `resizable` | `false` | Adds the resize handle. Without it nothing below applies and the drawer renders exactly as before. |
 | `width` | none | Controlled width in px. When set, the drawer renders it (clamped) and a drag or key press only calls `onWidthChange`. |
 | `defaultWidth` | pixel width of `size` (352 / 448 / 640) | Uncontrolled starting width in px when nothing is stored. |
-| `onWidthChange` | none | `(width) => void`, called with the clamped width on every change (each pointer move during a drag), controlled or not. |
+| `onWidthChange` | none | `(width) => void`, called with the clamped width on every change (each pointer move that changes it during a drag), controlled or not. |
 | `minWidth` / `maxWidth` | `320` / `960` | Bounds in px for dragging, the keyboard, and any stored value. |
 | `storageKey` | none | Uncontrolled only: persist the width under this key. Omit to keep it in memory only. |
 | `storage` | `localStorage` | Any `{ getItem, setItem }` (the `DrawerWidthStorage` type), such as `sessionStorage` or your own settings store. |
 | `resizeLabel` | `'Resize drawer'` | Accessible name of the handle. |
 
-A stored width is clamped to the current `minWidth`/`maxWidth` when it is read,
-and a value that is not a finite number is ignored. Storage access is wrapped
-so that blocked storage or a full quota falls back to the default width without
-throwing; in development a console warning says so, and names a stored value it
-ignored. Storage is never read on the server: a server-rendered drawer hydrates
-at its default width and moves to the stored one straight after. The width is written when a drag ends
-and on each key press, not on every pointer move. The panel's `maxWidth: 100vw`
-still applies, so it never grows past the viewport.
+A stored width is clamped to the current `minWidth`/`maxWidth` when it is
+applied, and a value that is not a finite number is ignored. Storage access is
+wrapped so that blocked storage or a full quota falls back to the default width
+without throwing; in development a console warning says so, and names a stored
+value it ignored. Storage is never read on the server: a server-rendered drawer
+hydrates at its default width and moves to the stored one straight after. The
+width is written when a drag ends and on each key press, not on every pointer
+move. The panel's `maxWidth: 100vw` still applies, so it never grows past the
+viewport, and the handle starts each drag and key press from the width on
+screen.
 
 To own the width yourself, pass `width` with `onWidthChange`, the same
 `value` / `defaultValue` / `onValueChange` convention as `SearchInput`:
