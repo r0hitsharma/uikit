@@ -1,5 +1,5 @@
-import { Button } from '@r0hitsharma/design-system';
-import { Plus, Settings2, X } from 'lucide-react';
+import { Button, Select } from '@r0hitsharma/design-system';
+import { Plus, RefreshCw, Settings2, X } from 'lucide-react';
 
 import { css } from '../../../styled-system/css';
 
@@ -151,6 +151,48 @@ export const IconOnly = () => (
           <X size={16} strokeWidth={1.9} />
         </Button>
       </div>
+    </div>
+  </div>
+);
+
+const selectClassName = css({ width: '40' });
+
+// Icon-only buttons are square at every size (width = height) and for both
+// variants, so they line up with text controls of the same size in a toolbar
+// row. `Select` has a single height, which matches `lg`.
+export const IconOnlyInToolbar = () => (
+  <div className={frameClassName}>
+    <div className={inlineRowClassName}>
+      <Button size="sm">Small</Button>
+      <Button iconOnly size="sm" aria-label="Refresh">
+        <RefreshCw size={14} strokeWidth={1.9} />
+      </Button>
+      <Button iconOnly size="sm" variant="item" aria-label="Settings">
+        <Settings2 size={14} strokeWidth={1.9} />
+      </Button>
+    </div>
+    <div className={inlineRowClassName}>
+      <Button size="md">Medium</Button>
+      <Button iconOnly size="md" aria-label="Refresh">
+        <RefreshCw size={16} strokeWidth={1.9} />
+      </Button>
+      <Button iconOnly size="md" variant="item" aria-label="Settings">
+        <Settings2 size={16} strokeWidth={1.9} />
+      </Button>
+    </div>
+    <div className={inlineRowClassName}>
+      <Select aria-label="Range" className={selectClassName} defaultValue="24h">
+        <option value="1h">Last hour</option>
+        <option value="24h">Last 24 hours</option>
+        <option value="7d">Last 7 days</option>
+      </Select>
+      <Button size="lg">Large</Button>
+      <Button iconOnly size="lg" aria-label="Refresh">
+        <RefreshCw size={16} strokeWidth={1.9} />
+      </Button>
+      <Button iconOnly size="lg" variant="item" aria-label="Settings">
+        <Settings2 size={16} strokeWidth={1.9} />
+      </Button>
     </div>
   </div>
 );

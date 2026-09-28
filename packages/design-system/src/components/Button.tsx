@@ -68,9 +68,8 @@ export function Button({
     emphasis === 'solid' && 'button--emphasis_solid',
     tone === 'subdued' && 'button--tone_subdued',
     selected && 'button--selected_true',
+    // Squares the button at its `size` for every variant (see the recipe).
     iconOnly && 'button--iconOnly_true',
-    // Square width only applies to icon-only panel buttons.
-    iconOnly && variant === 'panel' && `button--iconSize_${size}`,
   );
 
   // `gap` remains an inline escape hatch (an arbitrary dimension, not a token);
