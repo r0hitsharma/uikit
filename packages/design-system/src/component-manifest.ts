@@ -557,4 +557,12 @@ export const designSystemComponentManifest = [
     contractScope: 'key-value-table',
     recipeKey: 'keyValueTable',
   },
+  {
+    exportName: 'Steps',
+    behaviorSource: 'ark-ui',
+    styleOwner: 'design-system-preset',
+    storyBucket: 'molecules',
+    contractScope: 'steps',
+    recipeKey: 'steps',
+  },
 ] as const satisfies readonly DesignSystemComponentManifestEntry[];

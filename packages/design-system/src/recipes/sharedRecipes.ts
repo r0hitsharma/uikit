@@ -34,6 +34,7 @@ import { sidebarLayoutRecipe } from './sidebarLayout.recipe.js';
 import { splitLayoutRecipe } from './splitLayout.recipe.js';
 import { statRowRecipe, statTileRecipe } from './statTile.recipe.js';
 import { statusPillRecipe, statusPillRowRecipe } from './statusPill.recipe.js';
+import { stepsRecipe } from './steps.recipe.js';
 import { surfaceMessageRecipe } from './surfaceMessage.recipe.js';
 import { switchRecipe } from './switch.recipe.js';
 import { themeToggleRecipe } from './themeToggle.recipe.js';
@@ -102,4 +103,5 @@ export const designSystemSlotRecipes = {
   statusPill: statusPillRecipe,
   popover: popoverRecipe,
   keyValueTable: keyValueTableRecipe,
+  steps: stepsRecipe,
 };
