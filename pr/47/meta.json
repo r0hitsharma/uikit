@@ -1877,6 +1877,18 @@
       "namedExport": "Toolbar",
       "meta": {}
     },
+    "organisms--drawer--controlled-width": {
+      "name": "Controlled width",
+      "levels": [
+        "Organisms",
+        "Drawer"
+      ],
+      "locStart": 227,
+      "locEnd": 260,
+      "filePath": "src/stories/organisms/drawer.stories.tsx",
+      "namedExport": "ControlledWidth",
+      "meta": {}
+    },
     "organisms--drawer--default": {
       "name": "Default",
       "levels": [
@@ -1889,6 +1901,18 @@
       "namedExport": "Default",
       "meta": {}
     },
+    "organisms--drawer--non-modal": {
+      "name": "Non modal",
+      "levels": [
+        "Organisms",
+        "Drawer"
+      ],
+      "locStart": 180,
+      "locEnd": 216,
+      "filePath": "src/stories/organisms/drawer.stories.tsx",
+      "namedExport": "NonModal",
+      "meta": {}
+    },
     "organisms--drawer--open-by-default": {
       "name": "Open by default",
       "levels": [
@@ -1899,6 +1923,18 @@
       "locEnd": 126,
       "filePath": "src/stories/organisms/drawer.stories.tsx",
       "namedExport": "OpenByDefault",
+      "meta": {}
+    },
+    "organisms--drawer--resizable": {
+      "name": "Resizable",
+      "levels": [
+        "Organisms",
+        "Drawer"
+      ],
+      "locStart": 132,
+      "locEnd": 174,
+      "filePath": "src/stories/organisms/drawer.stories.tsx",
+      "namedExport": "Resizable",
       "meta": {}
     },
     "organisms--empty-state--compact-with-action": {
