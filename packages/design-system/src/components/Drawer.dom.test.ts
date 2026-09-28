@@ -14,7 +14,9 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { createElement, type ComponentProps } from 'react';
+import { act, createElement, type ComponentProps } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Drawer, type DrawerWidthStorage } from './Drawer.js';
@@ -289,6 +291,55 @@ describe('Drawer.Content persisted width', () => {
     await waitFor(() => {
       expect(content().style.width).toBe('464px');
     });
+  });
+
+  it('hydrates server markup at the default width, then applies the stored one', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // The server has no storage: the adapter answers only once hydrating.
+    let onClient = false;
+    const storage: DrawerWidthStorage = {
+      getItem: () => (onClient ? '600' : null),
+      setItem: () => {},
+    };
+    const tree = drawerTree({ resizable: true, storageKey: 'w', storage });
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(tree);
+    document.body.append(container);
+    expect(content().style.width).toBe('448px');
+
+    // Testing Library sets this only inside its own helpers.
+    const actEnvironment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+    actEnvironment.IS_REACT_ACT_ENVIRONMENT = true;
+    onClient = true;
+    const root = await act(async () => hydrateRoot(container, tree));
+    try {
+      expect(content().style.width).toBe('600px');
+      expect(handle().getAttribute('aria-valuenow')).toBe('600');
+      // A hydration mismatch is reported through console.error.
+      expect(error).not.toHaveBeenCalled();
+    } finally {
+      act(() => root.unmount());
+      container.remove();
+      delete actEnvironment.IS_REACT_ACT_ENVIRONMENT;
+    }
+  });
+
+  it('reads storage when storageKey or resizable change after mount', () => {
+    const { storage } = memoryStorage({ a: '500', b: '700' });
+    const { rerender } = renderDrawer({ storageKey: 'a', storage });
+    rerender(drawerTree({ resizable: true, storageKey: 'a', storage }));
+    expect(content().style.width).toBe('500px');
+    rerender(drawerTree({ resizable: true, storageKey: 'b', storage }));
+    expect(content().style.width).toBe('700px');
+  });
+
+  it('keeps the width changed in this mount over a stored one', () => {
+    const { storage, values } = memoryStorage({ w: '600' });
+    renderDrawer({ resizable: true, storageKey: 'w', storage });
+    fireEvent.keyDown(handle(), { key: 'ArrowLeft' });
+    values.set('w', '400');
+    fireEvent.keyDown(handle(), { key: 'ArrowLeft' });
+    expect(content().style.width).toBe('632px');
   });
 
   it('clamps a stored width to the current bounds', () => {

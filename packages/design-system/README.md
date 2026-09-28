@@ -99,9 +99,10 @@ End (to `maxWidth`). The handle is a focusable `role="separator"` with
 drawer's `dir` (in RTL the panel sits on the left and the directions mirror), and
 it sits last in tab order so opening the drawer still focuses its content.
 
-Add `storageKey` to persist the width. It is read when `Content` mounts, so a
-drawer that unmounts on close (`lazyMount` + `unmountOnExit` on `Root`) reopens
-at the saved width; one that stays mounted keeps its width in memory.
+Add `storageKey` to persist the width. It is read when `Content` renders, until
+the width is changed in that mount, so a drawer that unmounts on close
+(`lazyMount` + `unmountOnExit` on `Root`) reopens at the saved width; one that
+stays mounted keeps its width in memory.
 
 ```tsx
 import { Drawer } from '@r0hitsharma/design-system/drawer';
@@ -131,8 +132,9 @@ import { Drawer } from '@r0hitsharma/design-system/drawer';
 
 A stored width is clamped to the current `minWidth`/`maxWidth` when it is read,
 and a value that is not a finite number is ignored. Storage access is wrapped
-so that a missing `window` (SSR), blocked storage, or a full quota falls back
-to the default width without throwing. The width is written when a drag ends
+so that blocked storage or a full quota falls back to the default width without
+throwing. Storage is never read on the server: a server-rendered drawer hydrates
+at its default width and moves to the stored one straight after. The width is written when a drag ends
 and on each key press, not on every pointer move. The panel's `maxWidth: 100vw`
 still applies, so it never grows past the viewport.
 

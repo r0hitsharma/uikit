@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ComponentPropsWithoutRef,
   type KeyboardEvent,
   type PointerEvent,
@@ -89,18 +90,28 @@ function defaultStorage(): DrawerWidthStorage | undefined {
 function readStoredWidth(
   storage: DrawerWidthStorage | undefined,
   key: string | undefined,
-): number | undefined {
-  if (key === undefined) return undefined;
+): string | null {
+  if (key === undefined) return null;
   try {
-    const raw = (storage ?? defaultStorage())?.getItem(key);
-    // `Number('')` is 0, so an empty value is rejected before the conversion.
-    if (raw == null || raw.trim() === '') return undefined;
-    const parsed = Number(raw);
-    return Number.isFinite(parsed) ? parsed : undefined;
+    return (storage ?? defaultStorage())?.getItem(key) ?? null;
   } catch {
-    return undefined;
+    return null;
   }
 }
+
+/** The stored value as a width, or `undefined` when it is missing or unusable. */
+function parseStoredWidth(raw: string | null): number | undefined {
+  // `Number('')` is 0, so an empty value is rejected before the conversion.
+  if (raw === null || raw.trim() === '') return undefined;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+// Storage has no change event worth following here: the drawer reads it on
+// render and is the only writer that matters to it.
+const subscribeToNothing = () => () => {};
+// The server has no storage to read, and hydration must render what it did.
+const nothingStored = (): string | null => null;
 
 function writeStoredWidth(
   storage: DrawerWidthStorage | undefined,
@@ -157,10 +168,12 @@ type DrawerContentProps = ComponentPropsWithoutRef<typeof ArkDrawer.Content> & {
   maxWidth?: number;
   /**
    * Uncontrolled only: persists the width under this key (when a drag ends and
-   * on each key press) and restores it on mount. Omit to keep the width in
-   * memory only. A stored width is clamped to the current
-   * `minWidth`/`maxWidth`. Ignored, with a dev-only warning, when `width` is
-   * set: the owner of a controlled width owns its persistence too.
+   * on each key press) and restores it until the width is changed in this
+   * mount. Omit to keep the width in memory only. A stored width is clamped to
+   * the current `minWidth`/`maxWidth` when applied. Read after hydration, so a
+   * server-rendered drawer hydrates at its default width. Ignored, with a
+   * dev-only warning, when `width` is set: the owner of a controlled width owns
+   * its persistence too.
    */
   storageKey?: string;
   /** Where `storageKey` is read and written. Defaults to `localStorage`. */
@@ -186,12 +199,20 @@ function DrawerContent({
   ...props
 }: DrawerContentProps) {
   const controlled = widthProp !== undefined;
-  // Uncontrolled only, and read once per mount: a drawer that unmounts on
-  // close (`lazyMount` + `unmountOnExit`) restores the persisted width when it
-  // reopens, and one that stays mounted keeps its in-memory width.
-  const [chosenWidth, setChosenWidth] = useState(() =>
-    resizable && !controlled ? readStoredWidth(storage, storageKey) : undefined,
+  const persisted = resizable && !controlled && storageKey !== undefined;
+  // Read on every render until the width is changed in this mount, so a
+  // drawer that unmounts on close (`lazyMount` + `unmountOnExit`) reopens at
+  // the persisted width, one that stays mounted keeps its in-memory width, and
+  // a `storageKey` or `resizable` that changes later is honoured. The server
+  // snapshot keeps hydration on the default width; React then re-renders with
+  // the stored one.
+  const stored = useSyncExternalStore(
+    subscribeToNothing,
+    () => (persisted ? readStoredWidth(storage, storageKey) : null),
+    nothingStored,
   );
+  const storedWidth = parseStoredWidth(stored);
+  const [chosenWidth, setChosenWidth] = useState<number>();
   const [dragging, setDragging] = useState(false);
 
   // Warn once, dev-only, when `storageKey` is passed alongside a controlled
@@ -233,7 +254,11 @@ function DrawerContent({
   // controlled width that is out of bounds is rendered clamped but not
   // reported back: `onWidthChange` reports user changes, not corrections.
   const width = clampWidth(
-    widthProp ?? chosenWidth ?? defaultWidth ?? SIZE_WIDTHS[size],
+    widthProp ??
+      chosenWidth ??
+      storedWidth ??
+      defaultWidth ??
+      SIZE_WIDTHS[size],
     minWidth,
     maxWidth,
   );
