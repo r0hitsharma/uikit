@@ -124,3 +124,95 @@ export const OpenByDefault = () => {
     </div>
   );
 };
+
+// `resizable` adds a handle on the drawer's inner edge: drag it, or Tab to it
+// and use the arrow keys, Home, and End. `storageKey` persists the width to
+// localStorage; with `lazyMount` + `unmountOnExit` the content remounts on
+// every open, so closing and reopening shows the width being restored.
+export const Resizable = () => {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <div className={frameClassName}>
+      <Button onClick={() => setOpen(true)}>Reopen drawer</Button>
+
+      <Drawer.Root
+        lazyMount
+        unmountOnExit
+        open={open}
+        onOpenChange={(details) => setOpen(details.open)}
+      >
+        <Drawer.Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner>
+            <Drawer.Content
+              resizable
+              minWidth={360}
+              maxWidth={900}
+              storageKey="uikit-preview:drawer-width"
+            >
+              <div className={bodyClassName}>
+                <Drawer.Title>Resizable drawer</Drawer.Title>
+                <Drawer.Description>
+                  Width between 360px and 900px, remembered across reopens.
+                </Drawer.Description>
+                <p className={paragraphClassName}>
+                  Drag the left edge, or focus the handle and use the arrow
+                  keys. Close the drawer and reopen it: it comes back at the
+                  width you left it.
+                </p>
+              </div>
+              <div className={footerClassName}>
+                <Drawer.CloseTrigger>Done</Drawer.CloseTrigger>
+              </div>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Drawer.Portal>
+      </Drawer.Root>
+    </div>
+  );
+};
+
+const widthReadoutClassName = css({
+  fontFamily: 'mono',
+  fontSize: 'sm',
+  color: 'text.default',
+});
+
+// Controlled: the story owns the width. The drawer reports every drag or key
+// press through `onWidthChange` and moves only because the state it feeds
+// back into `width` changed. The readout shows the value the drawer renders.
+export const ControlledWidth = () => {
+  const [open, setOpen] = useState(true);
+  const [width, setWidth] = useState(520);
+
+  return (
+    <div className={frameClassName}>
+      <Button onClick={() => setOpen(true)}>Reopen drawer</Button>
+
+      <Drawer.Root
+        open={open}
+        onOpenChange={(details) => setOpen(details.open)}
+      >
+        <Drawer.Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner>
+            <Drawer.Content resizable width={width} onWidthChange={setWidth}>
+              <div className={bodyClassName}>
+                <Drawer.Title>Controlled width</Drawer.Title>
+                <Drawer.Description>
+                  The parent holds the width in state.
+                </Drawer.Description>
+                <p className={widthReadoutClassName}>width: {width}px</p>
+                <Button onClick={() => setWidth(448)}>Reset to 448px</Button>
+              </div>
+              <div className={footerClassName}>
+                <Drawer.CloseTrigger>Done</Drawer.CloseTrigger>
+              </div>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Drawer.Portal>
+      </Drawer.Root>
+    </div>
+  );
+};

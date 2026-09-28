@@ -89,6 +89,79 @@ Every module except the theme bootstrap is marked side-effect-free
 (`"sideEffects": ["./dist/theme-bootstrap.js"]`), so importing only what you use is
 fully tree-shakeable (a `Badge`-only import ships ~1 KB, not the Ark/TanStack engine).
 
+### Resizable drawer
+
+`Drawer.Content` renders a fixed width from `size` (`sm` / `md` / `lg`) by
+default. Pass `resizable` to add a handle on the panel's inner edge instead: drag
+it, or focus it and use the arrow keys (16px a step), Home (to `minWidth`) and
+End (to `maxWidth`). The handle is a focusable `role="separator"` with
+`aria-orientation="vertical"` and `aria-valuenow`/`min`/`max`, it follows the
+drawer's `dir` (in RTL the panel sits on the left and the directions mirror), and
+it sits last in tab order so opening the drawer still focuses its content.
+
+Add `storageKey` to persist the width. It is read when `Content` renders, until
+the width is changed in that mount, so a drawer that unmounts on close
+(`lazyMount` + `unmountOnExit` on `Root`) reopens at the saved width; one that
+stays mounted keeps its width in memory.
+
+```tsx
+import { Drawer } from '@r0hitsharma/design-system/drawer';
+
+<Drawer.Root lazyMount unmountOnExit open={open} onOpenChange={(d) => setOpen(d.open)}>
+  <Drawer.Portal>
+    <Drawer.Backdrop />
+    <Drawer.Positioner>
+      <Drawer.Content resizable minWidth={360} maxWidth={900} storageKey="orders-drawer-width">
+        {/* ... */}
+      </Drawer.Content>
+    </Drawer.Positioner>
+  </Drawer.Portal>
+</Drawer.Root>;
+```
+
+| Prop | Default | |
+| --- | --- | --- |
+| `resizable` | `false` | Adds the resize handle. Without it nothing below applies and the drawer renders exactly as before. |
+| `width` | none | Controlled width in px. When set, the drawer renders it (clamped) and a drag or key press only calls `onWidthChange`. |
+| `defaultWidth` | pixel width of `size` (352 / 448 / 640) | Uncontrolled starting width in px when nothing is stored. |
+| `onWidthChange` | none | `(width) => void`, called with the clamped width on every change (each pointer move that changes it during a drag), controlled or not. |
+| `minWidth` / `maxWidth` | `320` / `960` | Bounds in px for dragging, the keyboard, and any stored value. |
+| `storageKey` | none | Uncontrolled only: persist the width under this key. Omit to keep it in memory only. |
+| `storage` | `localStorage` | Any `{ getItem, setItem }` (the `DrawerWidthStorage` type), such as `sessionStorage` or your own settings store. |
+| `resizeLabel` | `'Resize drawer'` | Accessible name of the handle. |
+
+A stored width is clamped to the current `minWidth`/`maxWidth` when it is
+applied, and a value that is not a finite number is ignored. Storage access is
+wrapped so that blocked storage or a full quota falls back to the default width
+without throwing; in development a console warning says so, and names a stored
+value it ignored. Storage is never read on the server: a server-rendered drawer
+hydrates at its default width and moves to the stored one straight after. The
+width is written when a drag ends and on each key press, not on every pointer
+move. The panel's `maxWidth: 100vw` still applies, so it never grows past the
+viewport, and the handle starts each drag and key press from the width on
+screen.
+
+To own the width yourself, pass `width` with `onWidthChange`, the same
+`value` / `defaultValue` / `onValueChange` convention as `SearchInput`:
+
+```tsx
+const [width, setWidth] = useState(480);
+
+<Drawer.Content resizable width={width} onWidthChange={setWidth}>
+  {/* ... */}
+</Drawer.Content>;
+```
+
+A controlled drawer moves only when `width` changes. A `width` outside
+`minWidth`/`maxWidth` renders clamped, and that correction is not reported
+through `onWidthChange`, which only reports changes the user makes. Storage
+belongs to whoever owns the width: with `width` set, `storageKey` and `storage`
+are ignored (never read or written), and a dev-only console warning says so.
+Dev-only warnings also flag resize props passed without `resizable`, and a
+`minWidth` larger than `maxWidth`.
+`onWidthChange` also fires in uncontrolled mode, so you can observe changes
+without taking over the width.
+
 ### Use design tokens
 
 This package **emits no CSS of its own** — it builds with `tsc`, ships no generated

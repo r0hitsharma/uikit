@@ -3,7 +3,7 @@ import { defineSlotRecipe } from '@pandacss/dev';
 export const drawerRecipe = defineSlotRecipe({
   className: 'drawer',
   description:
-    'Right-anchored drawer skin over Ark Drawer: fixed scrim, edge-aligned panel, and a slide/fade transition keyed off Ark data-state, all tokenized.',
+    'Right-anchored drawer skin over Ark Drawer: fixed scrim, edge-aligned panel, and a slide/fade transition keyed off Ark data-state, and an opt-in inline-edge resize handle, all tokenized.',
   slots: [
     'backdrop',
     'positioner',
@@ -11,6 +11,7 @@ export const drawerRecipe = defineSlotRecipe({
     'title',
     'description',
     'closeTrigger',
+    'resizeHandle',
   ],
   base: {
     backdrop: {
@@ -101,6 +102,37 @@ export const drawerRecipe = defineSlotRecipe({
         outlineStyle: 'solid',
         outlineColor: 'border.strong',
         outlineOffset: '1px',
+      },
+    },
+    // Only rendered by `resizable` Content. A transparent grab strip on the
+    // inline-start edge (the content's transform makes it the containing
+    // block, as for `closeTrigger`); its `::before` line takes the accent on
+    // hover, focus, and during a drag. `touchAction: none` keeps a touch drag
+    // from scrolling instead of resizing.
+    resizeHandle: {
+      position: 'absolute',
+      insetBlock: '0',
+      insetInlineStart: '0',
+      zIndex: '1',
+      w: '2',
+      cursor: 'col-resize',
+      userSelect: 'none',
+      touchAction: 'none',
+      bg: 'transparent',
+      outline: 'none',
+      _before: {
+        content: '""',
+        position: 'absolute',
+        insetBlock: '0',
+        insetInlineStart: '0',
+        borderInlineStartWidth: 'strong',
+        borderInlineStartStyle: 'solid',
+        borderColor: 'transparent',
+        transitionProperty: 'border-color',
+        transitionDuration: 'fast',
+      },
+      '&:hover::before, &:focus-visible::before, &[data-dragging]::before': {
+        borderColor: 'interactive.accent',
       },
     },
   },
