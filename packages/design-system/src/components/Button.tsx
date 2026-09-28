@@ -68,7 +68,8 @@ export function Button({
     emphasis === 'solid' && 'button--emphasis_solid',
     tone === 'subdued' && 'button--tone_subdued',
     selected && 'button--selected_true',
-    // Squares the button at its `size` for every variant (see the recipe).
+    // Makes the button square for every variant, size and density; the
+    // recipe's square rules select on this plus the size/density classes.
     iconOnly && 'button--iconOnly_true',
   );
 

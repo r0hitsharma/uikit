@@ -17,17 +17,25 @@ import { defineRecipe } from '@pandacss/dev';
  * - Density differs by structural variant, so it is split into `itemDensity`
  *   (padding/type) and `panelDensity` (height/type); `Button.tsx` translates the
  *   public `density` prop to the right one based on `variant`.
- * - `size` sets panel/text height; `iconOnly` squares the button at that size
- *   through nested `&.button--size_*` selectors (see the variant below).
+ * - `size` sets panel/text height; `iconOnly` makes the button square at its
+ *   height through nested size- and density-qualified selectors (see the
+ *   variant below).
  */
 
 /** Square box for an icon-only button whose `size` has height `side`. */
 const iconOnlySquare = (side: '6' | '8' | '9') => ({
   px: '0',
+  gap: '0',
   w: side,
   minW: side,
   alignItems: 'center',
 });
+
+/**
+ * Box for an icon-only compact panel: `panelDensity.compact`'s height, pinned
+ * here so it does not depend on stylesheet order either, and a matching width.
+ */
+const compactIconOnlySquare = { h: '7', w: '7', minW: '7' };
 
 export const buttonRecipe = defineRecipe({
   className: 'button',
@@ -78,8 +86,10 @@ export const buttonRecipe = defineRecipe({
     },
     // Box metrics AND type step. `size` now sets font-size too, so a default
     // button no longer inherits the larger body step. Item and compact-panel
-    // buttons still get their type from `itemDensity`/`panelDensity`, which are
-    // declared after `size` and win the cascade.
+    // buttons are meant to take their type (and compact panels their height)
+    // from `itemDensity`/`panelDensity`. Those are single-class rules like
+    // `size`, so which one wins depends on the order Panda emits them in, not
+    // on the order they are declared here.
     size: {
       sm: {
         h: '6',
@@ -156,25 +166,33 @@ export const buttonRecipe = defineRecipe({
         color: 'text.muted',
       },
     },
-    // Icon-only buttons are square at every size and for every variant: `px: 0`
-    // plus a width (and min-width, so a flex row cannot squeeze it) equal to
-    // that size's `h`, with the icon centred on both axes. These are NOT
-    // compoundVariants, which staticCss ['*'] would never emit; they are nested
-    // `&.button--size_*` selectors inside this single variant, so each rule
-    // reads `.button--iconOnly_true.button--size_lg`. The doubled class
-    // out-specifies the single-class `size`, `itemDensity`, `panelDensity` and
-    // `variant` rules that also set padding, width or alignment, so the result
-    // no longer depends on the order those classes land in the generated
-    // stylesheet. Height is left to `size` and `panelDensity`, so a compact
-    // panel keeps its shorter box.
+    // Icon-only buttons are square for every variant, size and density: no
+    // padding or gap, a width (and min-width, so a flex row cannot squeeze it)
+    // equal to the box's height, and the icon centred on both axes.
+    //
+    // These are NOT compoundVariants, which staticCss ['*'] would never emit;
+    // they are nested selectors inside this single variant, so they are
+    // covered by ['*'] like any other variant class. Specificity, not
+    // declaration order, decides every conflict:
+    // - `.button--iconOnly_true.button--size_*` (two classes) outranks the
+    //   single-class `size`, `itemDensity`, `panelDensity` and `variant` rules
+    //   that also set padding, gap, width or alignment.
+    // - A compact panel is `panelDensity.compact`'s height (`h: 7`) at every
+    //   size, so `.button--iconOnly_true.button--panelDensity_compact.button--size_*`
+    //   (three classes) outranks the size rules and sets that height and a
+    //   matching width.
+    // So the result does not depend on the order Panda emits these classes in.
+    // `Button` always emits a `size` class, which is why every metric lives in
+    // the size-qualified rules rather than the bare variant.
     iconOnly: {
       true: {
         justifyContent: 'center',
-        gap: '0',
-        px: '0',
         '&.button--size_sm': iconOnlySquare('6'),
         '&.button--size_md': iconOnlySquare('8'),
         '&.button--size_lg': iconOnlySquare('9'),
+        '&.button--panelDensity_compact.button--size_sm': compactIconOnlySquare,
+        '&.button--panelDensity_compact.button--size_md': compactIconOnlySquare,
+        '&.button--panelDensity_compact.button--size_lg': compactIconOnlySquare,
       },
     },
   },
