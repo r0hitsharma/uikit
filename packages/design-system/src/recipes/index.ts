@@ -39,3 +39,4 @@ export { statusPillRecipe, statusPillRowRecipe } from './statusPill.recipe.js';
 export { popoverRecipe } from './popover.recipe.js';
 export { keyValueTableRecipe } from './keyValueTable.recipe.js';
 export { stepsRecipe } from './steps.recipe.js';
+export { collapsibleRecipe } from './collapsible.recipe.js';

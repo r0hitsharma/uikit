@@ -66,4 +66,5 @@ export const designSystemStaticCssRecipes = {
   popover: ['*'],
   keyValueTable: ['*'],
   steps: ['*'],
+  collapsible: ['*'],
 } satisfies Record<string, ['*']>;
