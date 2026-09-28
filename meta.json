@@ -1535,8 +1535,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 677,
-      "locEnd": 716,
+      "locStart": 678,
+      "locEnd": 717,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "ColoredLegend",
       "meta": {}
@@ -1547,8 +1547,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 478,
-      "locEnd": 488,
+      "locStart": 479,
+      "locEnd": 489,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "Default",
       "meta": {}
@@ -1559,10 +1559,22 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 732,
-      "locEnd": 786,
+      "locStart": 821,
+      "locEnd": 875,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "Distribution",
+      "meta": {}
+    },
+    "organisms--charting-primitives--narrow-legend": {
+      "name": "Narrow legend",
+      "levels": [
+        "Organisms",
+        "Charting primitives"
+      ],
+      "locStart": 796,
+      "locEnd": 805,
+      "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
+      "namedExport": "NarrowLegend",
       "meta": {}
     },
     "organisms--charting-primitives--reader-layer": {
@@ -1571,8 +1583,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 547,
-      "locEnd": 673,
+      "locStart": 548,
+      "locEnd": 674,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "ReaderLayer",
       "meta": {}
@@ -1583,8 +1595,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 493,
-      "locEnd": 529,
+      "locStart": 494,
+      "locEnd": 530,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "Responsive",
       "meta": {}
@@ -1595,8 +1607,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 849,
-      "locEnd": 871,
+      "locStart": 938,
+      "locEnd": 960,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "SyncedCrosshair",
       "meta": {}
@@ -1607,8 +1619,8 @@
         "Organisms",
         "Charting primitives"
       ],
-      "locStart": 942,
-      "locEnd": 964,
+      "locStart": 1031,
+      "locEnd": 1053,
       "filePath": "src/stories/organisms/charting-primitives.stories.tsx",
       "namedExport": "SyncedReadout",
       "meta": {}
