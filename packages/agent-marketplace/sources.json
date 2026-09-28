@@ -77,7 +77,7 @@
       "upstream": "https://github.com/oxc-project/oxc",
       "path": ".agents/skills/migrate-oxlint/SKILL.md",
       "branch": "main",
-      "pinnedRevision": "e6dc8c4726df777ecb64f943816ee177565f40e9",
+      "pinnedRevision": "f08236b729e3cc468cf79b68e1385a36687cecc5",
       "normalizationNotes": [
         "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "First-party skill from OXC package authors.",
@@ -91,7 +91,7 @@
       "upstream": "https://github.com/oxc-project/oxc",
       "path": ".agents/skills/migrate-oxfmt/SKILL.md",
       "branch": "main",
-      "pinnedRevision": "e6dc8c4726df777ecb64f943816ee177565f40e9",
+      "pinnedRevision": "f08236b729e3cc468cf79b68e1385a36687cecc5",
       "normalizationNotes": [
         "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "First-party skill from OXC package authors.",
