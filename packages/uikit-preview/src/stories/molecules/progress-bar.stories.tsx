@@ -53,7 +53,7 @@ export const SmallWithoutHeader = () => (
       aria-label="Sync progress"
       value={55}
       size="sm"
-      showValueText={false}
+      showHeader={false}
     />
   </div>
 );

@@ -3,8 +3,9 @@
  *
  * `ProgressBar` composes Ark `Progress`, so these pin what the wrapper adds:
  * the recipe classes, the "n of m" `aria-valuetext`, the accessible name
- * coming from the visible label, and the clamping that keeps an out-of-range
- * value from reaching Ark (which throws on one).
+ * coming from the visible label, and the normalizing that keeps an
+ * out-of-range value or an unusable range from reaching Ark (which throws on
+ * either).
  */
 import { cleanup, render } from '@testing-library/react';
 import { createElement } from 'react';
@@ -12,7 +13,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   ProgressBar,
-  clampProgressValue,
+  normalizeProgress,
   type ProgressBarProps,
 } from './ProgressBar.js';
 
@@ -27,19 +28,42 @@ function renderBar(props: ProgressBarProps) {
   return { container, progressbar };
 }
 
-describe('clampProgressValue', () => {
-  it('passes an in-range value through', () => {
-    expect(clampProgressValue(3, 0, 5)).toBe(3);
+describe('normalizeProgress', () => {
+  it('passes an in-range value and range through', () => {
+    expect(normalizeProgress(3, 0, 5)).toEqual({ value: 3, min: 0, max: 5 });
   });
 
-  it('clamps to the range ends', () => {
-    expect(clampProgressValue(7, 0, 5)).toBe(5);
-    expect(clampProgressValue(-1, 0, 5)).toBe(0);
+  it('clamps the value to the range ends', () => {
+    expect(normalizeProgress(7, 0, 5).value).toBe(5);
+    expect(normalizeProgress(-1, 0, 5).value).toBe(0);
+    expect(normalizeProgress(4, 10, 20).value).toBe(10);
   });
 
   it('reads a non-finite value as min', () => {
-    expect(clampProgressValue(Number.NaN, 2, 5)).toBe(2);
-    expect(clampProgressValue(Number.POSITIVE_INFINITY, 2, 5)).toBe(2);
+    expect(normalizeProgress(Number.NaN, 2, 5).value).toBe(2);
+    expect(normalizeProgress(Number.POSITIVE_INFINITY, 2, 5).value).toBe(2);
+  });
+
+  it('reads a non-finite min as 0', () => {
+    expect(normalizeProgress(3, Number.NaN, 5)).toEqual({
+      value: 3,
+      min: 0,
+      max: 5,
+    });
+  });
+
+  it('turns a non-finite, empty or inverted range into an empty bar', () => {
+    expect(normalizeProgress(3, 0, Number.NaN)).toEqual({
+      value: 0,
+      min: 0,
+      max: 100,
+    });
+    expect(normalizeProgress(0, 0, 0)).toEqual({ value: 0, min: 0, max: 100 });
+    expect(normalizeProgress(7, 10, 5)).toEqual({
+      value: 10,
+      min: 10,
+      max: 110,
+    });
   });
 });
 
@@ -82,7 +106,7 @@ describe('ProgressBar', () => {
     const { container, progressbar } = renderBar({
       value: 1,
       'aria-label': 'Sync',
-      showValueText: false,
+      showHeader: false,
     });
 
     expect(progressbar.getAttribute('aria-label')).toBe('Sync');
@@ -97,6 +121,49 @@ describe('ProgressBar', () => {
     expect(
       container.querySelector<HTMLElement>('.progressBar__range')?.style.width,
     ).toBe('100%');
+  });
+
+  it('names the bar from a string label while the header is hidden', () => {
+    const { container, progressbar } = renderBar({
+      value: 1,
+      label: 'Upload',
+      showHeader: false,
+    });
+
+    expect(container.querySelector('.progressBar__header')).toBeNull();
+    expect(progressbar.hasAttribute('aria-labelledby')).toBe(false);
+    expect(progressbar.getAttribute('aria-label')).toBe('Upload');
+  });
+
+  it('carries a non-zero min through to the progressbar', () => {
+    const { container, progressbar } = renderBar({
+      value: 15,
+      min: 10,
+      max: 20,
+    });
+
+    expect(progressbar.getAttribute('aria-valuemin')).toBe('10');
+    expect(progressbar.getAttribute('aria-valuenow')).toBe('15');
+    expect(
+      container.querySelector<HTMLElement>('.progressBar__range')?.style.width,
+    ).toBe('50%');
+  });
+
+  it('renders an empty bar instead of letting Ark throw on an unusable range', () => {
+    for (const [min, max] of [
+      [0, Number.NaN],
+      [0, 0],
+      [10, 5],
+    ] as const) {
+      const { container } = renderBar({ value: 3, min, max });
+
+      expect(
+        container.querySelector<HTMLElement>('.progressBar__range')?.style
+          .width,
+        `fill for [${min}, ${max}]`,
+      ).toBe('0%');
+      cleanup();
+    }
   });
 
   it('applies the tone variant to the root and the size variant to the track', () => {
