@@ -617,6 +617,18 @@
       "namedExport": "Closed",
       "meta": {}
     },
+    "molecules--collapsible--disabled": {
+      "name": "Disabled",
+      "levels": [
+        "Molecules",
+        "Collapsible"
+      ],
+      "locStart": 81,
+      "locEnd": 91,
+      "filePath": "src/stories/molecules/collapsible.stories.tsx",
+      "namedExport": "Disabled",
+      "meta": {}
+    },
     "molecules--collapsible--open": {
       "name": "Open",
       "levels": [
@@ -629,16 +641,16 @@
       "namedExport": "Open",
       "meta": {}
     },
-    "molecules--collapsible--trailing-indicator-and-disabled": {
-      "name": "Trailing indicator and disabled",
+    "molecules--collapsible--trailing-indicator": {
+      "name": "Trailing indicator",
       "levels": [
         "Molecules",
         "Collapsible"
       ],
       "locStart": 64,
-      "locEnd": 85,
+      "locEnd": 78,
       "filePath": "src/stories/molecules/collapsible.stories.tsx",
-      "namedExport": "TrailingIndicatorAndDisabled",
+      "namedExport": "TrailingIndicator",
       "meta": {}
     },
     "molecules--heat-cell--all-steps": {
