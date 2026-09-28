@@ -1,5 +1,5 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
-import { useEffect, useRef } from 'react';
+import { StrictMode, useEffect, useRef } from 'react';
 import {
   afterAll,
   afterEach,
@@ -12,6 +12,7 @@ import {
 
 import {
   FALLBACK_CHART_WIDTH,
+  ResponsiveChart,
   useChartDimensions,
   useContainerWidth,
 } from './responsive.js';
@@ -81,6 +82,9 @@ afterEach(() => {
 const watching = (element: Element) =>
   StubResizeObserver.instances.filter((o) => o.observed.has(element));
 
+const liveObservers = () =>
+  StubResizeObserver.instances.filter((o) => o.observed.size > 0);
+
 /** A widget that renders an empty state first and its container later. */
 function Widget({ loading }: { loading: boolean }) {
   const [ref, width] = useContainerWidth();
@@ -124,6 +128,40 @@ describe('useContainerWidth', () => {
     expect(screen.getByTestId('width').textContent).toBe('1054');
   });
 
+  it('keeps the previous width when a report reads zero', () => {
+    render(<Widget loading={false} />);
+    const container = screen.getByTestId('container');
+    container.dataset.width = '0';
+    act(() => watching(container)[0]!.trigger());
+    expect(screen.getByTestId('width').textContent).toBe('1054');
+  });
+
+  it('follows the ref when it moves to a new node', () => {
+    function Moving({ node }: { node: 'a' | 'b' }) {
+      const [ref, width] = useContainerWidth();
+      return (
+        <>
+          <p data-testid="width">{width}</p>
+          {node === 'a' ? (
+            <div key="a" ref={ref} data-testid="a" data-width="300" />
+          ) : (
+            <div key="b" ref={ref} data-testid="b" data-width="700" />
+          )}
+        </>
+      );
+    }
+    const { rerender } = render(<Moving node="a" />);
+    const a = screen.getByTestId('a');
+    expect(screen.getByTestId('width').textContent).toBe('300');
+
+    rerender(<Moving node="b" />);
+    const b = screen.getByTestId('b');
+    expect(watching(a)).toHaveLength(0);
+    expect(watching(b)).toHaveLength(1);
+    expect(liveObservers()).toHaveLength(1);
+    expect(screen.getByTestId('width').textContent).toBe('700');
+  });
+
   it('observes an element assigned through ref.current by a merged ref', () => {
     function Merged() {
       const [ref, width] = useContainerWidth();
@@ -149,6 +187,26 @@ describe('useContainerWidth', () => {
     merged.dataset.width = '410';
     act(() => watching(merged)[0]!.trigger());
     expect(screen.getByTestId('width').textContent).toBe('410');
+  });
+
+  it('keeps the fallback width without a ResizeObserver', () => {
+    vi.stubGlobal('ResizeObserver', undefined);
+    expect(() => render(<Widget loading={false} />)).not.toThrow();
+    expect(screen.getByTestId('width').textContent).toBe(
+      String(FALLBACK_CHART_WIDTH),
+    );
+  });
+
+  it('leaves exactly one live observer under StrictMode', () => {
+    render(
+      <StrictMode>
+        <Widget loading={false} />
+      </StrictMode>,
+    );
+    const container = screen.getByTestId('container');
+    expect(liveObservers()).toHaveLength(1);
+    expect(watching(container)).toHaveLength(1);
+    expect(screen.getByTestId('width').textContent).toBe('1054');
   });
 
   it('keeps the attached element readable as ref.current', () => {
@@ -184,5 +242,34 @@ describe('useChartDimensions', () => {
     const { rerender } = render(<Chart loading />);
     rerender(<Chart loading={false} />);
     expect(screen.getByTestId('size').textContent).toBe('800x400');
+  });
+});
+
+describe('ResponsiveChart', () => {
+  it('observes a container that mounts late and tracks its resizes', () => {
+    function Card({ loading }: { loading: boolean }) {
+      if (loading) return null;
+      return (
+        <ResponsiveChart aspect={2}>
+          {({ width, height }) => (
+            <p data-testid="size">{`${width}x${height}`}</p>
+          )}
+        </ResponsiveChart>
+      );
+    }
+    const { rerender } = render(<Card loading />);
+    expect(StubResizeObserver.instances).toHaveLength(0);
+
+    rerender(<Card loading={false} />);
+    const wrapper = screen.getByTestId('size').parentElement!;
+    expect(watching(wrapper)).toHaveLength(1);
+    // Unlaid-out (zero width) on attach, so the fallback holds until a report.
+    expect(screen.getByTestId('size').textContent).toBe(
+      `${FALLBACK_CHART_WIDTH}x${FALLBACK_CHART_WIDTH / 2}`,
+    );
+
+    wrapper.dataset.width = '600';
+    act(() => watching(wrapper)[0]!.trigger());
+    expect(screen.getByTestId('size').textContent).toBe('600x300');
   });
 });
