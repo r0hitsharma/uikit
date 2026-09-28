@@ -66,7 +66,7 @@ type MeasuredRef<T extends Element = HTMLDivElement> = RefCallback<T> &
  */
 export function useResizeObserverRef<T extends Element>(
   onResize: (element: T) => void,
-  onDetach?: (element: T) => void,
+  onDetach?: () => void,
 ): MeasuredRef<T> {
   const [element, setElement] = useState<T | null>(null);
   const [ref] = useState(() => {
@@ -95,7 +95,7 @@ export function useResizeObserverRef<T extends Element>(
       // A cleanup also runs when the ref moves to a new node, or for
       // StrictMode's simulated unmount; only an emptied ref is a detach.
       // oxlint-disable-next-line react-hooks/exhaustive-deps -- the live value is the point: it tells a real detach from a move
-      if (ref.current === null) onDetachRef.current?.(element);
+      if (ref.current === null) onDetachRef.current?.();
     };
   }, [element, onResizeRef, onDetachRef, ref]);
 
