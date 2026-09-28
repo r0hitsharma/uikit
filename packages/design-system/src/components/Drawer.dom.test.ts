@@ -144,6 +144,21 @@ describe('Drawer.Content resizable', () => {
     expect(separator.getAttribute('aria-valuemax')).toBe('960');
   });
 
+  it.each([
+    ['sm', '352px'],
+    ['md', '448px'],
+    ['lg', '640px'],
+  ] as const)('starts a %s drawer at %s', (size, width) => {
+    renderDrawer({ resizable: true, size });
+    expect(content().style.width).toBe(width);
+  });
+
+  it('puts the handle last in the content, opted out of swipe-to-dismiss', () => {
+    renderDrawer({ resizable: true });
+    expect(content().lastElementChild).toBe(handle());
+    expect(handle().hasAttribute('data-no-drag')).toBe(true);
+  });
+
   it('honours defaultWidth and a custom accessible name', () => {
     renderDrawer({ resizable: true, defaultWidth: 500, resizeLabel: 'Resize' });
     expect(content().style.width).toBe('500px');
@@ -158,6 +173,7 @@ describe('Drawer.Content resizable', () => {
     expect(handle().hasAttribute('data-dragging')).toBe(true);
     fireEvent.pointerMove(handle(), { pointerId: 1, clientX: 400 });
     expect(content().style.width).toBe('548px');
+    expect(handle().getAttribute('aria-valuenow')).toBe('548');
     // Not written mid-drag, only once the pointer is released.
     expect(values.has('w')).toBe(false);
 
@@ -203,6 +219,21 @@ describe('Drawer.Content resizable', () => {
     expect(handle().hasAttribute('data-dragging')).toBe(true);
     fireEvent.pointerMove(handle(), { pointerId: 1, clientX: 450 });
     expect(content().style.width).toBe('498px');
+  });
+
+  it('does not write storage for a press without movement', () => {
+    const { storage, values } = memoryStorage();
+    renderDrawer({ resizable: true, storageKey: 'w', storage });
+    drag(500, 500);
+    expect(values.has('w')).toBe(false);
+  });
+
+  it('re-clamps when minWidth or maxWidth change after mount', () => {
+    const { rerender } = renderDrawer({ resizable: true, defaultWidth: 700 });
+    rerender(drawerTree({ resizable: true, defaultWidth: 700, maxWidth: 600 }));
+    expect(content().style.width).toBe('600px');
+    rerender(drawerTree({ resizable: true, defaultWidth: 300, minWidth: 360 }));
+    expect(content().style.width).toBe('360px');
   });
 
   it('steps the keyboard from the rendered width when CSS caps the panel', () => {
