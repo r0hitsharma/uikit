@@ -167,14 +167,17 @@ without taking over the width.
 `Drawer.Root` forwards every prop to Ark's drawer. A modal drawer traps focus
 and, on close, Ark returns it to the element that opened it. A non-modal drawer
 (`modal={false}`) has no focus trap, so Ark leaves focus on `<body>`; `Root`
-fills that gap and returns focus to the opener too. It does so only when focus
-would otherwise be lost (on `<body>` or still inside the drawer), so it never
-pulls focus back from something the user focused elsewhere on the page.
+fills that gap and returns focus to the opener too. When nothing was focused at
+open (Safari does not focus a clicked button, and a drawer can start open), or
+the opener has left the page, focus goes to the drawer's `Drawer.Trigger`
+instead, as Ark does for a modal drawer. It moves focus only when focus would
+otherwise be lost (on `<body>` or still inside the drawer), so it never pulls
+focus back from something the user focused elsewhere on the page.
 
 | Prop | Default | |
 | --- | --- | --- |
 | `restoreFocus` | `true` | Return focus on close, modal or not. `false` leaves focus where it is. |
-| `finalFocusEl` | the opener | `() => HTMLElement \| null`: where focus goes on close instead of the opener. |
+| `finalFocusEl` | the opener, else the trigger | `() => HTMLElement \| null`: where focus goes on close instead of the opener. |
 | `initialFocusEl` | first focusable in the drawer | `() => HTMLElement \| null`: where focus lands on open, such as the title (give it `tabIndex={-1}`). |
 
 ```tsx

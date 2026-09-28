@@ -623,6 +623,24 @@ describe('Drawer.Root focus restoration', () => {
     );
   }
 
+  // An uncontrolled drawer opened by its own `Drawer.Trigger`.
+  function triggerTree(rootProps: Partial<RootProps> = {}) {
+    return createElement(
+      Drawer.Root,
+      { modal: false, ...rootProps },
+      createElement(Drawer.Trigger, null, 'Open drawer'),
+      createElement(
+        Drawer.Positioner,
+        null,
+        createElement(
+          Drawer.Content,
+          null,
+          createElement('input', { 'aria-label': 'Min amount' }),
+        ),
+      ),
+    );
+  }
+
   const opener = () => screen.getByRole('button', { name: 'Open drawer' });
   const inside = () => screen.getByLabelText('Min amount');
 
@@ -655,23 +673,37 @@ describe('Drawer.Root focus restoration', () => {
   });
 
   it('returns focus to a Drawer.Trigger in an uncontrolled non-modal drawer', async () => {
-    render(
-      createElement(
-        Drawer.Root,
-        { modal: false },
-        createElement(Drawer.Trigger, null, 'Open drawer'),
-        createElement(
-          Drawer.Positioner,
-          null,
-          createElement(
-            Drawer.Content,
-            null,
-            createElement('input', { 'aria-label': 'Min amount' }),
-          ),
-        ),
-      ),
-    );
+    render(triggerTree());
     await openFromButton();
+
+    pressEscape();
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(opener());
+    });
+  });
+
+  it('falls back to the trigger when clicking it did not focus it', async () => {
+    // Safari and macOS Firefox do not focus a clicked button, so focus is
+    // still on <body> when the drawer opens.
+    render(triggerTree());
+    fireEvent.click(opener());
+    await waitFor(() => {
+      expect(content().contains(document.activeElement)).toBe(true);
+    });
+
+    pressEscape();
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(opener());
+    });
+  });
+
+  it('falls back to the trigger for a drawer that starts open', async () => {
+    render(triggerTree({ defaultOpen: true }));
+    await waitFor(() => {
+      expect(content().contains(document.activeElement)).toBe(true);
+    });
 
     pressEscape();
 

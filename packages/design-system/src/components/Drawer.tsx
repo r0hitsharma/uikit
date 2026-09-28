@@ -479,28 +479,50 @@ function DrawerCloseTrigger({
 
 /** Whether `element` is missing, the document body, or inside `container`. */
 function isFocusLost(
-  doc: Document,
   element: Element | null,
   container: HTMLElement | null,
 ): boolean {
   return (
     element === null ||
-    element === doc.body ||
+    element === document.body ||
     (container?.contains(element) ?? false)
+  );
+}
+
+/**
+ * The trigger Ark itself would return focus to: the one for the current
+ * `triggerValue`, else the first `Drawer.Trigger` that controls this drawer.
+ */
+function findTrigger(
+  triggerId: string | undefined,
+  contentId: string | undefined,
+): HTMLElement | null {
+  const current = triggerId ? document.getElementById(triggerId) : null;
+  if (current) return current;
+  const triggers = document.querySelectorAll<HTMLElement>(
+    '[data-scope="drawer"][data-part="trigger"]',
+  );
+  return (
+    Array.from(triggers).find(
+      (trigger) => trigger.getAttribute('aria-controls') === contentId,
+    ) ?? null
   );
 }
 
 /**
  * Returns focus to the opener when a drawer that does not trap focus closes.
  * Ark restores focus only through its focus trap, which is off whenever
- * `trapFocus` is (by default, whenever `modal` is false), so a non-modal
+ * `trapFocus` is false (by default, whenever `modal` is false), so a non-modal
  * drawer would otherwise leave focus on `<body>` after Escape.
  *
  * The opener is read in a layout effect on open: Ark moves focus into the
- * content a frame later, so focus is still on the element that opened it. On
- * close, focus moves back only if it is lost (on `<body>`) or still inside the
- * drawer; if the user has already moved it elsewhere on the page, which a
- * non-modal drawer allows, it is left there.
+ * content a frame later, so focus is still on the element that opened it. When
+ * nothing was focused (Safari does not focus a clicked button, and a drawer
+ * can start open), or the opener has left the page, focus goes to the trigger
+ * instead, the same fallback Ark's trap uses. On close, focus moves back only
+ * if it is lost (on `<body>`) or still inside the drawer; if the user has
+ * already moved it elsewhere on the page, which a non-modal drawer allows, it
+ * is left there.
  */
 function NonModalFocusReturn({
   finalFocusEl,
@@ -508,32 +530,36 @@ function NonModalFocusReturn({
   const drawer = useDrawerContext();
   const { open } = drawer;
   const contentId = drawer.getContentProps().id;
+  const triggerId = drawer.getTriggerProps({
+    value: drawer.triggerValue ?? undefined,
+  }).id;
   const opener = useRef<HTMLElement | null>(null);
   const wasOpen = useRef(false);
 
   useLayoutEffect(() => {
-    const doc = document;
-    const content = contentId ? doc.getElementById(contentId) : null;
+    const content = contentId ? document.getElementById(contentId) : null;
     if (open) {
       // Capture once per opening: a re-render while open (a new inline
       // `finalFocusEl`, say) re-runs this effect with focus already inside.
       if (wasOpen.current) return;
       wasOpen.current = true;
-      const active = doc.activeElement;
+      const active = document.activeElement;
       opener.current =
-        active instanceof HTMLElement && !isFocusLost(doc, active, content)
+        active instanceof HTMLElement && !isFocusLost(active, content)
           ? active
           : null;
       return;
     }
     if (!wasOpen.current) return;
     wasOpen.current = false;
-    const target = finalFocusEl?.() ?? opener.current;
+    const recorded = opener.current?.isConnected ? opener.current : null;
     opener.current = null;
+    const target =
+      finalFocusEl?.() ?? recorded ?? findTrigger(triggerId, contentId);
     if (!target?.isConnected) return;
-    if (!isFocusLost(doc, doc.activeElement, content)) return;
+    if (!isFocusLost(document.activeElement, content)) return;
     target.focus({ preventScroll: true });
-  }, [open, contentId, finalFocusEl]);
+  }, [open, contentId, triggerId, finalFocusEl]);
 
   return null;
 }
