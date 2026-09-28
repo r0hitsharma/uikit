@@ -1,0 +1,178 @@
+name: snapshot-update
+
+# Regenerate visual-snapshot baselines on the same runner image CI compares
+# them on. CoreText metrics differ between macOS majors, so a baseline rendered
+# on any other macOS version reflows text and fails CI; this is the supported
+# way to produce baselines without a matching local machine.
+#
+# Dispatch it on a branch. It renders, uploads every PNG that changed as the
+# `snapshot-updates` artifact (flat, named as in tests/snapshot.spec.ts-snapshots),
+# and optionally commits them back to the branch.
+#
+# About `commit: true`:
+#   - The render job never holds a write token: install, build and render run
+#     with `contents: read` and no persisted credentials. Only the separate
+#     `commit` job, which runs no project code, gets `contents: write`.
+#   - It pushes on top of the exact commit that was rendered, as a fast-forward.
+#     If the branch moved in the meantime the push is rejected; re-dispatch.
+#   - It refuses to push to main: baselines land through a pull request.
+#   - A push made with GITHUB_TOKEN does not trigger workflows, so ci.yml will
+#     NOT run on the new commit by itself. Dispatch ci.yml on the branch (a full
+#     run) or push any later commit to get checks on it.
+#   - The commit is authored by github-actions[bot]. To commit as yourself,
+#     leave `commit` off and add the artifact's files to the branch locally.
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: >-
+          `affected`: the stories the branch's diff against `base` can change
+          (the same scoping ci.yml applies to pull requests). `all`: every story.
+        type: choice
+        options:
+          - affected
+          - all
+        default: affected
+      base:
+        description: Branch the `affected` scope diffs against (ignored for `all`).
+        type: string
+        default: main
+      commit:
+        description: Commit the regenerated PNGs to the dispatched branch.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snapshot-update-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    # Pinned to macos-26 to match ci.yml's visual-snapshots job.
+    runs-on: macos-26
+    outputs:
+      changed: ${{ steps.collect.outputs.changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          # The affected scope diffs against the base branch's merge-base.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Enable Corepack
+        run: corepack enable npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for orphaned snapshots
+        run: npm run snapshot:check-orphans --workspace @r0hitsharma/uikit-preview
+
+      - name: Build packages
+        run: npm run build
+
+      # Same guard as ci.yml: stories bundle dist/, so a stale build would
+      # re-render the previous component and regenerate nothing.
+      - name: Check rendered packages are built from current sources
+        run: npm run snapshot:check-stale --workspace @r0hitsharma/uikit-preview
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium
+
+      - name: Scope to the stories the branch affects
+        if: inputs.scope == 'affected'
+        env:
+          BASE: ${{ inputs.base }}
+        run: node .github/scripts/scope-snapshots.ts --base "origin/$BASE"
+
+      # --update-snapshots rewrites only baselines that fail comparison (and
+      # writes missing ones), so the artifact holds real changes only.
+      - name: Render and update snapshots
+        run: npm run snapshot:update:all --workspace @r0hitsharma/uikit-preview
+
+      - name: Collect changed snapshots
+        id: collect
+        if: always()
+        env:
+          SNAPSHOT_DIR: packages/uikit-preview/tests/snapshot.spec.ts-snapshots
+          OUT_DIR: ${{ runner.temp }}/snapshot-updates
+        run: |
+          mkdir -p "$OUT_DIR"
+          count=0
+          while IFS= read -r file; do
+            [[ -n "$file" ]] || continue
+            cp "$file" "$OUT_DIR/"
+            echo "  $file"
+            count=$((count + 1))
+          done < <(git ls-files --modified --others --exclude-standard -- "$SNAPSHOT_DIR")
+          echo "changed=$count" >> "$GITHUB_OUTPUT"
+          echo "$count snapshot(s) changed."
+          echo "Snapshot update (${{ inputs.scope }}): **$count** baseline(s) changed." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload changed snapshots
+        if: always() && steps.collect.outputs.changed != '0'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: snapshot-updates
+          path: ${{ runner.temp }}/snapshot-updates
+          if-no-files-found: error
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ladle-playwright-report
+          path: packages/uikit-preview/playwright-report
+          if-no-files-found: ignore
+
+  commit:
+    needs: render
+    if: inputs.commit && needs.render.outputs.changed != '0'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Refuse anything but a feature branch
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if [[ "$REF" != refs/heads/* || "$REF" == refs/heads/main ]]; then
+            echo "commit: true needs a feature branch; got $REF." >&2
+            echo "Baselines reach main through a pull request." >&2
+            exit 1
+          fi
+
+      # The exact commit that was rendered, so the push below is a fast-forward
+      # of it or nothing.
+      - name: Checkout the rendered commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Download changed snapshots
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: snapshot-updates
+          path: packages/uikit-preview/tests/snapshot.spec.ts-snapshots
+
+      - name: Commit and push
+        env:
+          BRANCH: ${{ github.ref_name }}
+          SCOPE: ${{ inputs.scope }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add packages/uikit-preview/tests/snapshot.spec.ts-snapshots
+          git commit -m "test(snapshots): regenerate $SCOPE baselines on macos-26"
+          git push origin "HEAD:refs/heads/$BRANCH"

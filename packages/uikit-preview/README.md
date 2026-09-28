@@ -38,3 +38,21 @@ npm run snapshot:update         # re-render only the snapshots a change affects
 npm run snapshot:update:all     # re-render every snapshot
 npm run snapshot:check-orphans  # flag snapshots with no matching story
 ```
+
+CI compares on `macos-26`. On a pull request it checks the stories the diff can
+affect (changed baselines, plus every story whose bundle includes a changed
+module; Panda/token inputs, preview config and rendered-dependency lockfile
+changes widen that to all). Pushes to `main` and manual `ci` dispatches check
+every story.
+
+If your machine is on a different macOS major, text metrics differ and locally
+rendered baselines will not match CI. Dispatch the `snapshot-update` workflow on
+your branch instead (`affected` or `all`); it uploads the changed PNGs as the
+`snapshot-updates` artifact, and can commit them to the branch
+(`commit: true`). Commits pushed by that workflow do not trigger CI, so dispatch
+`ci` on the branch afterwards.
+
+```bash
+gh workflow run snapshot-update.yml --ref <branch> -f scope=all
+gh run download <run-id> -n snapshot-updates -D tests/snapshot.spec.ts-snapshots
+```

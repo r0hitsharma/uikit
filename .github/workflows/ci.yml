@@ -11,7 +11,9 @@ on:
       - synchronize
   merge_group:
   # Manual full run: every suite, and the full visual-snapshot suite, on the
-  # dispatched ref.
+  # dispatched ref. Also the way to get CI onto a commit pushed by a workflow
+  # (snapshot-update.yml with `commit: true`), since GITHUB_TOKEN pushes do not
+  # trigger workflows.
   workflow_dispatch:
 
 permissions:
