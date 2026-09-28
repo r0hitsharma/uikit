@@ -11,11 +11,12 @@ const meta = (await fetch(`${origin}/meta.json`).then((response) =>
 )) as LadleMeta;
 
 // SNAPSHOT_STORY_IDS narrows the run to a comma-separated allow-list of story
-// ids. On pull requests CI sets it to only the stories whose PNGs changed; the
-// `snapshot:update` (affected) script sets it to the stories a local diff
-// touched. Unset (merge_group, `snapshot:update:all`, local `snapshot:test`)
-// means "all" — distinct from a set-but-empty value, which means "none" (so a
-// forced/edge PR run with no changed PNGs never re-renders the full suite).
+// ids. On pull requests CI sets it to the stories the PR's diff can affect
+// (.github/scripts/scope-snapshots.ts); the `snapshot:update` (affected) script
+// sets it to the stories a local diff touched. Unset (CI on push, dispatch and
+// merge_group, `snapshot:update:all`, local `snapshot:test`) means "all",
+// distinct from a set-but-empty value, which means "none" (so a PR whose diff
+// affects no story never re-renders the full suite).
 const filterRaw = process.env.SNAPSHOT_STORY_IDS;
 const filter =
   filterRaw === undefined
