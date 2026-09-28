@@ -49,16 +49,16 @@
       "id": "migrate-oxlint",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "pinnedRevision": "e6dc8c4726df777ecb64f943816ee177565f40e9",
-      "resolved": "https://raw.githubusercontent.com/oxc-project/oxc/e6dc8c4726df777ecb64f943816ee177565f40e9/.agents/skills/migrate-oxlint/SKILL.md",
+      "pinnedRevision": "f08236b729e3cc468cf79b68e1385a36687cecc5",
+      "resolved": "https://raw.githubusercontent.com/oxc-project/oxc/f08236b729e3cc468cf79b68e1385a36687cecc5/.agents/skills/migrate-oxlint/SKILL.md",
       "contentSha256": "3d2d8a2e3b57118819270689fdd32dfcd8f86edc68f2044f7f84f61282960536"
     },
     {
       "id": "migrate-oxfmt",
       "kind": "skill",
       "sourceType": "remote-markdown",
-      "pinnedRevision": "e6dc8c4726df777ecb64f943816ee177565f40e9",
-      "resolved": "https://raw.githubusercontent.com/oxc-project/oxc/e6dc8c4726df777ecb64f943816ee177565f40e9/.agents/skills/migrate-oxfmt/SKILL.md",
+      "pinnedRevision": "f08236b729e3cc468cf79b68e1385a36687cecc5",
+      "resolved": "https://raw.githubusercontent.com/oxc-project/oxc/f08236b729e3cc468cf79b68e1385a36687cecc5/.agents/skills/migrate-oxfmt/SKILL.md",
       "contentSha256": "86afdda5fafc3b56f9a5b1079e069c7c8822e93f92716ea5f6e12e88d58dac22"
     },
     {
