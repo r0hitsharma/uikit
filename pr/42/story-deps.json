@@ -946,7 +946,16 @@
       "packages/uikit-preview/src/stories/templates/split-layout.stories.tsx",
       "packages/uikit-preview/src/stories/tokens/tokens.stories.tsx"
     ],
+    "packages/webmcp/dist/confirmation.js": [
+      "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
+    ],
     "packages/webmcp/dist/hooks.js": [
+      "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
+    ],
+    "packages/webmcp/dist/mcp-b-optout.js": [
+      "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
+    ],
+    "packages/webmcp/dist/mcp-b.js": [
       "packages/uikit-preview/src/stories/organisms/mcp-connect.stories.tsx"
     ],
     "packages/webmcp/dist/provider.js": [
