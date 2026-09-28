@@ -211,10 +211,10 @@ calls a recipe function for it to extract), and every component renders unstyled
 ```typescript
 import { defineConfig } from '@pandacss/dev';
 import { designSystemStaticCssRecipes } from '@r0hitsharma/design-system';
-import { designSystemPreset } from '@r0hitsharma/design-system/panda-preset';
+import { designSystemStandalonePreset } from '@r0hitsharma/design-system/panda-preset';
 
 export default defineConfig({
-  presets: [designSystemPreset],
+  presets: [designSystemStandalonePreset],
   staticCss: {
     recipes: {
       ...designSystemStaticCssRecipes,
@@ -223,6 +223,30 @@ export default defineConfig({
   },
 });
 ```
+
+The preset was called `designSystemPreset` before it carried Panda's base presets. That
+name still works, marked `@deprecated`, and on every `panda codegen`/`cssgen` it prints a
+notice describing the change below; switching the import to `designSystemStandalonePreset`
+silences it.
+
+The preset is self-contained: it declares Panda's own `@pandacss/preset-base` and
+`@pandacss/preset-panda` as nested presets, because its semantic tokens resolve into
+Panda's default theme (`neutral.*`, `white`, spacing, radii). Panda adds that theme
+only when a config sets no `presets`, so without it a `presets: [designSystemStandalonePreset]`
+config would log hundreds of `Missing token` warnings. Both are peer dependencies, so
+npm installs them automatically. The preset uses whichever copy your install resolves
+for them, which under npm is normally the newest 1.x and can be newer than your
+`@pandacss/dev`; add both as direct dependencies at your `@pandacss/dev` version to
+pin them. A config that still lists them explicitly
+(`presets: ['@pandacss/preset-base', '@pandacss/preset-panda', designSystemStandalonePreset]`)
+keeps working and generates identical CSS, so the two entries can be dropped.
+
+Put your own token overrides under `theme.extend`, in any preset position. A preset
+that sets `theme.tokens` instead replaces the *whole* token set merged before it, not
+just the values it names: listed after `designSystemStandalonePreset` it drops Panda's default
+theme (hundreds of `Missing token` warnings), and listed before it, its tokens are
+replaced by Panda's defaults without a warning. Before this release, a full token theme
+listed before `designSystemStandalonePreset` survived; move it into `theme.extend`.
 
 The recipe definitions themselves are available from the root barrel and from the
 `@r0hitsharma/design-system/recipes` subpath. See

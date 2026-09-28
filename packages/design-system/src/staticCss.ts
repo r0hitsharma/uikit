@@ -10,7 +10,7 @@
  * import { designSystemStaticCssRecipes } from '@r0hitsharma/design-system';
  *
  * export default defineConfig({
- *   presets: [designSystemPreset],
+ *   presets: [designSystemStandalonePreset],
  *   staticCss: {
  *     recipes: {
  *       ...designSystemStaticCssRecipes,
