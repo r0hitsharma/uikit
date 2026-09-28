@@ -1,3 +1,5 @@
+import { preset as pandaBasePreset } from '@pandacss/preset-base';
+import { preset as pandaDefaultPreset } from '@pandacss/preset-panda';
 import { describe, expect, it } from 'vitest';
 
 import { designSystemPandaConfig } from '../panda.shared.js';
@@ -86,6 +88,63 @@ describe('shared recipes', () => {
     expect(used.length).toBeGreaterThan(0);
     for (const value of used) {
       expect(borderWidthNames, value).toContain(value);
+    }
+  });
+});
+
+/** Every `{category.path}` token reference in a token tree, however deep. */
+function collectTokenReferences(node: unknown): string[] {
+  if (typeof node === 'string') {
+    return [...node.matchAll(/\{([^}]+)\}/g)].map((match) => match[1] ?? '');
+  }
+  if (typeof node !== 'object' || node === null) return [];
+  return Object.values(node).flatMap(collectTokenReferences);
+}
+
+/** Whether `path` (e.g. `colors.neutral.50`) names a token in `tree`. */
+function hasToken(tree: unknown, path: string): boolean {
+  let node = tree;
+  for (const segment of path.split('.')) {
+    if (typeof node !== 'object' || node === null || !(segment in node)) {
+      return false;
+    }
+    node = (node as Record<string, unknown>)[segment];
+  }
+  return typeof node === 'object' && node !== null;
+}
+
+describe('base presets', () => {
+  // Panda drops its own default presets as soon as a consumer sets `presets`,
+  // so `presets: [designSystemPreset]` only resolves the base palette the
+  // semantic tokens point into because the preset declares it itself.
+  it('are declared on the preset', () => {
+    expect(designSystemPreset.presets).toEqual([
+      pandaBasePreset,
+      pandaDefaultPreset,
+    ]);
+  });
+
+  it('define every token the semantic tokens reference', () => {
+    const extend = designSystemPreset.theme?.extend;
+    // Resolve against what the preset itself carries (its own tokens plus the
+    // presets it declares), which is all a `presets: [designSystemPreset]`
+    // consumer gets.
+    const nestedTokens = (designSystemPreset.presets ?? []).map((nested) =>
+      typeof nested === 'object' && !(nested instanceof Promise)
+        ? nested.theme?.tokens
+        : undefined,
+    );
+    const trees = [...nestedTokens, extend?.tokens, extend?.semanticTokens];
+    const references = collectTokenReferences(extend?.semanticTokens);
+
+    expect(references.length).toBeGreaterThan(0);
+    for (const reference of references) {
+      // `colorPalette` is Panda's virtual palette, resolved per component.
+      if (reference.startsWith('colors.colorPalette.')) continue;
+      expect(
+        trees.some((tree) => hasToken(tree, reference)),
+        reference,
+      ).toBe(true);
     }
   });
 });

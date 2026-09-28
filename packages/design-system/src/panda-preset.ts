@@ -1,4 +1,6 @@
 import { definePreset } from '@pandacss/dev';
+import { preset as pandaBasePreset } from '@pandacss/preset-base';
+import { preset as pandaDefaultPreset } from '@pandacss/preset-panda';
 
 import {
   designSystemRecipes,
@@ -55,10 +57,24 @@ import {
  * emit NO CSS unless the consuming `panda.config` lists them in `staticCss`.
  * `panda.shared.ts` sets this for the internal build; consumers of this preset
  * must replicate `staticCss.recipes` for every recipe they render dynamically.
+ *
+ * BASE PRESETS: the semantic tokens below resolve into Panda's default theme
+ * (`{colors.neutral.50}`, `{colors.white}`), and the recipes use its spacing,
+ * radii and font scales. Panda adds that theme (`@pandacss/preset-panda`) only
+ * when a config sets no `presets`, so a consumer writing
+ * `presets: [designSystemPreset]` would otherwise lose every one of those base
+ * tokens. This preset therefore declares it itself, together with
+ * `@pandacss/preset-base` (utilities, conditions, patterns) so it also works
+ * under `eject: true`. Panda resolves nested presets before the preset that
+ * lists them, so the design-system layer still wins, and merging a base preset
+ * a second time (a consumer that also lists it explicitly) changes nothing in
+ * the generated output. Both are peer dependencies, so the copy used here is
+ * the consumer's own, at the version their `@pandacss/dev` ships.
  */
 
 export const designSystemPreset = definePreset({
   name: 'design-system',
+  presets: [pandaBasePreset, pandaDefaultPreset],
   globalCss: colorSchemeGlobalCss,
   theme: {
     extend: {

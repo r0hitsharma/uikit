@@ -6,6 +6,35 @@ before you file a "styles aren't applying" bug — the cause is almost always on
 
 ---
 
+## Setting `presets` drops Panda's defaults (the preset carries them for you)
+
+**Symptom:** `panda codegen` / `cssgen` log hundreds of `Missing token: colors.neutral.*` (or
+`colors.white`, spacing, radii) notices, and components render without their colours.
+
+**Cause:** Panda applies `@pandacss/preset-panda` (the default theme: palette, spacing, radii,
+fonts) only when a config sets **no** `presets`. The design-system semantic tokens resolve into
+that palette (`surface.canvas` is `{colors.neutral.50}` / `{colors.neutral.950}`), so a config
+that sets `presets: [designSystemPreset]` and nothing else used to leave every one of those
+references dangling.
+
+**Fix (built in):** `designSystemPreset` declares `@pandacss/preset-base` and
+`@pandacss/preset-panda` as nested presets. Panda resolves a preset's own `presets` before the
+preset itself, so `presets: [designSystemPreset]` gets the full default theme with the
+design-system layer on top. Both packages are peer dependencies of `@r0hitsharma/design-system`;
+`@pandacss/dev` already depends on them, so your install has them at your Panda version.
+
+- A config that already lists them
+  (`presets: ['@pandacss/preset-base', '@pandacss/preset-panda', designSystemPreset]`) still
+  works and generates byte-identical CSS and codegen output. The two extra entries are now
+  redundant and can be removed.
+- **Order your own presets after `designSystemPreset`.** Its nested base presets are merged
+  immediately before it, so a preset listed *earlier* that replaces a Panda default through
+  `theme.tokens` (say, a brand `neutral` ramp) is reset to Panda's value. Overrides written
+  under `theme.extend` survive in any order, because extensions are applied after every
+  preset's base theme. When in doubt, list your preset after `designSystemPreset`.
+
+---
+
 ## Recipe variants driven by runtime state generate NO CSS (the worst one)
 
 **Symptom:** a recipe variant that is toggled at runtime silently renders with no styling.

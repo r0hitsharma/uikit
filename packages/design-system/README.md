@@ -115,6 +115,21 @@ export default defineConfig({
 });
 ```
 
+The preset is self-contained: it declares Panda's own `@pandacss/preset-base` and
+`@pandacss/preset-panda` as nested presets, because its semantic tokens resolve into
+Panda's default theme (`neutral.*`, `white`, spacing, radii). Panda adds that theme
+only when a config sets no `presets`, so without it a `presets: [designSystemPreset]`
+config would log hundreds of `Missing token` warnings. Both are peer dependencies; npm
+installs them automatically, and `@pandacss/dev` already brings them in at your
+Panda version. A config that still lists them explicitly
+(`presets: ['@pandacss/preset-base', '@pandacss/preset-panda', designSystemPreset]`)
+keeps working and generates identical output, so the two entries can be dropped.
+
+Because nested presets are applied just before the preset that declares them, list
+any preset of your own that replaces Panda's defaults through `theme.tokens` *after*
+`designSystemPreset`; listed before it, those values are reset to Panda's. Overrides
+under `theme.extend` survive in either order.
+
 The recipe definitions themselves are available from the root barrel and from the
 `@r0hitsharma/design-system/recipes` subpath. See
 [PANDA_NOTES.md](./PANDA_NOTES.md) for this and the other Panda gotchas that bite
