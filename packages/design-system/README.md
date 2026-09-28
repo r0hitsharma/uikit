@@ -133,7 +133,8 @@ import { Drawer } from '@r0hitsharma/design-system/drawer';
 A stored width is clamped to the current `minWidth`/`maxWidth` when it is read,
 and a value that is not a finite number is ignored. Storage access is wrapped
 so that blocked storage or a full quota falls back to the default width without
-throwing. Storage is never read on the server: a server-rendered drawer hydrates
+throwing; in development a console warning says so, and names a stored value it
+ignored. Storage is never read on the server: a server-rendered drawer hydrates
 at its default width and moves to the stored one straight after. The width is written when a drag ends
 and on each key press, not on every pointer move. The panel's `maxWidth: 100vw`
 still applies, so it never grows past the viewport.
@@ -154,6 +155,8 @@ A controlled drawer moves only when `width` changes. A `width` outside
 through `onWidthChange`, which only reports changes the user makes. Storage
 belongs to whoever owns the width: with `width` set, `storageKey` and `storage`
 are ignored (never read or written), and a dev-only console warning says so.
+Dev-only warnings also flag resize props passed without `resizable`, and a
+`minWidth` larger than `maxWidth`.
 `onWidthChange` also fires in uncontrolled mode, so you can observe changes
 without taking over the width.
 

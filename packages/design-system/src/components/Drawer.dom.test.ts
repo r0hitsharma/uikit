@@ -84,6 +84,9 @@ function memoryStorage(initial: Record<string, string> = {}) {
   return { storage, values };
 }
 
+const silenceWarnings = () =>
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+
 /** Stands in for layout: jsdom reports every element as 0px wide. */
 function stubRenderedWidth(width: number) {
   vi.spyOn(content(), 'getBoundingClientRect').mockReturnValue({
@@ -106,9 +109,26 @@ describe('Drawer.Content without resizable', () => {
   });
 
   it('never touches storage', () => {
+    silenceWarnings();
     const getItem = vi.fn(() => '600');
     renderDrawer({ storageKey: 'w', storage: { getItem, setItem: vi.fn() } });
     expect(getItem).not.toHaveBeenCalled();
+  });
+
+  it('warns once, in development, about resize props it ignores', () => {
+    const warn = silenceWarnings();
+    const { rerender } = renderDrawer({ storageKey: 'w', minWidth: 400 });
+    rerender(drawerTree({ storageKey: 'w', minWidth: 400 }));
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]?.[0]).toContain(
+      '`minWidth`, `storageKey` without `resizable`',
+    );
+  });
+
+  it('does not warn without resize props', () => {
+    const warn = silenceWarnings();
+    renderDrawer({ size: 'sm' });
+    expect(warn).not.toHaveBeenCalled();
   });
 });
 
@@ -359,13 +379,17 @@ describe('Drawer.Content persisted width', () => {
   it.each(['', 'abc', 'NaN', 'Infinity'])(
     'falls back to the default width when the stored value is %j',
     (stored) => {
+      const warn = silenceWarnings();
       const { storage } = memoryStorage({ w: stored });
       renderDrawer({ resizable: true, storageKey: 'w', storage });
       expect(content().style.width).toBe('448px');
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0]?.[0]).toContain('not a finite number');
     },
   );
 
   it('keeps working when the storage adapter throws on read and write', () => {
+    const warn = silenceWarnings();
     const storage: DrawerWidthStorage = {
       getItem: () => {
         throw new Error('SecurityError');
@@ -381,9 +405,23 @@ describe('Drawer.Content persisted width', () => {
     expect(content().style.width).toBe('464px');
     drag(500, 450);
     expect(content().style.width).toBe('514px');
+
+    // Said in development, so a broken adapter is not silent: one read
+    // warning per mount, and each failed write with its error.
+    const messages = warn.mock.calls.map(([message]) => String(message));
+    expect(messages.filter((m) => m.includes('could not read'))).toHaveLength(
+      1,
+    );
+    expect(messages.filter((m) => m.includes('could not write'))).toHaveLength(
+      2,
+    );
+    expect(warn.mock.calls.at(-1)?.[1]).toEqual(
+      new Error('QuotaExceededError'),
+    );
   });
 
   it('keeps working when touching window.localStorage itself throws', () => {
+    silenceWarnings();
     vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
       throw new Error('SecurityError');
     });
@@ -490,5 +528,13 @@ describe('Drawer.Content controlled width', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     renderDrawer({ resizable: true, storageKey: 'w' });
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('warns once when minWidth is larger than maxWidth', () => {
+    const warn = silenceWarnings();
+    renderDrawer({ resizable: true, minWidth: 700, maxWidth: 500 });
+    expect(content().style.width).toBe('700px');
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]?.[0]).toContain('larger than its `maxWidth`');
   });
 });

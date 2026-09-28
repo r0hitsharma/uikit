@@ -87,22 +87,26 @@ function defaultStorage(): DrawerWidthStorage | undefined {
   return typeof window === 'undefined' ? undefined : window.localStorage;
 }
 
+/** Snapshot of a storage read that threw. A symbol, so snapshots stay primitive. */
+const READ_FAILED = Symbol('read failed');
+type StoredWidthSnapshot = string | null | typeof READ_FAILED;
+
 function readStoredWidth(
   storage: DrawerWidthStorage | undefined,
   key: string | undefined,
-): string | null {
+): StoredWidthSnapshot {
   if (key === undefined) return null;
   try {
     return (storage ?? defaultStorage())?.getItem(key) ?? null;
   } catch {
-    return null;
+    return READ_FAILED;
   }
 }
 
 /** The stored value as a width, or `undefined` when it is missing or unusable. */
-function parseStoredWidth(raw: string | null): number | undefined {
+function parseStoredWidth(raw: StoredWidthSnapshot): number | undefined {
   // `Number('')` is 0, so an empty value is rejected before the conversion.
-  if (raw === null || raw.trim() === '') return undefined;
+  if (typeof raw !== 'string' || raw.trim() === '') return undefined;
   const parsed = Number(raw);
   return Number.isFinite(parsed) ? parsed : undefined;
 }
@@ -111,7 +115,7 @@ function parseStoredWidth(raw: string | null): number | undefined {
 // render and is the only writer that matters to it.
 const subscribeToNothing = () => () => {};
 // The server has no storage to read, and hydration must render what it did.
-const nothingStored = (): string | null => null;
+const nothingStored = (): StoredWidthSnapshot => null;
 
 function writeStoredWidth(
   storage: DrawerWidthStorage | undefined,
@@ -121,10 +125,34 @@ function writeStoredWidth(
   if (key === undefined) return;
   try {
     (storage ?? defaultStorage())?.setItem(key, String(Math.round(width)));
-  } catch {
+  } catch (error) {
     // Storage unavailable or over quota: the width still applies for this
-    // mount, it just does not survive a remount.
+    // mount, it just does not survive a remount. Said in development, so a
+    // broken `storage` adapter is not mistaken for blocked storage.
+    if (IS_DEV_WARNING_ENABLED) {
+      console.warn(
+        `[uikit] \`Drawer.Content\` could not write its width under "${key}"; ` +
+          'it will not survive a remount.',
+        error,
+      );
+    }
   }
+}
+
+/**
+ * Logs `message` once per mount, in development only, whenever it is defined.
+ * The latch is only touched in the effect: a ref is not readable or writable
+ * during render.
+ */
+function useDevWarningOnce(message: string | undefined): void {
+  const warned = useRef(false);
+  useEffect(() => {
+    if (!IS_DEV_WARNING_ENABLED || message === undefined || warned.current) {
+      return;
+    }
+    warned.current = true;
+    console.warn(message);
+  }, [message]);
 }
 
 /** Whether the element lays out right-to-left (Ark stamps `dir` on Content). */
@@ -189,15 +217,18 @@ function DrawerContent({
   width: widthProp,
   defaultWidth,
   onWidthChange,
-  minWidth = DEFAULT_MIN_WIDTH,
-  maxWidth = DEFAULT_MAX_WIDTH,
+  minWidth: minWidthProp,
+  maxWidth: maxWidthProp,
   storageKey,
   storage,
-  resizeLabel = 'Resize drawer',
+  resizeLabel: resizeLabelProp,
   style,
   children,
   ...props
 }: DrawerContentProps) {
+  const minWidth = minWidthProp ?? DEFAULT_MIN_WIDTH;
+  const maxWidth = maxWidthProp ?? DEFAULT_MAX_WIDTH;
+  const resizeLabel = resizeLabelProp ?? 'Resize drawer';
   const controlled = widthProp !== undefined;
   const persisted = resizable && !controlled && storageKey !== undefined;
   // Read on every render until the width is changed in this mount, so a
@@ -215,26 +246,51 @@ function DrawerContent({
   const [chosenWidth, setChosenWidth] = useState<number>();
   const [dragging, setDragging] = useState(false);
 
-  // Warn once, dev-only, when `storageKey` is passed alongside a controlled
-  // `width` it can never apply to. The latch is only touched in the effect: a
-  // ref is not readable or writable during render.
-  const storageIgnoredWarned = useRef(false);
-  const storageIgnored = resizable && controlled && storageKey !== undefined;
-  useEffect(() => {
-    if (
-      !IS_DEV_WARNING_ENABLED ||
-      !storageIgnored ||
-      storageIgnoredWarned.current
-    ) {
-      return;
-    }
-    storageIgnoredWarned.current = true;
-    console.warn(
-      '[uikit] `Drawer.Content` was given both `width` and `storageKey`. A ' +
-        'controlled width is never read from or written to storage; persist ' +
-        'it where you hold `width`, or drop `width` to let the drawer do it.',
-    );
-  }, [storageIgnored]);
+  useDevWarningOnce(
+    resizable && controlled && storageKey !== undefined
+      ? '[uikit] `Drawer.Content` was given both `width` and `storageKey`. A ' +
+          'controlled width is never read from or written to storage; persist ' +
+          'it where you hold `width`, or drop `width` to let the drawer do it.'
+      : undefined,
+  );
+  const ignoredProps = resizable
+    ? ''
+    : Object.entries({
+        width: widthProp,
+        defaultWidth,
+        onWidthChange,
+        minWidth: minWidthProp,
+        maxWidth: maxWidthProp,
+        storageKey,
+        storage,
+        resizeLabel: resizeLabelProp,
+      })
+        .filter(([, value]) => value !== undefined)
+        .map(([name]) => `\`${name}\``)
+        .join(', ');
+  useDevWarningOnce(
+    ignoredProps
+      ? `[uikit] \`Drawer.Content\` was given ${ignoredProps} without ` +
+          '`resizable`, so they have no effect. Add `resizable` to use them.'
+      : undefined,
+  );
+  useDevWarningOnce(
+    resizable && minWidth > maxWidth
+      ? `[uikit] \`Drawer.Content\` was given a \`minWidth\` (${minWidth}) ` +
+          `larger than its \`maxWidth\` (${maxWidth}); the width is pinned to ` +
+          '`minWidth`.'
+      : undefined,
+  );
+  useDevWarningOnce(
+    stored === READ_FAILED
+      ? `[uikit] \`Drawer.Content\` could not read the width stored under ` +
+          `"${storageKey}" (the storage threw); using the default width.`
+      : stored !== null && storedWidth === undefined
+        ? `[uikit] \`Drawer.Content\` ignored the value stored under ` +
+          `"${storageKey}" (${JSON.stringify(stored)}), which is not a finite ` +
+          'number; using the default width.'
+        : undefined,
+  );
   const contentClassName = cx(
     slots.content,
     `drawer__content--size_${size}`,
