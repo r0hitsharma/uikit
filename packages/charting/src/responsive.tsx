@@ -1,17 +1,20 @@
 import {
   type CSSProperties,
   type ReactNode,
+  type RefCallback,
   type RefObject,
   useEffect,
-  useRef,
   useState,
 } from 'react';
 
+import { useLatest } from './use-latest.js';
+
 /**
  * Fallback width for a renderer with no `ResizeObserver` (jsdom / SSR / the
- * first paint before measurement). `XYChart` needs a pixel width, and a chart
- * in a fluid grid cell has none until measured; this keeps the first render and
- * non-browser renderers from collapsing to zero. Previously every consumer
+ * first paint before measurement, or before the measured element mounts).
+ * `XYChart` needs a pixel width, and a chart in a fluid grid cell has none
+ * until measured; this keeps the first render and non-browser renderers from
+ * collapsing to zero. Previously every consumer
  * declared its own `FALLBACK_WIDTH` — it belongs here, in the kit.
  */
 export const FALLBACK_CHART_WIDTH = 560;
@@ -39,9 +42,63 @@ const deriveHeight = (
 };
 
 /**
- * Measures a container's width. Returns a ref to attach to the measured element
- * and the observed width (falling back to `fallbackWidth` before measurement /
- * without a `ResizeObserver`).
+ * The ref the measuring hooks return: a stable callback ref that also exposes
+ * the attached element as `.current`. Observation follows whatever element it
+ * holds, however it got there: pass it straight to `ref={…}`, or assign
+ * `ref.current` from a merged callback ref, and either way the element is
+ * measured from the moment it attaches until it detaches, including one that
+ * mounts after the component does.
+ */
+type MeasuredRef<T extends Element = HTMLDivElement> = RefCallback<T> &
+  RefObject<T | null>;
+
+/**
+ * Runs `onResize` with the element the returned ref holds: once when it
+ * attaches, then on every `ResizeObserver` report, and not after it detaches.
+ * Calling the ref and assigning its `.current` are the same operation, so an
+ * element attached late, detached, or moved to a different node is tracked
+ * each time. No-ops without a `ResizeObserver` (jsdom / SSR).
+ *
+ * Internal: shared by the measuring hooks here, not re-exported from the
+ * package barrels.
+ */
+export function useResizeObserverRef<T extends Element>(
+  onResize: (element: T) => void,
+): MeasuredRef<T> {
+  const [element, setElement] = useState<T | null>(null);
+  const [ref] = useState(() => {
+    let current: T | null = null;
+    const attach = (next: T | null) => {
+      current = next;
+      setElement(next);
+    };
+    return Object.defineProperty(attach, 'current', {
+      get: () => current,
+      set: attach,
+      enumerable: true,
+    }) as MeasuredRef<T>;
+  });
+  const onResizeRef = useLatest(onResize);
+
+  useEffect(() => {
+    if (!element || typeof ResizeObserver === 'undefined') return;
+    const measure = () => onResizeRef.current(element);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [element, onResizeRef]);
+
+  return ref;
+}
+
+/**
+ * Measures a container's width. Returns a {@link MeasuredRef} to attach to the
+ * measured element and the observed width. The width is `fallbackWidth` until
+ * the element has been measured (before it mounts, or without a
+ * `ResizeObserver`), and keeps its last measured value after the element
+ * detaches. A report of zero width (a collapsed or `display: none` container)
+ * is ignored rather than collapsing the chart.
  *
  * This is the width-only primitive: a fixed-height or pixel-laid-out chart wants
  * just the width and computes its own height, so it should reach for this rather
@@ -49,23 +106,12 @@ const deriveHeight = (
  */
 export function useContainerWidth(
   fallbackWidth = FALLBACK_CHART_WIDTH,
-): [RefObject<HTMLDivElement | null>, number] {
-  const ref = useRef<HTMLDivElement | null>(null);
+): [MeasuredRef, number] {
   const [width, setWidth] = useState(fallbackWidth);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element || typeof ResizeObserver === 'undefined') return;
-    const measure = () => {
-      const next = element.clientWidth;
-      if (next > 0) setWidth(next);
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
+  const ref = useResizeObserverRef<HTMLDivElement>((element) => {
+    const next = element.clientWidth;
+    if (next > 0) setWidth(next);
+  });
   return [ref, width];
 }
 
@@ -79,7 +125,7 @@ export function useContainerWidth(
  */
 export function useChartDimensions(
   options: UseChartDimensionsOptions = {},
-): [RefObject<HTMLDivElement | null>, ChartDimensions] {
+): [MeasuredRef, ChartDimensions] {
   const [ref, width] = useContainerWidth(options.fallbackWidth);
   return [ref, { width, height: deriveHeight(width, options) }];
 }
