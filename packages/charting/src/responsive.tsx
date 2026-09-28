@@ -59,8 +59,8 @@ type MeasuredRef<T extends Element = HTMLDivElement> = RefCallback<T> &
  * element attached late, detached, or moved to a different node is tracked
  * each time. No-ops without a `ResizeObserver` (jsdom / SSR).
  *
- * Internal: shared by the measuring hooks here, not re-exported from the
- * package barrels.
+ * Internal: shared by the measuring hooks here and `ChartLegend`'s
+ * `onHeightChange`, not re-exported from the package barrels.
  */
 export function useResizeObserverRef<T extends Element>(
   onResize: (element: T) => void,

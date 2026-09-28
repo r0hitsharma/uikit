@@ -176,6 +176,28 @@ export function Example() {
 }
 ```
 
+### Legend height is not fixed
+
+`ChartLegend` wraps onto as many rows as its items need at the width it is
+given, so its height grows with the series count and shrinks with the host. A
+layout that reserves a constant height for it clips the legend (or the plot) as
+soon as it wraps. Cap the item count with `maxItems` (the rest collapse into a
+"+n more" entry) and size the plot from the measured legend with
+`onHeightChange`:
+
+```tsx
+function ChartCard({ height }: { height: number }) {
+  const [ref, width] = useContainerWidth();
+  const [legendHeight, setLegendHeight] = useState(0);
+  return (
+    <div ref={ref} style={{ height, overflow: 'hidden' }}>
+      <ChartLegend items={items} maxItems={4} onHeightChange={setLegendHeight} />
+      <XYChart width={width} height={height - legendHeight} /* … */ />
+    </div>
+  );
+}
+```
+
 ## Notes
 
 - Colors are design-system CSS-variable tokens (for example
