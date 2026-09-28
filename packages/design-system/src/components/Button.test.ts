@@ -1,55 +1,109 @@
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { loadConfigAndCreateContext } from '@pandacss/node';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
-import { buttonRecipe } from '../recipes/button.recipe.js';
-import { Button, type ButtonSize, type ButtonVariant } from './Button.js';
+import {
+  Button,
+  type ButtonDensity,
+  type ButtonSize,
+  type ButtonVariant,
+} from './Button.js';
 
 const sizes: ButtonSize[] = ['sm', 'md', 'lg'];
 const variants: ButtonVariant[] = ['panel', 'item'];
+const densities: ButtonDensity[] = ['comfortable', 'compact'];
 
-// Read the recipe as plain nested objects: Panda's style types do not model
-// the nested `&.button--size_*` selector keys.
-type Styles = Record<string, unknown>;
-const recipeVariants = (buttonRecipe.variants ?? {}) as Record<
-  string,
-  Record<string, Styles> | undefined
->;
-const sizeVariant = recipeVariants.size;
-const iconOnlyVariant = recipeVariants.iconOnly;
+const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
+
+// The stylesheet Panda emits for this package's own config, from staticCss
+// alone: that is what produces every single-variant `button--*` class, and it
+// is what a consumer's `staticCss` spread emits too.
+let css = '';
+beforeAll(async () => {
+  const ctx = await loadConfigAndCreateContext({
+    cwd: packageRoot,
+    configPath: join(packageRoot, 'panda.config.ts'),
+  });
+  const sheet = ctx.createSheet();
+  ctx.appendCssOfType('static', sheet);
+  css = ctx.getCss(sheet);
+}, 30_000);
+
+/** Declarations of every rule whose selector list contains exactly `selector`. */
+function declarationsFor(selector: string): Record<string, string> {
+  const declarations: Record<string, string> = {};
+  for (const [, selectorList = '', body = ''] of css.matchAll(
+    /([^{}]+)\{([^{}]*)\}/g,
+  )) {
+    if (!selectorList.split(',').some((s) => s.trim() === selector)) continue;
+    for (const declaration of body.split(';')) {
+      const [property, ...value] = declaration.split(':');
+      if (property?.trim()) {
+        declarations[property.trim()] = value.join(':').trim();
+      }
+    }
+  }
+  return declarations;
+}
+
+// Why these rules are size- and density-qualified: see the `iconOnly` variant
+// in `recipes/button.recipe.ts`.
+describe('icon-only button stylesheet', () => {
+  it.each(sizes)(
+    'a %s icon-only button is as wide as it is tall, with no padding or gap',
+    (size) => {
+      const height = declarationsFor(`.button--size_${size}`).height;
+      const square = declarationsFor(
+        `.button--iconOnly_true.button--size_${size}`,
+      );
+
+      expect(height).toMatch(/^var\(--sizes-/);
+      expect(square.width).toBe(height);
+      expect(square['min-width']).toBe(height);
+      expect(square['padding-inline']).toBe('var(--spacing-0)');
+      expect(square.gap).toBe('var(--spacing-0)');
+    },
+  );
+
+  it.each(sizes)(
+    'a compact %s icon-only panel is the compact height, and as wide',
+    (size) => {
+      const height = declarationsFor('.button--panelDensity_compact').height;
+      const square = declarationsFor(
+        `.button--iconOnly_true.button--panelDensity_compact.button--size_${size}`,
+      );
+
+      expect(height).toMatch(/^var\(--sizes-/);
+      expect(square.height).toBe(height);
+      expect(square.width).toBe(height);
+      expect(square['min-width']).toBe(height);
+    },
+  );
+});
 
 const classNamesOf = (html: string): string[] =>
   /class="([^"]*)"/.exec(html)?.[1]?.split(' ') ?? [];
 
-// The `size` variant and the density variants all set `px`, and `item` sets a
-// full width. Those are single-class rules, and which one wins against a
-// single-class `iconOnly` rule depends on the order Panda happens to emit them.
-// Square icon-only sizing therefore lives in `.button--iconOnly_true.button--size_*`
-// rules, whose extra class wins regardless of order.
-describe('icon-only button recipe', () => {
-  it.each(sizes)('squares a %s button to its size height', (size) => {
-    const height = sizeVariant?.[size]?.h;
-    const square = iconOnlyVariant?.true?.[`&.button--size_${size}`];
-
-    expect(height).toBeDefined();
-    expect(square).toEqual({
-      px: '0',
-      w: height,
-      minW: height,
-      alignItems: 'center',
-    });
-  });
-});
-
 describe('Button iconOnly', () => {
-  it.each(variants.flatMap((variant) => sizes.map((size) => [variant, size])))(
-    'emits the classes the square rule selects on (%s, %s)',
-    (variant, size) => {
+  it.each(
+    variants.flatMap((variant) =>
+      sizes.flatMap((size) =>
+        densities.map((density) => [variant, size, density] as const),
+      ),
+    ),
+  )(
+    'emits the classes the square rules select on (%s, %s, %s)',
+    (variant, size, density) => {
       const classes = classNamesOf(
         renderToStaticMarkup(
           createElement(Button, {
-            variant: variant as ButtonVariant,
-            size: size as ButtonSize,
+            variant,
+            size,
+            density,
             iconOnly: true,
             'aria-label': 'Refresh',
           }),
@@ -58,6 +112,9 @@ describe('Button iconOnly', () => {
 
       expect(classes).toContain('button--iconOnly_true');
       expect(classes).toContain(`button--size_${size}`);
+      if (variant === 'panel' && density === 'compact') {
+        expect(classes).toContain('button--panelDensity_compact');
+      }
     },
   );
 });

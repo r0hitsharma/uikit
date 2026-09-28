@@ -90,6 +90,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@pandacss/node": "1.12.1",
     "@pandacss/preset-base": "1.12.1",
     "@pandacss/preset-panda": "1.12.1",
     "@r0hitsharma/oxfmt-config": "*",
