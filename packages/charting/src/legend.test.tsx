@@ -1,5 +1,5 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveChartColor } from './chart-color.js';
 import { ChartLegend, type ChartLegendItem, Swatch } from './legend.js';
@@ -109,53 +109,118 @@ class StubResizeObserver {
 }
 
 describe('ChartLegend onHeightChange', () => {
+  // jsdom lays nothing out, so every element reports this height.
+  let laidOutHeight = 0;
+  const offsetHeight = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    'offsetHeight',
+  );
+
+  beforeEach(() => {
+    laidOutHeight = 0;
+    vi.stubGlobal('ResizeObserver', StubResizeObserver);
+    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+      configurable: true,
+      get: () => laidOutHeight,
+    });
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
     StubResizeObserver.instances = [];
+    if (offsetHeight) {
+      Object.defineProperty(
+        HTMLElement.prototype,
+        'offsetHeight',
+        offsetHeight,
+      );
+    }
   });
 
-  /** jsdom lays nothing out, so the legend's height is stubbed on the node. */
-  const setHeight = (element: HTMLElement, height: number) =>
-    Object.defineProperty(element, 'offsetHeight', {
-      configurable: true,
-      value: height,
-    });
+  const liveObservers = () =>
+    StubResizeObserver.instances.filter((o) => o.observed.size > 0);
 
-  it('reports the height when the legend lays out and when it wraps', () => {
-    vi.stubGlobal('ResizeObserver', StubResizeObserver);
+  const resize = (height: number) => {
+    laidOutHeight = height;
+    act(() => {
+      for (const observer of liveObservers()) observer.trigger();
+    });
+  };
+
+  it('reports the laid-out height exactly once, then each change', () => {
+    laidOutHeight = 20;
     const onHeightChange = vi.fn();
     render(<ChartLegend items={FIVE} onHeightChange={onHeightChange} />);
-    // jsdom's unmeasured box reads 0 on the first report.
-    expect(onHeightChange).toHaveBeenLastCalledWith(0);
+    expect(onHeightChange.mock.calls).toEqual([[20]]);
 
     const legend = screen.getByRole('list');
-    const [observer] = StubResizeObserver.instances;
-    expect(observer?.observed.has(legend)).toBe(true);
+    expect(liveObservers()).toHaveLength(1);
+    expect(liveObservers()[0]!.observed.has(legend)).toBe(true);
 
-    setHeight(legend, 42);
-    act(() => observer?.trigger());
-    expect(onHeightChange).toHaveBeenLastCalledWith(42);
+    resize(42);
+    expect(onHeightChange.mock.calls).toEqual([[20], [42]]);
 
     // A report that did not change the height is not passed on.
-    const calls = onHeightChange.mock.calls.length;
-    act(() => observer?.trigger());
-    expect(onHeightChange).toHaveBeenCalledTimes(calls);
+    resize(42);
+    expect(onHeightChange).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports 0 when the legend stops rendering', () => {
+    laidOutHeight = 20;
+    const onHeightChange = vi.fn();
+    const { rerender } = render(
+      <ChartLegend items={FIVE} onHeightChange={onHeightChange} />,
+    );
+    rerender(<ChartLegend items={[]} onHeightChange={onHeightChange} />);
+    expect(onHeightChange).toHaveBeenLastCalledWith(0);
+    expect(liveObservers()).toHaveLength(0);
+
+    // Rendering again at the same height reports it afresh.
+    rerender(<ChartLegend items={FIVE} onHeightChange={onHeightChange} />);
+    expect(onHeightChange.mock.calls).toEqual([[20], [0], [20]]);
+  });
+
+  it('reports the current height to a listener that is removed and re-added', () => {
+    laidOutHeight = 20;
+    const onHeightChange = vi.fn();
+    const { rerender } = render(
+      <ChartLegend items={FIVE} onHeightChange={onHeightChange} />,
+    );
+    rerender(<ChartLegend items={FIVE} />);
+    expect(liveObservers()).toHaveLength(0);
+    rerender(<ChartLegend items={FIVE} onHeightChange={onHeightChange} />);
+    expect(onHeightChange.mock.calls).toEqual([[20], [20]]);
+    expect(liveObservers()).toHaveLength(1);
+  });
+
+  it('hands a swapped-in listener the current height, and stops calling the old one', () => {
+    laidOutHeight = 20;
+    const first = vi.fn();
+    const second = vi.fn();
+    const { rerender } = render(
+      <ChartLegend items={FIVE} onHeightChange={first} />,
+    );
+    rerender(<ChartLegend items={FIVE} onHeightChange={second} />);
+    expect(second.mock.calls).toEqual([[20]]);
+    expect(liveObservers()).toHaveLength(1);
+    expect(StubResizeObserver.instances).toHaveLength(1);
+
+    resize(42);
+    expect(first.mock.calls).toEqual([[20]]);
+    expect(second.mock.calls).toEqual([[20], [42]]);
   });
 
   it('observes nothing without a listener', () => {
-    vi.stubGlobal('ResizeObserver', StubResizeObserver);
     render(<ChartLegend items={FIVE} />);
     expect(StubResizeObserver.instances).toHaveLength(0);
   });
 
   it('stops observing when the legend unmounts', () => {
-    vi.stubGlobal('ResizeObserver', StubResizeObserver);
     const { unmount } = render(
       <ChartLegend items={FIVE} interactive onHeightChange={() => {}} />,
     );
-    const [observer] = StubResizeObserver.instances;
-    expect(observer?.observed.size).toBe(1);
+    expect(liveObservers()).toHaveLength(1);
     unmount();
-    expect(observer?.observed.size).toBe(0);
+    expect(liveObservers()).toHaveLength(0);
   });
 });
