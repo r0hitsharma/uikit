@@ -1,4 +1,7 @@
+import { useRef } from 'react';
+
 import { resolveChartColor, type ChartColor } from './chart-color.js';
+import { useResizeObserverRef } from './responsive.js';
 import { chartTokens } from './theme.js';
 
 export type ChartLegendItem = {
@@ -50,6 +53,22 @@ export type ChartLegendProps = {
    * static and interactive forms.
    */
   colorLabel?: boolean;
+  /**
+   * Render at most this many items, followed by a "+n more" entry naming the
+   * rest in its tooltip. The legend wraps onto as many rows as its width needs,
+   * so on a narrow host the item count is what bounds its height. Unset (the
+   * default) renders every item.
+   */
+  maxItems?: number;
+  /**
+   * Fires with the legend's rendered height in px once it lays out and again
+   * whenever that height changes (a wrap onto another row, a longer label).
+   * The height is not fixed: it depends on the item count and the width the
+   * host grants, so a host that shares a height budget between the legend and
+   * the plot should subtract this rather than reserve a constant. Reports only
+   * while the legend is rendered, and needs a `ResizeObserver`.
+   */
+  onHeightChange?: (height: number) => void;
 };
 
 /** Resolves an item's interaction identity, falling back to its label. */
@@ -114,6 +133,30 @@ function Trailing({ note, badge }: { note?: string; badge?: string }) {
 }
 
 /**
+ * The "+n more" entry `maxItems` appends. Plain text in both forms: the items
+ * it stands for are not rendered, so there is nothing for it to toggle. The
+ * hidden labels are its tooltip.
+ */
+function MoreItems({
+  overflow,
+  listItem = false,
+}: {
+  overflow: ChartLegendItem[];
+  listItem?: boolean;
+}) {
+  if (overflow.length === 0) return null;
+  return (
+    <span
+      role={listItem ? 'listitem' : undefined}
+      title={overflow.map((item) => item.label).join(', ')}
+      style={{ opacity: 0.7 }}
+    >
+      +{overflow.length} more
+    </span>
+  );
+}
+
+/**
  * A provided, token-themed legend for `XYChart` series. Previously this
  * pattern was hand-rolled per-story (see the charting audit); it now lives in
  * the package so consumers get one consistent legend instead of re-deriving
@@ -135,8 +178,29 @@ export function ChartLegend({
   onToggle,
   onHover,
   colorLabel = false,
+  maxItems,
+  onHeightChange,
 }: ChartLegendProps) {
+  // The attach-time measure and the observer's own first report usually read
+  // the same height; pass on changes only.
+  const reported = useRef<number | null>(null);
+  const measuredRef = useResizeObserverRef<HTMLDivElement>((element) => {
+    const height = element.offsetHeight;
+    if (height === reported.current) return;
+    reported.current = height;
+    onHeightChange?.(height);
+  });
+  // Only observe when someone is listening; otherwise leave the node alone.
+  const ref = onHeightChange ? measuredRef : undefined;
+
   if (items.length === 0) return null;
+
+  const limit =
+    maxItems != null && maxItems >= 0 && maxItems < items.length
+      ? Math.floor(maxItems)
+      : items.length;
+  const shown = items.slice(0, limit);
+  const overflow = items.slice(limit);
 
   const containerStyle = {
     display: 'flex',
@@ -149,8 +213,8 @@ export function ChartLegend({
 
   if (interactive) {
     return (
-      <div style={containerStyle}>
-        {items.map((item) => {
+      <div ref={ref} style={containerStyle}>
+        {shown.map((item) => {
           const id = itemId(item);
           return (
             <button
@@ -190,6 +254,7 @@ export function ChartLegend({
             </button>
           );
         })}
+        <MoreItems overflow={overflow} />
       </div>
     );
   }
@@ -199,8 +264,8 @@ export function ChartLegend({
   // unaffected. The `hidden`/`emphasis`/`note`/`badge` affordances apply only
   // to the interactive branch above.
   return (
-    <div role="list" aria-label="Chart legend" style={containerStyle}>
-      {items.map((item) => (
+    <div ref={ref} role="list" aria-label="Chart legend" style={containerStyle}>
+      {shown.map((item) => (
         <span
           key={itemId(item)}
           role="listitem"
@@ -216,6 +281,7 @@ export function ChartLegend({
           )}
         </span>
       ))}
+      <MoreItems overflow={overflow} listItem />
     </div>
   );
 }

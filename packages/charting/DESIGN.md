@@ -358,7 +358,12 @@ Current (exported from the package root):
   and one component is not responsible for both rendering and store wiring.
   `Swatch` — the small themed swatch SVG it renders per item — is exported
   standalone so a hand-composed legend reuses the same markup instead of
-  re-deriving it.
+  re-deriving it. The legend wraps, so its height depends on the item count
+  and the host width; `maxItems` bounds it by count (a "+n more" entry names
+  the rest) and `onHeightChange` reports it so a host can derive the plot
+  height from what is left. A row cap (`maxRows`) was not chosen: which items
+  fit in N rows is only known after layout, so it would need a measure-then-
+  re-render pass, where a count cap is decided before render.
 - **`EmphasisLayer` / `EmphasisSeries`** (`emphasis.tsx`): cross-chart
   dim-and-hide, applied as CSS on already-mounted nodes rather than as a
   re-render. `EmphasisSeries id="…"` wraps a mark in one stable
