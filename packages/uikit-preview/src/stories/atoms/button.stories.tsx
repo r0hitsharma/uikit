@@ -157,9 +157,10 @@ export const IconOnly = () => (
 
 const selectClassName = css({ width: '40' });
 
-// Icon-only buttons are square at every size (width = height) and for both
-// variants, so they line up with text controls of the same size in a toolbar
-// row. `Select` has a single height, which matches `lg`.
+// Icon-only buttons are square (width = height) for every variant, size and
+// density, so they line up with text controls of the same size in a toolbar
+// row. `Select` has a single height, which matches `lg`. Compact density is
+// in `IconOnlyCompact` below.
 export const IconOnlyInToolbar = () => (
   <div className={frameClassName}>
     <div className={inlineRowClassName}>
@@ -194,5 +195,32 @@ export const IconOnlyInToolbar = () => (
         <Settings2 size={16} strokeWidth={1.9} />
       </Button>
     </div>
+  </div>
+);
+
+// `density="compact"` icon-only buttons stay square. A compact panel is the
+// compact panel height at every `size`, next to a compact text panel of the
+// same height; a compact item keeps its size's height.
+export const IconOnlyCompact = () => (
+  <div className={frameClassName}>
+    {(['sm', 'md', 'lg'] as const).map((size) => (
+      <div key={size} className={inlineRowClassName}>
+        <Button size={size} density="compact">
+          Compact {size}
+        </Button>
+        <Button iconOnly size={size} density="compact" aria-label="Refresh">
+          <RefreshCw size={14} strokeWidth={1.9} />
+        </Button>
+        <Button
+          iconOnly
+          size={size}
+          density="compact"
+          variant="item"
+          aria-label="Settings"
+        >
+          <Settings2 size={14} strokeWidth={1.9} />
+        </Button>
+      </div>
+    ))}
   </div>
 );
