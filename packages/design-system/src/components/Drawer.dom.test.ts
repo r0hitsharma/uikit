@@ -5,6 +5,9 @@
  * width restore, and storage that throws. jsdom has no layout, so the rendered
  * width reads as 0 and the drag starts from the drawer's own width state, the
  * same fallback a real browser never needs.
+ *
+ * Also `Drawer.Root` focus restoration: Ark returns focus to the opener only
+ * for a drawer that traps focus, and `Root` covers the non-modal case.
  */
 import { LocaleProvider } from '@ark-ui/react/locale';
 import {
@@ -14,7 +17,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { act, createElement, type ComponentProps } from 'react';
+import { act, createElement, useState, type ComponentProps } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -567,5 +570,207 @@ describe('Drawer.Content controlled width', () => {
     expect(content().style.width).toBe('700px');
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0]?.[0]).toContain('larger than its `maxWidth`');
+  });
+});
+
+describe('Drawer.Root focus restoration', () => {
+  type RootProps = ComponentProps<typeof Drawer.Root>;
+
+  // A host-owned opener, as in a filter rail that opens a non-modal drawer.
+  function FocusHarness({
+    rootProps = {},
+    withOutsideInput = false,
+  }: {
+    rootProps?: Partial<RootProps>;
+    withOutsideInput?: boolean;
+  }) {
+    const [open, setOpen] = useState(false);
+    return createElement(
+      'div',
+      null,
+      createElement(
+        'button',
+        { type: 'button', onClick: () => setOpen(true) },
+        'Open drawer',
+      ),
+      createElement(
+        'button',
+        { type: 'button', onClick: () => setOpen(false) },
+        'Close from outside',
+      ),
+      withOutsideInput
+        ? createElement('input', { 'aria-label': 'Outside' })
+        : null,
+      createElement(
+        Drawer.Root,
+        {
+          modal: false,
+          ...rootProps,
+          open,
+          onOpenChange: (details: { open: boolean }) => setOpen(details.open),
+        },
+        createElement(
+          Drawer.Positioner,
+          null,
+          createElement(
+            Drawer.Content,
+            null,
+            createElement(Drawer.Title, { tabIndex: -1 }, 'Refine'),
+            createElement('input', { 'aria-label': 'Min amount' }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  const opener = () => screen.getByRole('button', { name: 'Open drawer' });
+  const inside = () => screen.getByLabelText('Min amount');
+
+  async function openFromButton() {
+    opener().focus();
+    fireEvent.click(opener());
+    // Ark moves focus into the content a frame after it opens.
+    await waitFor(() => {
+      expect(content().contains(document.activeElement)).toBe(true);
+    });
+  }
+
+  function pressEscape() {
+    fireEvent.keyDown(document.activeElement ?? document.body, {
+      key: 'Escape',
+    });
+  }
+
+  it('returns focus to the opener when a non-modal drawer closes on Escape', async () => {
+    render(createElement(FocusHarness));
+    await openFromButton();
+    inside().focus();
+
+    pressEscape();
+
+    await waitFor(() => {
+      expect(content().hidden).toBe(true);
+    });
+    expect(document.activeElement).toBe(opener());
+  });
+
+  it('returns focus to a Drawer.Trigger in an uncontrolled non-modal drawer', async () => {
+    render(
+      createElement(
+        Drawer.Root,
+        { modal: false },
+        createElement(Drawer.Trigger, null, 'Open drawer'),
+        createElement(
+          Drawer.Positioner,
+          null,
+          createElement(
+            Drawer.Content,
+            null,
+            createElement('input', { 'aria-label': 'Min amount' }),
+          ),
+        ),
+      ),
+    );
+    await openFromButton();
+
+    pressEscape();
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(opener());
+    });
+  });
+
+  it('keeps focus where the user moved it outside a non-modal drawer', async () => {
+    render(createElement(FocusHarness, { withOutsideInput: true }));
+    await openFromButton();
+    const outside = screen.getByLabelText('Outside');
+    outside.focus();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close from outside' }));
+
+    await waitFor(() => {
+      expect(content().hidden).toBe(true);
+    });
+    expect(document.activeElement).toBe(outside);
+  });
+
+  it('leaves focus alone with restoreFocus={false}', async () => {
+    render(createElement(FocusHarness, { rootProps: { restoreFocus: false } }));
+    await openFromButton();
+
+    pressEscape();
+
+    await waitFor(() => {
+      expect(content().hidden).toBe(true);
+    });
+    expect(document.activeElement).not.toBe(opener());
+  });
+
+  it('prefers finalFocusEl over the opener', async () => {
+    const target = document.createElement('button');
+    document.body.append(target);
+    try {
+      render(
+        createElement(FocusHarness, {
+          rootProps: { finalFocusEl: () => target },
+        }),
+      );
+      await openFromButton();
+
+      pressEscape();
+
+      await waitFor(() => {
+        expect(document.activeElement).toBe(target);
+      });
+    } finally {
+      target.remove();
+    }
+  });
+
+  it('keeps the opener across re-renders while open', async () => {
+    // A fresh inline `finalFocusEl` on every render, returning nothing, so the
+    // opener captured on open is what focus must return to.
+    const tree = () =>
+      createElement(FocusHarness, { rootProps: { finalFocusEl: () => null } });
+    const { rerender } = render(tree());
+    await openFromButton();
+    inside().focus();
+    rerender(tree());
+
+    pressEscape();
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(opener());
+    });
+  });
+
+  it('lands initial focus on initialFocusEl, such as the title', async () => {
+    render(
+      createElement(FocusHarness, {
+        rootProps: {
+          initialFocusEl: () =>
+            document.querySelector<HTMLElement>('.drawer__title'),
+        },
+      }),
+    );
+    opener().focus();
+    fireEvent.click(opener());
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(
+        screen.getByRole('heading', { name: 'Refine' }),
+      );
+    });
+  });
+
+  it('still returns focus in a modal drawer (via Ark)', async () => {
+    render(createElement(FocusHarness, { rootProps: { modal: true } }));
+    await openFromButton();
+
+    pressEscape();
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(opener());
+    });
   });
 });

@@ -1,7 +1,12 @@
-import { Drawer as ArkDrawer } from '@ark-ui/react/drawer';
+import {
+  Drawer as ArkDrawer,
+  useDrawerContext,
+  type DrawerRootProps as ArkDrawerRootProps,
+} from '@ark-ui/react/drawer';
 import { Portal } from '@ark-ui/react/portal';
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useSyncExternalStore,
@@ -18,7 +23,8 @@ import { IS_DEV_WARNING_ENABLED } from '../hooks/devWarning.js';
  * `styled-system`, so the recipe is applied by its stable slot class names
  * (Panda convention: `${className}__${slot}`). The recipe must be added to
  * `staticCss` so these classes are always generated. Behavior (Esc handling,
- * scrim, scroll-lock, focus trap) comes from Ark; this file only skins it.
+ * scrim, scroll-lock, focus trap) comes from Ark; this file skins it, and only
+ * adds focus restoration for a drawer that does not trap focus (`DrawerRoot`).
  */
 const slots = {
   backdrop: 'drawer__backdrop',
@@ -471,16 +477,109 @@ function DrawerCloseTrigger({
   );
 }
 
+/** Whether `element` is missing, the document body, or inside `container`. */
+function isFocusLost(
+  doc: Document,
+  element: Element | null,
+  container: HTMLElement | null,
+): boolean {
+  return (
+    element === null ||
+    element === doc.body ||
+    (container?.contains(element) ?? false)
+  );
+}
+
+/**
+ * Returns focus to the opener when a drawer that does not trap focus closes.
+ * Ark restores focus only through its focus trap, which is off whenever
+ * `trapFocus` is (by default, whenever `modal` is false), so a non-modal
+ * drawer would otherwise leave focus on `<body>` after Escape.
+ *
+ * The opener is read in a layout effect on open: Ark moves focus into the
+ * content a frame later, so focus is still on the element that opened it. On
+ * close, focus moves back only if it is lost (on `<body>`) or still inside the
+ * drawer; if the user has already moved it elsewhere on the page, which a
+ * non-modal drawer allows, it is left there.
+ */
+function NonModalFocusReturn({
+  finalFocusEl,
+}: Pick<ArkDrawerRootProps, 'finalFocusEl'>) {
+  const drawer = useDrawerContext();
+  const { open } = drawer;
+  const contentId = drawer.getContentProps().id;
+  const opener = useRef<HTMLElement | null>(null);
+  const wasOpen = useRef(false);
+
+  useLayoutEffect(() => {
+    const doc = document;
+    const content = contentId ? doc.getElementById(contentId) : null;
+    if (open) {
+      // Capture once per opening: a re-render while open (a new inline
+      // `finalFocusEl`, say) re-runs this effect with focus already inside.
+      if (wasOpen.current) return;
+      wasOpen.current = true;
+      const active = doc.activeElement;
+      opener.current =
+        active instanceof HTMLElement && !isFocusLost(doc, active, content)
+          ? active
+          : null;
+      return;
+    }
+    if (!wasOpen.current) return;
+    wasOpen.current = false;
+    const target = finalFocusEl?.() ?? opener.current;
+    opener.current = null;
+    if (!target?.isConnected) return;
+    if (!isFocusLost(doc, doc.activeElement, content)) return;
+    target.focus({ preventScroll: true });
+  }, [open, contentId, finalFocusEl]);
+
+  return null;
+}
+
+type DrawerRootProps = Omit<ArkDrawerRootProps, 'restoreFocus'> & {
+  /**
+   * Returns focus to the element that opened the drawer (or to
+   * `finalFocusEl`, when given) once it closes. Defaults to `true`. Ark does
+   * this for a drawer that traps focus; this also covers one that does not,
+   * such as a non-modal drawer (`modal={false}`). A non-modal drawer only
+   * moves focus back when it would otherwise be lost, not after the user has
+   * focused something else on the page.
+   */
+  restoreFocus?: boolean;
+};
+
+/**
+ * Ark's `Drawer.Root`, plus focus restoration for a drawer that does not trap
+ * focus (see `restoreFocus`). Every prop is forwarded to Ark, including
+ * `initialFocusEl` (where focus lands on open, such as the title, in modal
+ * and non-modal drawers alike) and `finalFocusEl`.
+ */
+function DrawerRoot({ children, ...props }: DrawerRootProps) {
+  const trapsFocus = props.trapFocus ?? props.modal ?? true;
+  const restoreFocus = props.restoreFocus ?? true;
+  return (
+    <ArkDrawer.Root {...props}>
+      {restoreFocus && !trapsFocus ? (
+        <NonModalFocusReturn finalFocusEl={props.finalFocusEl} />
+      ) : null}
+      {children}
+    </ArkDrawer.Root>
+  );
+}
+
 /**
  * Right-anchored Drawer skinned with the `drawer` slot recipe. Composition
  * mirrors Ark: wrap `Backdrop` + `Positioner` in `Drawer.Portal` for correct
- * stacking. Structural parts (`Root`, `Trigger`, `Context`) pass through Ark
- * unchanged so all behavior is preserved. `Content` takes a fixed `size`, or
+ * stacking. `Trigger` and `Context` pass through Ark unchanged, and `Root`
+ * forwards every prop to Ark, adding focus restoration for a drawer that does
+ * not trap focus (`restoreFocus`). `Content` takes a fixed `size`, or
  * opts into a drag/keyboard resize handle and a persisted width with
  * `resizable`.
  */
 export const Drawer = {
-  Root: ArkDrawer.Root,
+  Root: DrawerRoot,
   Trigger: ArkDrawer.Trigger,
   Portal,
   Backdrop: DrawerBackdrop,
