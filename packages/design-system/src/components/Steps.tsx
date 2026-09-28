@@ -27,31 +27,42 @@ const slots = {
 const cx = (...classes: Array<string | false | null | undefined>): string =>
   classes.filter(Boolean).join(' ');
 
-function StepsRoot({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkSteps.Root>) {
+/** Props of each styled part: Ark's own, plus the slot class composition. */
+export type StepsRootProps = ComponentPropsWithoutRef<typeof ArkSteps.Root>;
+export type StepsListProps = ComponentPropsWithoutRef<typeof ArkSteps.List>;
+export type StepsItemProps = ComponentPropsWithoutRef<typeof ArkSteps.Item>;
+export type StepsTriggerProps = ComponentPropsWithoutRef<
+  typeof ArkSteps.Trigger
+>;
+export type StepsIndicatorProps = ComponentPropsWithoutRef<
+  typeof ArkSteps.Indicator
+>;
+export type StepsSeparatorProps = ComponentPropsWithoutRef<
+  typeof ArkSteps.Separator
+>;
+export type StepsContentProps = ComponentPropsWithoutRef<
+  typeof ArkSteps.Content
+>;
+export type StepsCompletedContentProps = ComponentPropsWithoutRef<
+  typeof ArkSteps.CompletedContent
+>;
+export type StepsProgressProps = ComponentPropsWithoutRef<
+  typeof ArkSteps.Progress
+>;
+
+function StepsRoot({ className, ...props }: StepsRootProps) {
   return <ArkSteps.Root {...props} className={cx(slots.root, className)} />;
 }
 
-function StepsList({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkSteps.List>) {
+function StepsList({ className, ...props }: StepsListProps) {
   return <ArkSteps.List {...props} className={cx(slots.list, className)} />;
 }
 
-function StepsItem({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkSteps.Item>) {
+function StepsItem({ className, ...props }: StepsItemProps) {
   return <ArkSteps.Item {...props} className={cx(slots.item, className)} />;
 }
 
-function StepsTrigger({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkSteps.Trigger>) {
+function StepsTrigger({ className, ...props }: StepsTriggerProps) {
   return (
     <ArkSteps.Trigger {...props} className={cx(slots.trigger, className)} />
   );
@@ -66,7 +77,7 @@ function StepsIndicator({
   className,
   children,
   ...props
-}: ComponentPropsWithoutRef<typeof ArkSteps.Indicator>) {
+}: StepsIndicatorProps) {
   return (
     <ArkSteps.Indicator {...props} className={cx(slots.indicator, className)}>
       {children ?? (
@@ -84,19 +95,13 @@ function StepsIndicator({
   );
 }
 
-function StepsSeparator({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkSteps.Separator>) {
+function StepsSeparator({ className, ...props }: StepsSeparatorProps) {
   return (
     <ArkSteps.Separator {...props} className={cx(slots.separator, className)} />
   );
 }
 
-function StepsContent({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkSteps.Content>) {
+function StepsContent({ className, ...props }: StepsContentProps) {
   return (
     <ArkSteps.Content {...props} className={cx(slots.content, className)} />
   );
@@ -105,7 +110,7 @@ function StepsContent({
 function StepsCompletedContent({
   className,
   ...props
-}: ComponentPropsWithoutRef<typeof ArkSteps.CompletedContent>) {
+}: StepsCompletedContentProps) {
   return (
     <ArkSteps.CompletedContent
       {...props}
@@ -118,10 +123,7 @@ function StepsCompletedContent({
  * A `progressbar` filled to the share of steps completed. Ark announces it as
  * "`n`% complete"; pass `aria-valuetext` (e.g. "Step 2 of 4") to override.
  */
-function StepsProgress({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<typeof ArkSteps.Progress>) {
+function StepsProgress({ className, ...props }: StepsProgressProps) {
   return (
     <ArkSteps.Progress {...props} className={cx(slots.progress, className)} />
   );
