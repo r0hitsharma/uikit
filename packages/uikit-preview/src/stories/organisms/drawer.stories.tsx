@@ -1,4 +1,4 @@
-import { Button, Drawer } from '@r0hitsharma/design-system';
+import { Button, Drawer, TextInput } from '@r0hitsharma/design-system';
 import { useState } from 'react';
 
 import { css } from '../../../styled-system/css';
@@ -161,6 +161,48 @@ export const Resizable = () => {
                   keys. Close the drawer and reopen it: it comes back at the
                   width you left it.
                 </p>
+              </div>
+              <div className={footerClassName}>
+                <Drawer.CloseTrigger>Done</Drawer.CloseTrigger>
+              </div>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Drawer.Portal>
+      </Drawer.Root>
+    </div>
+  );
+};
+
+// Non-modal: no scrim, no focus trap, and the page behind stays usable. Ark
+// lands focus on the title (`initialFocusEl`), and `Root` returns it to the
+// button that opened the drawer on close, as a modal drawer does. Focus the
+// input, press Escape, and the "Open refine drawer" button is focused again.
+export const NonModal = () => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className={frameClassName}>
+      <Button onClick={() => setOpen(true)}>Open refine drawer</Button>
+
+      <Drawer.Root
+        modal={false}
+        open={open}
+        onOpenChange={(details) => setOpen(details.open)}
+        initialFocusEl={() =>
+          document.querySelector<HTMLElement>('[data-refine-title]')
+        }
+      >
+        <Drawer.Portal>
+          <Drawer.Positioner>
+            <Drawer.Content>
+              <div className={bodyClassName}>
+                <Drawer.Title data-refine-title tabIndex={-1}>
+                  Refine
+                </Drawer.Title>
+                <Drawer.Description>
+                  The page behind stays interactive.
+                </Drawer.Description>
+                <TextInput label="Minimum amount" />
               </div>
               <div className={footerClassName}>
                 <Drawer.CloseTrigger>Done</Drawer.CloseTrigger>
