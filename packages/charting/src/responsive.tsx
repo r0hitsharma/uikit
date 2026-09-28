@@ -94,7 +94,7 @@ export function useResizeObserverRef<T extends Element>(
       observer.disconnect();
       // A cleanup also runs when the ref moves to a new node, or for
       // StrictMode's simulated unmount; only an emptied ref is a detach.
-      // oxlint-disable-next-line react-hooks/exhaustive-deps -- the live value is the point: it tells a real detach from a move
+      // oxlint-disable-next-line react-hooks/exhaustive-deps -- both reads want the live value: `ref.current` tells a real detach from a move, and `onDetachRef` is a useLatest ref that holds the newest callback by design
       if (ref.current === null) onDetachRef.current?.();
     };
   }, [element, onResizeRef, onDetachRef, ref]);
