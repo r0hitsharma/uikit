@@ -93,6 +93,7 @@
       "packages/uikit-preview/src/stories/atoms/button.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/panel.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/popover.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/surface-message.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/confirm-tool-call-dialog.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/drawer.stories.tsx",
@@ -105,11 +106,17 @@
       "packages/uikit-preview/src/stories/templates/risk-detail-drawer.stories.tsx",
       "packages/uikit-preview/src/stories/templates/sidebar-grid.stories.tsx"
     ],
+    "packages/design-system/dist/components/Checkbox.js": [
+      "packages/uikit-preview/src/stories/molecules/checkbox.stories.tsx"
+    ],
     "packages/design-system/dist/components/Chip.js": [
       "packages/uikit-preview/src/stories/organisms/filter-primitives.stories.tsx"
     ],
     "packages/design-system/dist/components/Code.js": [
       "packages/uikit-preview/src/stories/atoms/code.stories.tsx"
+    ],
+    "packages/design-system/dist/components/Collapsible.js": [
+      "packages/uikit-preview/src/stories/molecules/collapsible.stories.tsx"
     ],
     "packages/design-system/dist/components/data-table/DataTable.js": [
       "packages/uikit-preview/src/stories/organisms/dashboard-kit.stories.tsx",
@@ -216,6 +223,9 @@
       "packages/uikit-preview/src/stories/templates/allocation-dashboard.stories.tsx",
       "packages/uikit-preview/src/stories/templates/allocation-grid-states.stories.tsx"
     ],
+    "packages/design-system/dist/components/ProgressBar.js": [
+      "packages/uikit-preview/src/stories/molecules/progress-bar.stories.tsx"
+    ],
     "packages/design-system/dist/components/ProportionBar.js": [
       "packages/uikit-preview/src/stories/molecules/proportion-bar.stories.tsx"
     ],
@@ -273,6 +283,9 @@
     "packages/design-system/dist/components/StatusPill.js": [
       "packages/uikit-preview/src/stories/atoms/status-pill.stories.tsx"
     ],
+    "packages/design-system/dist/components/Steps.js": [
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx"
+    ],
     "packages/design-system/dist/components/StyledSelect.js": [
       "packages/uikit-preview/src/stories/atoms/button.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/range-picker.stories.tsx",
@@ -294,7 +307,9 @@
       "packages/uikit-preview/src/stories/templates/sidebar-grid.stories.tsx"
     ],
     "packages/design-system/dist/components/TextInput.js": [
-      "packages/uikit-preview/src/stories/atoms/text-input.stories.tsx"
+      "packages/uikit-preview/src/stories/atoms/text-input.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx",
+      "packages/uikit-preview/src/stories/organisms/drawer.stories.tsx"
     ],
     "packages/design-system/dist/components/ThemeToggle.js": [
       "packages/uikit-preview/src/stories/molecules/theme-toggle.stories.tsx",
@@ -436,6 +451,8 @@
       "packages/uikit-preview/src/stories/atoms/switch.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/text-input.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/tree-row.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/checkbox.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/collapsible.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/heat-cell.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/identity-palette.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/info-popover.stories.tsx",
@@ -443,6 +460,7 @@
       "packages/uikit-preview/src/stories/molecules/meter.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/panel.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/popover.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/progress-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-list.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/range-picker.stories.tsx",
@@ -451,6 +469,7 @@
       "packages/uikit-preview/src/stories/molecules/skeleton-rows.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/skeleton-stack.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/stat-tile.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/surface-message.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/theme-toggle.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/async-state-renderer.stories.tsx",
@@ -522,6 +541,12 @@
     "packages/uikit-preview/src/stories/atoms/tree-row.stories.tsx": [
       "packages/uikit-preview/src/stories/atoms/tree-row.stories.tsx"
     ],
+    "packages/uikit-preview/src/stories/molecules/checkbox.stories.tsx": [
+      "packages/uikit-preview/src/stories/molecules/checkbox.stories.tsx"
+    ],
+    "packages/uikit-preview/src/stories/molecules/collapsible.stories.tsx": [
+      "packages/uikit-preview/src/stories/molecules/collapsible.stories.tsx"
+    ],
     "packages/uikit-preview/src/stories/molecules/heat-cell.stories.tsx": [
       "packages/uikit-preview/src/stories/molecules/heat-cell.stories.tsx"
     ],
@@ -542,6 +567,9 @@
     ],
     "packages/uikit-preview/src/stories/molecules/popover.stories.tsx": [
       "packages/uikit-preview/src/stories/molecules/popover.stories.tsx"
+    ],
+    "packages/uikit-preview/src/stories/molecules/progress-bar.stories.tsx": [
+      "packages/uikit-preview/src/stories/molecules/progress-bar.stories.tsx"
     ],
     "packages/uikit-preview/src/stories/molecules/proportion-bar.stories.tsx": [
       "packages/uikit-preview/src/stories/molecules/proportion-bar.stories.tsx"
@@ -566,6 +594,9 @@
     ],
     "packages/uikit-preview/src/stories/molecules/stat-tile.stories.tsx": [
       "packages/uikit-preview/src/stories/molecules/stat-tile.stories.tsx"
+    ],
+    "packages/uikit-preview/src/stories/molecules/steps.stories.tsx": [
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx"
     ],
     "packages/uikit-preview/src/stories/molecules/surface-message.stories.tsx": [
       "packages/uikit-preview/src/stories/molecules/surface-message.stories.tsx"
@@ -698,6 +729,8 @@
       "packages/uikit-preview/src/stories/atoms/switch.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/text-input.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/tree-row.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/checkbox.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/collapsible.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/heat-cell.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/identity-palette.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/info-popover.stories.tsx",
@@ -705,6 +738,7 @@
       "packages/uikit-preview/src/stories/molecules/meter.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/panel.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/popover.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/progress-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-list.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/range-picker.stories.tsx",
@@ -713,6 +747,7 @@
       "packages/uikit-preview/src/stories/molecules/skeleton-rows.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/skeleton-stack.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/stat-tile.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/surface-message.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/theme-toggle.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/async-state-renderer.stories.tsx",
@@ -757,6 +792,8 @@
       "packages/uikit-preview/src/stories/atoms/switch.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/text-input.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/tree-row.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/checkbox.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/collapsible.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/heat-cell.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/identity-palette.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/info-popover.stories.tsx",
@@ -764,6 +801,7 @@
       "packages/uikit-preview/src/stories/molecules/meter.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/panel.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/popover.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/progress-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-list.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/range-picker.stories.tsx",
@@ -772,6 +810,7 @@
       "packages/uikit-preview/src/stories/molecules/skeleton-rows.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/skeleton-stack.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/stat-tile.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/surface-message.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/theme-toggle.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/async-state-renderer.stories.tsx",
@@ -828,6 +867,8 @@
       "packages/uikit-preview/src/stories/atoms/switch.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/text-input.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/tree-row.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/checkbox.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/collapsible.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/heat-cell.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/identity-palette.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/info-popover.stories.tsx",
@@ -835,6 +876,7 @@
       "packages/uikit-preview/src/stories/molecules/meter.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/panel.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/popover.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/progress-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-list.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/range-picker.stories.tsx",
@@ -843,6 +885,7 @@
       "packages/uikit-preview/src/stories/molecules/skeleton-rows.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/skeleton-stack.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/stat-tile.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/surface-message.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/theme-toggle.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/async-state-renderer.stories.tsx",
@@ -901,6 +944,8 @@
       "packages/uikit-preview/src/stories/atoms/switch.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/text-input.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/tree-row.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/checkbox.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/collapsible.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/heat-cell.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/identity-palette.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/info-popover.stories.tsx",
@@ -908,6 +953,7 @@
       "packages/uikit-preview/src/stories/molecules/meter.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/panel.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/popover.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/progress-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-bar.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/proportion-list.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/range-picker.stories.tsx",
@@ -916,6 +962,7 @@
       "packages/uikit-preview/src/stories/molecules/skeleton-rows.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/skeleton-stack.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/stat-tile.stories.tsx",
+      "packages/uikit-preview/src/stories/molecules/steps.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/surface-message.stories.tsx",
       "packages/uikit-preview/src/stories/molecules/theme-toggle.stories.tsx",
       "packages/uikit-preview/src/stories/organisms/async-state-renderer.stories.tsx",
