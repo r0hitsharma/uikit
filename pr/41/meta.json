@@ -89,14 +89,26 @@
       "namedExport": "IconOnly",
       "meta": {}
     },
+    "atoms--button--icon-only-compact": {
+      "name": "Icon only compact",
+      "levels": [
+        "Atoms",
+        "Button"
+      ],
+      "locStart": 204,
+      "locEnd": 226,
+      "filePath": "src/stories/atoms/button.stories.tsx",
+      "namedExport": "IconOnlyCompact",
+      "meta": {}
+    },
     "atoms--button--icon-only-in-toolbar": {
       "name": "Icon only in toolbar",
       "levels": [
         "Atoms",
         "Button"
       ],
-      "locStart": 163,
-      "locEnd": 198,
+      "locStart": 164,
+      "locEnd": 199,
       "filePath": "src/stories/atoms/button.stories.tsx",
       "namedExport": "IconOnlyInToolbar",
       "meta": {}
