@@ -16,20 +16,22 @@ afterEach(cleanup);
 
 type RootProps = ComponentProps<typeof Collapsible.Root>;
 
-function renderCollapsible(props: Partial<RootProps> = {}) {
-  const view = render(
+function collapsibleTree(props: Partial<RootProps> = {}) {
+  return createElement(
+    Collapsible.Root,
+    props as RootProps,
     createElement(
-      Collapsible.Root,
-      props as RootProps,
-      createElement(
-        Collapsible.Trigger,
-        null,
-        createElement(Collapsible.Indicator),
-        'Advanced',
-      ),
-      createElement(Collapsible.Content, null, 'Hidden detail'),
+      Collapsible.Trigger,
+      null,
+      createElement(Collapsible.Indicator),
+      'Advanced',
     ),
+    createElement(Collapsible.Content, null, 'Hidden detail'),
   );
+}
+
+function renderCollapsible(props: Partial<RootProps> = {}) {
+  const view = render(collapsibleTree(props));
   const part = (slot: string) =>
     view.container.querySelector<HTMLElement>(`.collapsible__${slot}`);
   return { ...view, part };
@@ -43,6 +45,17 @@ async function click(element: HTMLElement): Promise<void> {
   await act(async () => {
     fireEvent.click(element);
   });
+}
+
+/**
+ * Closing passes through a `closing` state that checks for an exit animation
+ * on the next frame, so a close is only settled after one.
+ */
+async function nextFrame(): Promise<void> {
+  await act(
+    () =>
+      new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+  );
 }
 
 describe('Collapsible', () => {
@@ -110,6 +123,72 @@ describe('Collapsible', () => {
     expect(onOpenChange).toHaveBeenCalledWith(
       expect.objectContaining({ open: true }),
     );
+  });
+
+  it('closes again on a second click', async () => {
+    const onOpenChange = vi.fn();
+    const { part } = renderCollapsible({ defaultOpen: true, onOpenChange });
+    const trigger = part('trigger');
+    if (!trigger) throw new Error('trigger not rendered');
+
+    await click(trigger);
+    await nextFrame();
+
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(part('content')?.hidden).toBe(true);
+    expect(part('indicator')?.dataset.state).toBe('closed');
+    expect(onOpenChange).toHaveBeenCalledWith(
+      expect.objectContaining({ open: false }),
+    );
+  });
+
+  it('leaves a controlled open state to the parent, reporting the change', async () => {
+    const onOpenChange = vi.fn();
+    const { part, rerender } = renderCollapsible({ open: false, onOpenChange });
+    const trigger = part('trigger');
+    if (!trigger) throw new Error('trigger not rendered');
+
+    await click(trigger);
+
+    expect(onOpenChange).toHaveBeenCalledWith(
+      expect.objectContaining({ open: true }),
+    );
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+
+    await act(async () => {
+      rerender(collapsibleTree({ open: true, onOpenChange }));
+    });
+
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    expect(part('content')?.hidden).toBe(false);
+  });
+
+  it('keeps lazyMount content out of the DOM until first opened', async () => {
+    const { part, queryByText } = renderCollapsible({ lazyMount: true });
+    const trigger = part('trigger');
+    if (!trigger) throw new Error('trigger not rendered');
+
+    expect(queryByText('Hidden detail')).toBeNull();
+
+    await click(trigger);
+
+    expect(queryByText('Hidden detail')).not.toBeNull();
+  });
+
+  it('unmounts unmountOnExit content once closed', async () => {
+    const { part, queryByText } = renderCollapsible({
+      defaultOpen: true,
+      unmountOnExit: true,
+    });
+    const trigger = part('trigger');
+    if (!trigger) throw new Error('trigger not rendered');
+
+    expect(queryByText('Hidden detail')).not.toBeNull();
+
+    await click(trigger);
+    await nextFrame();
+
+    expect(queryByText('Hidden detail')).toBeNull();
   });
 
   it('ignores clicks while disabled', async () => {
