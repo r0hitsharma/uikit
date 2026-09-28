@@ -10,6 +10,11 @@ on:
       - reopened
       - synchronize
   merge_group:
+  # Manual full run: every suite, and the full visual-snapshot suite, on the
+  # dispatched ref. Also the way to get CI onto a commit pushed by a workflow
+  # (snapshot-update.yml with `commit: true`), since GITHUB_TOKEN pushes do not
+  # trigger workflows.
+  workflow_dispatch:
 
 permissions:
   actions: read
@@ -17,13 +22,14 @@ permissions:
 
 jobs:
   detect-changes:
-    # Skipped on merge_group so queue runs execute every suite unconditionally.
-    if: github.event_name != 'merge_group'
+    # Skipped on merge_group and workflow_dispatch, which execute every suite
+    # unconditionally.
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       lint: ${{ steps.changed-files.outputs.lint_any_changed }}
       agent_marketplace: ${{ steps.changed-files.outputs.agent_marketplace_any_changed }}
-      snapshot_files: ${{ steps.changed-files.outputs.visual_snapshot_files_all_changed_files }}
+      visual_snapshots: ${{ steps.changed-files.outputs.visual_snapshots_any_changed }}
       demo_relay: ${{ steps.changed-files.outputs.demo_relay_any_changed }}
       vitest: ${{ steps.changed-files.outputs.vitest_any_changed }}
     steps:
@@ -42,7 +48,9 @@ jobs:
     needs: detect-changes
     if: |
       !cancelled() &&
-      (github.event_name == 'merge_group' || needs.detect-changes.outputs.lint == 'true')
+      (github.event_name == 'merge_group' ||
+       github.event_name == 'workflow_dispatch' ||
+       needs.detect-changes.outputs.lint == 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -91,7 +99,9 @@ jobs:
     needs: detect-changes
     if: |
       !cancelled() &&
-      (github.event_name == 'merge_group' || needs.detect-changes.outputs.agent_marketplace == 'true')
+      (github.event_name == 'merge_group' ||
+       github.event_name == 'workflow_dispatch' ||
+       needs.detect-changes.outputs.agent_marketplace == 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -117,6 +127,7 @@ jobs:
     if: |
       !cancelled() &&
       (github.event_name == 'merge_group' ||
+       github.event_name == 'workflow_dispatch' ||
        needs.detect-changes.outputs.demo_relay == 'true' ||
        needs.detect-changes.outputs.vitest == 'true')
     runs-on: ubuntu-latest
@@ -159,7 +170,14 @@ jobs:
     if: |
       !cancelled() &&
       needs.lint.result == 'success' &&
-      (github.event_name == 'merge_group' || needs.detect-changes.outputs.snapshot_files != '')
+      (github.event_name == 'merge_group' ||
+       github.event_name == 'workflow_dispatch' ||
+       needs.detect-changes.outputs.visual_snapshots == 'true')
+    # Scope: pull requests check only the stories their diff can affect (see the
+    # scoping step below). Every other event checks the full suite: push to main
+    # (whenever it touched the visual_snapshots group), manual dispatch, and the
+    # merge queue. Main therefore re-verifies every baseline after each merge
+    # that could have moved one, instead of only when a PNG changed.
     # Pinned to macos-26 (not macos-latest) so the runner matches the macOS
     # version snapshots are generated on. CoreText font metrics differ between
     # macOS major versions, so a mismatch reflows text and fails comparisons.
@@ -167,6 +185,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          # Pull requests check out the merge commit; the scoping step diffs it
+          # against its first parent, the base it was merged onto.
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 1 }}
 
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -176,6 +198,9 @@ jobs:
 
       - name: Enable Corepack
         run: corepack enable npm
+
+      - name: Unit-test the snapshot scoping
+        run: node --test .github/scripts/snapshot-scope.test.ts
 
       - name: Install dependencies
         run: npm ci
@@ -198,26 +223,25 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install chromium
 
-      # Pull requests only re-render the stories whose PNGs changed (derived from
-      # the snapshot filenames "<story-id>-chromium-darwin.png"). SNAPSHOT_STORY_IDS
-      # is consumed by tests/snapshot.spec.ts. The merge_group run skips this step,
-      # leaving the env unset so the full suite runs as the merge gate.
-      - name: Scope snapshots to changed PNGs (pull requests only)
-        if: github.event_name != 'merge_group'
-        env:
-          CHANGED_SNAPSHOTS: ${{ needs.detect-changes.outputs.snapshot_files }}
+      # Pull requests only re-render the stories their diff can affect: changed
+      # baseline PNGs, plus every story whose bundle includes a changed source
+      # module (dist/story-deps.json, built above), widening to the full suite
+      # for Panda/token inputs, preview config, and lockfile changes that reach
+      # a rendered package. The mapping is the one `snapshot:update` uses
+      # locally. It exports SNAPSHOT_STORY_IDS (consumed by
+      # tests/snapshot.spec.ts), or leaves it unset for the full suite. Every
+      # other event skips this step and runs the full suite.
+      - name: Scope snapshots to the stories this pull request affects
+        if: github.event_name == 'pull_request'
         run: |
-          ids=""
-          for f in $CHANGED_SNAPSHOTS; do
-            case "$f" in
-              *-chromium-darwin.png)
-                base="$(basename "$f")"
-                ids="${ids:+$ids,}${base%-chromium-darwin.png}"
-                ;;
-            esac
-          done
-          echo "SNAPSHOT_STORY_IDS=$ids" >> "$GITHUB_ENV"
-          echo "Scoped visual snapshots to: ${ids:-<none>}"
+          # HEAD^1 is only the PR's base if HEAD is the merge commit; diffing a
+          # plain head commit against its parent would silently drop every
+          # earlier commit in the PR.
+          if ! git rev-parse --verify --quiet 'HEAD^2' > /dev/null; then
+            echo "Expected the pull request merge commit at HEAD." >&2
+            exit 1
+          fi
+          node .github/scripts/scope-snapshots.ts --base 'HEAD^1'
 
       - name: Run Ladle visual snapshots
         run: npm run snapshot:test --workspace @r0hitsharma/uikit-preview
@@ -252,7 +276,10 @@ jobs:
     steps:
       - name: Check all jobs succeeded
         run: |
-          if [[ "${{ github.event_name }}" != "merge_group" && "${{ needs.detect-changes.result }}" != "success" ]]; then
+          # detect-changes only runs on pull_request and push; merge_group and
+          # workflow_dispatch skip it by design.
+          event="${{ github.event_name }}"
+          if [[ ( "$event" == "pull_request" || "$event" == "push" ) && "${{ needs.detect-changes.result }}" != "success" ]]; then
             echo "detect-changes did not succeed (result: '${{ needs.detect-changes.result }}')"
             exit 1
           fi

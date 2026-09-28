@@ -18,7 +18,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "prepare": "npm run build",
     "type:check": "tsc -p tsconfig.json --noEmit",
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@tanstack/react-table": "9.2.4",
-    "zod": "4.5.4"
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@r0hitsharma/charting": "*",
@@ -45,8 +45,8 @@
     "@r0hitsharma/oxlint-config": "*",
     "@r0hitsharma/tsconfig": "*",
     "@testing-library/react": "^16.3.2",
-    "@types/react": "19.2.18",
-    "@types/react-dom": "19.2.7",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "jsdom": "^30.0.0",
     "oxfmt": "0.68.0",
     "oxlint": "1.83.0",

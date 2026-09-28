@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "prepare": "npm run build",
     "type:check": "tsc -p tsconfig.json --noEmit",
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@r0hitsharma/design-system": "*",
-    "lucide-react": "1.41.0"
+    "lucide-react": "1.47.0"
   },
   "peerDependencies": {
     "react": "^19.0.0"

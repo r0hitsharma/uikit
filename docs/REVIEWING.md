@@ -83,14 +83,17 @@ as the `review-discipline` skill in `packages/agent-marketplace`.
 - **Lint:** every workspace runs `oxlint --max-warnings=0`; a single warning fails
   the job. Suppressions follow the house pattern
   `// oxlint-disable-next-line <rule> -- <why>` with a real justification.
-- **Visual snapshots:** on PRs, CI scopes the Playwright suite to story ids derived
-  from *changed PNG filenames*; the merge queue runs the full suite. A
-  pixel-affecting change whose baseline was never regenerated therefore passes PR
-  CI and fails the queue. When tokens, recipes, or shared styles change, verify by
-  running the full local suite — Panda inputs (`src/tokens/`, `src/recipes/`,
+- **Visual snapshots:** on PRs, CI scopes the Playwright suite to the stories the
+  diff can affect: changed PNG filenames, plus every story whose bundle includes
+  a changed module (`dist/story-deps.json`, the same mapping as the local
+  `snapshot:update`). Panda inputs (`src/tokens/`, `src/recipes/`,
   `panda-preset.ts`, `panda.shared.ts`, `staticCss.ts`) compile into the global
   stylesheet every story consumes by class name, outside any story's JS module
-  graph.
+  graph, so they widen the PR run to the full suite, as do preview config and
+  lockfile changes that reach a rendered package. Push to main, manual dispatch
+  and the merge queue always run the full suite. Baselines must come from
+  `macos-26` (the `snapshot-update` workflow), not a local machine on another
+  macOS major.
 - **Preview deploys** use one concurrency group per PR (`preview.yml`), with
   `cancel-in-progress: false`: a newer push to the same PR supersedes its queued
   run, and PRs no longer cancel each other. Cross-PR gh-pages pushes can still

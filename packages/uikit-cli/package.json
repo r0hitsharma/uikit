@@ -3,7 +3,7 @@
   "type": "module",
   "description": "CLI for managing local uikit package linking in consumer workspaces",
   "scripts": {
-    "build": "tsc -b && npm run wrapper",
+    "build": "npm run clean && tsc -b && npm run wrapper",
     "wrapper": "./scripts/create-wrapper.sh",
     "clean": "rm -rf dist",
     "type:check": "tsc -p tsconfig.json --noEmit",
@@ -27,7 +27,7 @@
   "devDependencies": {
     "@r0hitsharma/oxfmt-config": "*",
     "@r0hitsharma/tsconfig": "*",
-    "@types/node": "24.13.3",
+    "@types/node": "24.13.6",
     "vitest": "^4.1.9"
   },
   "files": [

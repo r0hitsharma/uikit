@@ -136,7 +136,7 @@ export {
   type TextInputProps,
   type TextareaProps,
 } from './components/TextInput.js';
-export { Drawer } from './components/Drawer.js';
+export { Drawer, type DrawerWidthStorage } from './components/Drawer.js';
 export { Sparkline, type SparklineProps } from './components/Sparkline.js';
 export {
   Panel,
