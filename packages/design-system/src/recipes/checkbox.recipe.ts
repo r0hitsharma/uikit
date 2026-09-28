@@ -44,7 +44,7 @@ export const checkboxRecipe = defineSlotRecipe({
       gap: '2',
       cursor: 'pointer',
       userSelect: 'none',
-      '&[data-disabled]': {
+      _disabled: {
         cursor: 'not-allowed',
       },
     },
@@ -63,6 +63,9 @@ export const checkboxRecipe = defineSlotRecipe({
       color: 'white',
       transitionDuration: 'fast',
       transitionProperty: 'background-color, border-color',
+      // Raw rather than `_hover`: Panda sorts a `:hover` condition after plain
+      // attribute selectors, which would let this border override the checked
+      // and invalid ones below. Ark sets `data-hover` for the whole root.
       '&[data-hover]': {
         borderColor: 'border.strong',
       },
@@ -72,16 +75,16 @@ export const checkboxRecipe = defineSlotRecipe({
         bg: 'interactive.accent',
         borderColor: 'interactive.accent',
       },
-      '&[data-invalid]': {
+      _invalid: {
         borderColor: 'text.critical',
       },
-      '&[data-focus-visible]': {
+      _focusVisible: {
         outlineWidth: 'strong',
         outlineStyle: 'solid',
         outlineColor: 'border.strong',
         outlineOffset: '2px',
       },
-      '&[data-disabled]': {
+      _disabled: {
         opacity: '0.5',
       },
     },
@@ -94,7 +97,7 @@ export const checkboxRecipe = defineSlotRecipe({
     label: {
       textStyle: 'bodySm',
       color: 'text.default',
-      '&[data-disabled]': {
+      _disabled: {
         color: 'text.muted',
       },
     },
