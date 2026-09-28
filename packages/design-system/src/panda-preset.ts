@@ -68,8 +68,9 @@ import {
  * under `eject: true`. Panda resolves nested presets before the preset that
  * lists them, so the design-system layer still wins, and merging a base preset
  * a second time (a consumer that also lists it explicitly) changes nothing in
- * the generated output. Both are peer dependencies, so the copy used here is
- * the consumer's own, at the version their `@pandacss/dev` ships.
+ * the generated CSS. Both are peer dependencies, so the copy used here is
+ * whichever one the consumer's install resolves for them: under npm that is
+ * normally the newest 1.x, which can be newer than their `@pandacss/dev`.
  */
 
 export const designSystemPreset = definePreset({

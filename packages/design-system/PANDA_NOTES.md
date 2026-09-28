@@ -20,18 +20,23 @@ references dangling.
 **Fix (built in):** `designSystemPreset` declares `@pandacss/preset-base` and
 `@pandacss/preset-panda` as nested presets. Panda resolves a preset's own `presets` before the
 preset itself, so `presets: [designSystemPreset]` gets the full default theme with the
-design-system layer on top. Both packages are peer dependencies of `@r0hitsharma/design-system`;
-`@pandacss/dev` already depends on them, so your install has them at your Panda version.
+design-system layer on top. Both packages are peer dependencies of `@r0hitsharma/design-system`,
+and the preset uses whichever copy your install resolves for them. Under npm that is normally
+the newest 1.x, not necessarily the version your `@pandacss/dev` bundles; add both as direct
+dependencies at your `@pandacss/dev` version to pin them.
 
 - A config that already lists them
   (`presets: ['@pandacss/preset-base', '@pandacss/preset-panda', designSystemPreset]`) still
-  works and generates byte-identical CSS and codegen output. The two extra entries are now
-  redundant and can be removed.
-- **Order your own presets after `designSystemPreset`.** Its nested base presets are merged
-  immediately before it, so a preset listed *earlier* that replaces a Panda default through
-  `theme.tokens` (say, a brand `neutral` ramp) is reset to Panda's value. Overrides written
-  under `theme.extend` survive in any order, because extensions are applied after every
-  preset's base theme. When in doubt, list your preset after `designSystemPreset`.
+  works and generates byte-identical CSS. The two extra entries are now redundant and can be
+  removed. (Committed codegen may still change: a few pattern files differ in bundler-renamed
+  identifiers only.)
+- **Put token overrides under `theme.extend`.** In Panda, a later preset's `theme.tokens`
+  replaces the whole token set merged before it, not single values. So a preset that sets
+  `theme.tokens` (say, a brand `neutral` ramp) drops Panda's default theme when listed after
+  `designSystemPreset` (hundreds of `Missing token` warnings), and is itself replaced by the
+  nested Panda defaults, silently, when listed before it. Before this release a full token theme
+  listed before `designSystemPreset` survived, so move it into `theme.extend` when upgrading.
+  Extensions are applied after every preset's base theme, so they survive in any order.
 
 ---
 

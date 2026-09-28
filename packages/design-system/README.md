@@ -228,16 +228,20 @@ The preset is self-contained: it declares Panda's own `@pandacss/preset-base` an
 `@pandacss/preset-panda` as nested presets, because its semantic tokens resolve into
 Panda's default theme (`neutral.*`, `white`, spacing, radii). Panda adds that theme
 only when a config sets no `presets`, so without it a `presets: [designSystemPreset]`
-config would log hundreds of `Missing token` warnings. Both are peer dependencies; npm
-installs them automatically, and `@pandacss/dev` already brings them in at your
-Panda version. A config that still lists them explicitly
+config would log hundreds of `Missing token` warnings. Both are peer dependencies, so
+npm installs them automatically. The preset uses whichever copy your install resolves
+for them, which under npm is normally the newest 1.x and can be newer than your
+`@pandacss/dev`; add both as direct dependencies at your `@pandacss/dev` version to
+pin them. A config that still lists them explicitly
 (`presets: ['@pandacss/preset-base', '@pandacss/preset-panda', designSystemPreset]`)
-keeps working and generates identical output, so the two entries can be dropped.
+keeps working and generates identical CSS, so the two entries can be dropped.
 
-Because nested presets are applied just before the preset that declares them, list
-any preset of your own that replaces Panda's defaults through `theme.tokens` *after*
-`designSystemPreset`; listed before it, those values are reset to Panda's. Overrides
-under `theme.extend` survive in either order.
+Put your own token overrides under `theme.extend`, in any preset position. A preset
+that sets `theme.tokens` instead replaces the *whole* token set merged before it, not
+just the values it names: listed after `designSystemPreset` it drops Panda's default
+theme (hundreds of `Missing token` warnings), and listed before it, its tokens are
+replaced by Panda's defaults without a warning. Before this release, a full token theme
+listed before `designSystemPreset` survived; move it into `theme.extend`.
 
 The recipe definitions themselves are available from the root barrel and from the
 `@r0hitsharma/design-system/recipes` subpath. See
