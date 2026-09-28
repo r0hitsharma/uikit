@@ -580,19 +580,32 @@ describe('Drawer.Root focus restoration', () => {
   function FocusHarness({
     rootProps = {},
     withOutsideInput = false,
+    withSecondOpener = false,
+    removeOpenerWhileOpen = false,
   }: {
     rootProps?: Partial<RootProps>;
     withOutsideInput?: boolean;
+    withSecondOpener?: boolean;
+    removeOpenerWhileOpen?: boolean;
   }) {
     const [open, setOpen] = useState(false);
     return createElement(
       'div',
       null,
-      createElement(
-        'button',
-        { type: 'button', onClick: () => setOpen(true) },
-        'Open drawer',
-      ),
+      removeOpenerWhileOpen && open
+        ? null
+        : createElement(
+            'button',
+            { type: 'button', onClick: () => setOpen(true) },
+            'Open drawer',
+          ),
+      withSecondOpener
+        ? createElement(
+            'button',
+            { type: 'button', onClick: () => setOpen(true) },
+            'Open from row',
+          )
+        : null,
       createElement(
         'button',
         { type: 'button', onClick: () => setOpen(false) },
@@ -704,6 +717,56 @@ describe('Drawer.Root focus restoration', () => {
     await waitFor(() => {
       expect(content().contains(document.activeElement)).toBe(true);
     });
+
+    pressEscape();
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(opener());
+    });
+  });
+
+  it('leaves focus alone when the opener is gone and there is no trigger', async () => {
+    render(createElement(FocusHarness, { removeOpenerWhileOpen: true }));
+    await openFromButton();
+    expect(screen.queryByRole('button', { name: 'Open drawer' })).toBeNull();
+
+    pressEscape();
+
+    await waitFor(() => {
+      expect(content().hidden).toBe(true);
+    });
+    expect(document.activeElement?.isConnected).toBe(true);
+  });
+
+  it('returns focus to the latest opener when reopened from another', async () => {
+    render(createElement(FocusHarness, { withSecondOpener: true }));
+    await openFromButton();
+    pressEscape();
+    await waitFor(() => {
+      expect(document.activeElement).toBe(opener());
+    });
+
+    const row = screen.getByRole('button', { name: 'Open from row' });
+    row.focus();
+    fireEvent.click(row);
+    await waitFor(() => {
+      expect(content().contains(document.activeElement)).toBe(true);
+    });
+    pressEscape();
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(row);
+    });
+  });
+
+  it('returns focus in a modal drawer that does not trap focus', async () => {
+    render(
+      createElement(FocusHarness, {
+        rootProps: { modal: true, trapFocus: false },
+      }),
+    );
+    await openFromButton();
+    inside().focus();
 
     pressEscape();
 
