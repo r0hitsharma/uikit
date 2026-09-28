@@ -34,6 +34,7 @@ vitest:
   - packages/http-client-core/**
   - packages/http-client-react/**
   - packages/http-client-msw/**
+  - packages/mcp-connect/**
   - packages/router-kit/**
   - packages/uikit-cli/**
   - packages/webmcp/**

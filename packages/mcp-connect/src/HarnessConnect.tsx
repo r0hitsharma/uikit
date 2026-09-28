@@ -14,7 +14,13 @@
  *   reconnecting (WS dropped, retrying)        -> pending
  */
 
-import { Button, Dialog, Indicator, Tabs } from '@r0hitsharma/design-system';
+import {
+  Button,
+  Dialog,
+  Indicator,
+  Tabs,
+  type ButtonSize,
+} from '@r0hitsharma/design-system';
 import { Check, Copy, MessageCircle, X } from 'lucide-react';
 import { useState, type CSSProperties } from 'react';
 
@@ -117,6 +123,13 @@ export type HarnessConnectProps = {
    * Defaults to false.
    */
   defaultOpen?: boolean;
+  /**
+   * Size of the trigger button, matching the design-system `Button` sizes so
+   * it lines up with neighbouring controls. It also scales the chat icon
+   * (14px at sm and md, 16px at lg) and adjusts the status dot's offset so it
+   * stays on the trigger's corner. Defaults to "md".
+   */
+  size?: ButtonSize;
 };
 
 /**
@@ -130,6 +143,7 @@ export function HarnessConnect({
   connectionToken,
   serverName = 'uikit-preview',
   defaultOpen = false,
+  size = 'md',
 }: HarnessConnectProps) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -168,16 +182,21 @@ export function HarnessConnect({
           onClick={() => setOpen(true)}
           aria-label={`Open harness connect modal (${statusLabel})`}
           iconOnly
+          size={size}
         >
-          <MessageCircle size={14} aria-hidden />
+          <MessageCircle size={triggerIconSize[size]} aria-hidden />
         </Button>
-        <span style={dotOverlayStyle} aria-hidden>
+        <span style={dotOverlayStyles[size]} aria-hidden>
           <Indicator status={indicatorDsStatus} />
         </span>
       </div>
 
-      {/* Connection modal */}
+      {/* Connection modal. `lazyMount` keeps the content (and with it the
+          bearer connection token) out of the DOM until the dialog first
+          opens; `unmountOnExit` removes it again on close. */}
       <Dialog.Root
+        lazyMount
+        unmountOnExit
         open={open}
         onOpenChange={(details: { open: boolean }) => setOpen(details.open)}
       >
@@ -327,11 +346,30 @@ const triggerWrapStyle: CSSProperties = {
   flex: 'none',
 };
 
-const dotOverlayStyle: CSSProperties = {
+const triggerIconSize: Record<ButtonSize, number> = {
+  sm: 14,
+  md: 14,
+  lg: 16,
+};
+
+// Puts the status dot on the trigger's top-right corner. The `Indicator` is
+// inline-level, so inside a block overlay it would sit on a line box of the
+// inherited line height, and the dot would land partway down the button's
+// right edge. `display: flex` makes the overlay exactly as big as the dot.
+//
+// The offsets pull the dot's box out past the corner by less as the trigger
+// grows, so the dot sits a little further inside a larger button (the square
+// sizes come from the design-system `button` recipe's `size` variant).
+const dotOverlayBaseStyle: CSSProperties = {
   position: 'absolute',
-  top: -2,
-  right: -2,
+  display: 'flex',
   pointerEvents: 'none',
+};
+
+const dotOverlayStyles: Record<ButtonSize, CSSProperties> = {
+  sm: { ...dotOverlayBaseStyle, top: -3, right: -3 },
+  md: { ...dotOverlayBaseStyle, top: -2, right: -2 },
+  lg: { ...dotOverlayBaseStyle, top: -1, right: -1 },
 };
 
 const backdropStyle: CSSProperties = {
