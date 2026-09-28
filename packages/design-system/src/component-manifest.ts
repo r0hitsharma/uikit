@@ -581,4 +581,20 @@ export const designSystemComponentManifest = [
     contractScope: 'progressBar',
     recipeKey: 'progressBar',
   },
+  {
+    exportName: 'Checkbox',
+    behaviorSource: 'ark-ui',
+    styleOwner: 'design-system-preset',
+    storyBucket: 'molecules',
+    contractScope: 'checkbox',
+    recipeKey: 'checkbox',
+  },
+  {
+    exportName: 'CheckboxGroup',
+    behaviorSource: 'ark-ui',
+    styleOwner: 'design-system-preset',
+    storyBucket: 'molecules',
+    contractScope: 'checkbox',
+    recipeKey: 'checkbox',
+  },
 ] as const satisfies readonly DesignSystemComponentManifestEntry[];
