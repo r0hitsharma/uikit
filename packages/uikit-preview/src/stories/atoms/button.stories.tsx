@@ -1,5 +1,5 @@
-import { Button } from '@r0hitsharma/design-system';
-import { Plus, Settings2, X } from 'lucide-react';
+import { Button, Select } from '@r0hitsharma/design-system';
+import { Plus, RefreshCw, Settings2, X } from 'lucide-react';
 
 import { css } from '../../../styled-system/css';
 
@@ -152,5 +152,75 @@ export const IconOnly = () => (
         </Button>
       </div>
     </div>
+  </div>
+);
+
+const selectClassName = css({ width: '40' });
+
+// Icon-only buttons are square (width = height) for every variant, size and
+// density, so they line up with text controls of the same size in a toolbar
+// row. `Select` has a single height, which matches `lg`. Compact density is
+// in `IconOnlyCompact` below.
+export const IconOnlyInToolbar = () => (
+  <div className={frameClassName}>
+    <div className={inlineRowClassName}>
+      <Button size="sm">Small</Button>
+      <Button iconOnly size="sm" aria-label="Refresh">
+        <RefreshCw size={14} strokeWidth={1.9} />
+      </Button>
+      <Button iconOnly size="sm" variant="item" aria-label="Settings">
+        <Settings2 size={14} strokeWidth={1.9} />
+      </Button>
+    </div>
+    <div className={inlineRowClassName}>
+      <Button size="md">Medium</Button>
+      <Button iconOnly size="md" aria-label="Refresh">
+        <RefreshCw size={16} strokeWidth={1.9} />
+      </Button>
+      <Button iconOnly size="md" variant="item" aria-label="Settings">
+        <Settings2 size={16} strokeWidth={1.9} />
+      </Button>
+    </div>
+    <div className={inlineRowClassName}>
+      <Select aria-label="Range" className={selectClassName} defaultValue="24h">
+        <option value="1h">Last hour</option>
+        <option value="24h">Last 24 hours</option>
+        <option value="7d">Last 7 days</option>
+      </Select>
+      <Button size="lg">Large</Button>
+      <Button iconOnly size="lg" aria-label="Refresh">
+        <RefreshCw size={16} strokeWidth={1.9} />
+      </Button>
+      <Button iconOnly size="lg" variant="item" aria-label="Settings">
+        <Settings2 size={16} strokeWidth={1.9} />
+      </Button>
+    </div>
+  </div>
+);
+
+// `density="compact"` icon-only buttons stay square. A compact panel is the
+// compact panel height at every `size`, next to a compact text panel of the
+// same height; a compact item keeps its size's height.
+export const IconOnlyCompact = () => (
+  <div className={frameClassName}>
+    {(['sm', 'md', 'lg'] as const).map((size) => (
+      <div key={size} className={inlineRowClassName}>
+        <Button size={size} density="compact">
+          Compact {size}
+        </Button>
+        <Button iconOnly size={size} density="compact" aria-label="Refresh">
+          <RefreshCw size={14} strokeWidth={1.9} />
+        </Button>
+        <Button
+          iconOnly
+          size={size}
+          density="compact"
+          variant="item"
+          aria-label="Settings"
+        >
+          <Settings2 size={14} strokeWidth={1.9} />
+        </Button>
+      </div>
+    ))}
   </div>
 );

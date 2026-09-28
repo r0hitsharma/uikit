@@ -17,13 +17,30 @@ import { defineRecipe } from '@pandacss/dev';
  * - Density differs by structural variant, so it is split into `itemDensity`
  *   (padding/type) and `panelDensity` (height/type); `Button.tsx` translates the
  *   public `density` prop to the right one based on `variant`.
- * - `size` sets panel/text height; `iconSize` carries ONLY the square width the
- *   component applies for icon-only panel buttons.
+ * - `size` sets panel/text height; `iconOnly` makes the button square at its
+ *   height through nested size- and density-qualified selectors (see the
+ *   variant below).
  */
+
+/** Square box for an icon-only button whose `size` has height `side`. */
+const iconOnlySquare = (side: '6' | '8' | '9') => ({
+  px: '0',
+  gap: '0',
+  w: side,
+  minW: side,
+  alignItems: 'center',
+});
+
+/**
+ * Box for an icon-only compact panel: `panelDensity.compact`'s height, pinned
+ * here so it does not depend on stylesheet order either, and a matching width.
+ */
+const compactIconOnlySquare = { h: '7', w: '7', minW: '7' };
+
 export const buttonRecipe = defineRecipe({
   className: 'button',
   description:
-    'Semantic button contract (single-variant-only for staticCss ["*"]). variant (panel|item) sets layout; emphasis="solid" + colorPalette produce CTA/destructive fills via dark-aware role tokens; itemDensity/panelDensity + size/iconSize set metrics.',
+    'Semantic button contract (single-variant-only for staticCss ["*"]). variant (panel|item) sets layout; emphasis="solid" + colorPalette produce CTA/destructive fills via dark-aware role tokens; itemDensity/panelDensity + size set metrics; iconOnly squares the button at its size.',
   base: {
     display: 'inline-flex',
     alignItems: 'center',
@@ -69,8 +86,10 @@ export const buttonRecipe = defineRecipe({
     },
     // Box metrics AND type step. `size` now sets font-size too, so a default
     // button no longer inherits the larger body step. Item and compact-panel
-    // buttons still get their type from `itemDensity`/`panelDensity`, which are
-    // declared after `size` and win the cascade.
+    // buttons are meant to take their type (and compact panels their height)
+    // from `itemDensity`/`panelDensity`. Those are single-class rules like
+    // `size`, so which one wins depends on the order Panda emits them in, not
+    // on the order they are declared here.
     size: {
       sm: {
         h: '6',
@@ -147,26 +166,33 @@ export const buttonRecipe = defineRecipe({
         color: 'text.muted',
       },
     },
-    // Declared AFTER the density variants so its `px: 0` wins over
-    // `panelDensity.compact`'s `px` for a compact icon-only button.
+    // Icon-only buttons are square for every variant, size and density: no
+    // padding or gap, a width (and min-width, so a flex row cannot squeeze it)
+    // equal to the box's height, and the icon centred on both axes.
+    //
+    // These are NOT compoundVariants, which staticCss ['*'] would never emit;
+    // they are nested selectors inside this single variant, so they are
+    // covered by ['*'] like any other variant class. Specificity, not
+    // declaration order, decides every conflict:
+    // - `.button--iconOnly_true.button--size_*` (two classes) outranks the
+    //   single-class `size`, `itemDensity`, `panelDensity` and `variant` rules
+    //   that also set padding, gap, width or alignment.
+    // - A compact panel is `panelDensity.compact`'s height (`h: 7`) at every
+    //   size, so `.button--iconOnly_true.button--panelDensity_compact.button--size_*`
+    //   (three classes) outranks the size rules and sets that height and a
+    //   matching width.
+    // So the result does not depend on the order Panda emits these classes in.
+    // `Button` always emits a `size` class, which is why every metric lives in
+    // the size-qualified rules rather than the bare variant.
     iconOnly: {
       true: {
         justifyContent: 'center',
-        gap: '0',
-        px: '0',
-      },
-    },
-    // Square width for icon-only panel buttons. Carries ONLY width; the
-    // component emits it only when iconOnly && variant==='panel'.
-    iconSize: {
-      sm: {
-        w: '6',
-      },
-      md: {
-        w: '8',
-      },
-      lg: {
-        w: '9',
+        '&.button--size_sm': iconOnlySquare('6'),
+        '&.button--size_md': iconOnlySquare('8'),
+        '&.button--size_lg': iconOnlySquare('9'),
+        '&.button--panelDensity_compact.button--size_sm': compactIconOnlySquare,
+        '&.button--panelDensity_compact.button--size_md': compactIconOnlySquare,
+        '&.button--panelDensity_compact.button--size_lg': compactIconOnlySquare,
       },
     },
   },
