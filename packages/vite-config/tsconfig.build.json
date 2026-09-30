@@ -7,5 +7,5 @@
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["react-compiler.ts"]
+  "include": ["code-splitting.ts", "react-compiler.ts"]
 }

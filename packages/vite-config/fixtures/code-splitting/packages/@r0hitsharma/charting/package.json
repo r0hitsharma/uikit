@@ -1,0 +1,6 @@
+{
+  "name": "@r0hitsharma/charting",
+  "type": "module",
+  "sideEffects": false,
+  "exports": { "./primitives": "./primitives.js", "./xychart": "./xychart.js" }
+}
