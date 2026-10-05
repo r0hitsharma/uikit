@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@r0hitsharma/design-system": "*",
-    "lucide-react": "1.47.0"
+    "lucide-react": "1.48.0"
   },
   "peerDependencies": {
     "react": "^19.0.0"
