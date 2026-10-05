@@ -41,7 +41,7 @@
     "@r0hitsharma/oxfmt-config": "*",
     "@r0hitsharma/oxlint-config": "*",
     "@r0hitsharma/tsconfig": "*",
-    "@tanstack/react-router": "1.170.38",
+    "@tanstack/react-router": "1.170.40",
     "oxfmt": "0.68.0",
     "oxlint": "1.83.0",
     "vitest": "^4.1.9",
