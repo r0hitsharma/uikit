@@ -2,7 +2,7 @@
   "name": "@r0hitsharma/uikit",
   "private": true,
   "type": "module",
-  "packageManager": "npm@12.0.2",
+  "packageManager": "npm@12.2.0",
   "engines": {
     "npm": ">=12.0.0 <13.0.0"
   },
@@ -48,7 +48,7 @@
     "@semantic-release/git": "11.0.1",
     "conventional-changelog-conventionalcommits": "10.4.0",
     "conventional-changelog-writer": "9.2.1",
-    "lefthook": "2.1.14",
+    "lefthook": "2.2.1",
     "semantic-release": "25.0.9",
     "typescript": "7.0.2"
   },
