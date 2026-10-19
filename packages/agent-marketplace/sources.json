@@ -7,7 +7,7 @@
       "upstream": "https://github.com/mintuz/claude-plugins",
       "path": "src/web/skills/eyes/SKILL.md",
       "branch": "main",
-      "pinnedRevision": "64615530948a55333f87ab951e2d4036651bdb2e",
+      "pinnedRevision": "3527b5ab83a5a6039b5f65060c9c17bbf6c596c5",
       "normalizationNotes": [
         "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "Treat this as externally owned content."
@@ -20,7 +20,7 @@
       "upstream": "https://github.com/mintuz/claude-plugins",
       "path": "src/web/skills/web-design/SKILL.md",
       "branch": "main",
-      "pinnedRevision": "64615530948a55333f87ab951e2d4036651bdb2e",
+      "pinnedRevision": "3527b5ab83a5a6039b5f65060c9c17bbf6c596c5",
       "normalizationNotes": [
         "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "Treat this as externally owned content."
@@ -77,7 +77,7 @@
       "upstream": "https://github.com/oxc-project/oxc",
       "path": ".agents/skills/migrate-oxlint/SKILL.md",
       "branch": "main",
-      "pinnedRevision": "e6dc8c4726df777ecb64f943816ee177565f40e9",
+      "pinnedRevision": "73e6b564737a29ecebf428d276421dcc492836df",
       "normalizationNotes": [
         "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "First-party skill from OXC package authors.",
@@ -91,7 +91,7 @@
       "upstream": "https://github.com/oxc-project/oxc",
       "path": ".agents/skills/migrate-oxfmt/SKILL.md",
       "branch": "main",
-      "pinnedRevision": "e6dc8c4726df777ecb64f943816ee177565f40e9",
+      "pinnedRevision": "73e6b564737a29ecebf428d276421dcc492836df",
       "normalizationNotes": [
         "Vendored verbatim by `npm run refresh`; `check` fails on local edits. Put uikit-specific guidance in a local-authored skill.",
         "First-party skill from OXC package authors.",
