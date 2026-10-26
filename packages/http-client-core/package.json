@@ -28,7 +28,7 @@
   "dependencies": {
     "openapi-fetch": "0.17.0",
     "openapi-typescript-helpers": "0.1.0",
-    "zod": "4.6.5"
+    "zod": "4.6.7"
   },
   "peerDependencies": {
     "openapi-typescript": "^7.13.0"
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@r0hitsharma/oxfmt-config": "*",
     "@r0hitsharma/tsconfig": "*",
-    "@types/node": "24.13.6",
+    "@types/node": "24.19.2",
     "oxfmt": "0.68.0",
     "oxlint": "1.83.0"
   }
