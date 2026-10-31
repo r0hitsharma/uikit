@@ -48,8 +48,8 @@
     "@r0hitsharma/tsconfig": "*",
     "@types/node": "24.19.2",
     "msw": "2.15.0",
-    "oxfmt": "0.68.0",
-    "oxlint": "1.83.0",
+    "oxfmt": "0.73.0",
+    "oxlint": "1.88.0",
     "vitest": "^4.1.9"
   }
 }
