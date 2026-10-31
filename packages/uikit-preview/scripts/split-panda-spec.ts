@@ -45,13 +45,15 @@ const specDir = path.resolve(scriptDir, '../static/tokens/spec');
 const sourcePath = path.join(specDir, 'source.json');
 const spec = JSON.parse(readFileSync(sourcePath, 'utf8')) as PandaSpec;
 
-const toGroups = <T>(entries: Array<[string, T]>) =>
-  Object.entries(Object.groupBy(entries, ([category]) => category)).map(
-    ([type, values]) => ({
-      type,
-      values: values?.map(([, value]) => value) ?? [],
-    }),
-  );
+const toGroups = <T>(entries: Array<[string, T]>) => {
+  const groups = new Map<string, T[]>();
+
+  for (const [category, value] of entries) {
+    groups.get(category)?.push(value) ?? groups.set(category, [value]);
+  }
+
+  return [...groups].map(([type, values]) => ({ type, values }));
+};
 
 const baseTokens: Array<[string, TokenValue]> = [];
 const semanticTokens = new Map<
