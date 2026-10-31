@@ -1,151 +1,152 @@
 import { defineSlotRecipe } from '@pandacss/dev';
 
-export const drawerRecipe = defineSlotRecipe({
-  className: 'drawer',
-  description:
-    'Right-anchored drawer skin over Ark Drawer: fixed scrim, edge-aligned panel, and a slide/fade transition keyed off Ark data-state, and an opt-in inline-edge resize handle, all tokenized.',
-  slots: [
-    'backdrop',
-    'positioner',
-    'content',
-    'title',
-    'description',
-    'closeTrigger',
-    'resizeHandle',
-  ],
-  base: {
-    backdrop: {
-      position: 'fixed',
-      inset: '0',
-      zIndex: '50',
-      bg: 'overlay.backdrop',
-      opacity: '0',
-      transitionProperty: 'opacity',
-      transitionDuration: 'normal',
-      transitionTimingFunction: 'out',
-      '&[data-state="open"]': {
-        opacity: '1',
-      },
-      '&[data-state="closed"]': {
+export const drawerRecipe: ReturnType<typeof defineSlotRecipe> =
+  defineSlotRecipe({
+    className: 'drawer',
+    description:
+      'Right-anchored drawer skin over Ark Drawer: fixed scrim, edge-aligned panel, and a slide/fade transition keyed off Ark data-state, and an opt-in inline-edge resize handle, all tokenized.',
+    slots: [
+      'backdrop',
+      'positioner',
+      'content',
+      'title',
+      'description',
+      'closeTrigger',
+      'resizeHandle',
+    ],
+    base: {
+      backdrop: {
+        position: 'fixed',
+        inset: '0',
+        zIndex: '50',
+        bg: 'overlay.backdrop',
         opacity: '0',
+        transitionProperty: 'opacity',
+        transitionDuration: 'normal',
+        transitionTimingFunction: 'out',
+        '&[data-state="open"]': {
+          opacity: '1',
+        },
+        '&[data-state="closed"]': {
+          opacity: '0',
+        },
       },
-    },
-    positioner: {
-      position: 'fixed',
-      insetBlock: '0',
-      insetInlineEnd: '0',
-      zIndex: '50',
-      display: 'flex',
-    },
-    content: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '4',
-      maxWidth: '100vw',
-      height: '100%',
-      p: '5',
-      bg: 'surface.default',
-      color: 'text.default',
-      borderInlineStartWidth: 'hairline',
-      borderInlineStartStyle: 'solid',
-      borderColor: 'border.subtle',
-      boxShadow: '-8px 0 24px rgba(15, 23, 42, 0.16)',
-      willChange: 'transform',
-      transform: 'translateX(100%)',
-      transitionProperty: 'transform',
-      transitionDuration: 'normal',
-      transitionTimingFunction: 'out',
-      '&[data-state="open"]': {
-        transform: 'translateX(0)',
+      positioner: {
+        position: 'fixed',
+        insetBlock: '0',
+        insetInlineEnd: '0',
+        zIndex: '50',
+        display: 'flex',
       },
-      '&[data-state="closed"]': {
-        transform: 'translateX(100%)',
-      },
-      _focusVisible: {
-        outline: 'none',
-      },
-    },
-    title: {
-      m: '0',
-      textStyle: 'panelTitle',
-      color: 'text.strong',
-    },
-    description: {
-      m: '0',
-      textStyle: 'bodySm',
-      color: 'text.muted',
-    },
-    closeTrigger: {
-      position: 'absolute',
-      top: '4',
-      insetInlineEnd: '4',
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      w: '8',
-      h: '8',
-      borderRadius: 'sm',
-      borderWidth: 'hairline',
-      borderStyle: 'solid',
-      borderColor: 'transparent',
-      bg: 'transparent',
-      color: 'text.muted',
-      cursor: 'pointer',
-      transitionDuration: 'fast',
-      transitionProperty: 'background-color, color, border-color',
-      _hover: {
-        bg: 'interactive.hover',
+      content: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4',
+        maxWidth: '100vw',
+        height: '100%',
+        p: '5',
+        bg: 'surface.default',
         color: 'text.default',
+        borderInlineStartWidth: 'hairline',
+        borderInlineStartStyle: 'solid',
+        borderColor: 'border.subtle',
+        boxShadow: '-8px 0 24px rgba(15, 23, 42, 0.16)',
+        willChange: 'transform',
+        transform: 'translateX(100%)',
+        transitionProperty: 'transform',
+        transitionDuration: 'normal',
+        transitionTimingFunction: 'out',
+        '&[data-state="open"]': {
+          transform: 'translateX(0)',
+        },
+        '&[data-state="closed"]': {
+          transform: 'translateX(100%)',
+        },
+        _focusVisible: {
+          outline: 'none',
+        },
       },
-      _focusVisible: {
-        outlineWidth: 'strong',
-        outlineStyle: 'solid',
-        outlineColor: 'border.strong',
-        outlineOffset: '1px',
+      title: {
+        m: '0',
+        textStyle: 'panelTitle',
+        color: 'text.strong',
       },
-    },
-    // Only rendered by `resizable` Content. A transparent grab strip on the
-    // inline-start edge (the content's transform makes it the containing
-    // block, as for `closeTrigger`); its `::before` line takes the accent on
-    // hover, focus, and during a drag. `touchAction: none` keeps a touch drag
-    // from scrolling instead of resizing.
-    resizeHandle: {
-      position: 'absolute',
-      insetBlock: '0',
-      insetInlineStart: '0',
-      zIndex: '1',
-      w: '2',
-      cursor: 'col-resize',
-      userSelect: 'none',
-      touchAction: 'none',
-      bg: 'transparent',
-      outline: 'none',
-      _before: {
-        content: '""',
+      description: {
+        m: '0',
+        textStyle: 'bodySm',
+        color: 'text.muted',
+      },
+      closeTrigger: {
+        position: 'absolute',
+        top: '4',
+        insetInlineEnd: '4',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        w: '8',
+        h: '8',
+        borderRadius: 'sm',
+        borderWidth: 'hairline',
+        borderStyle: 'solid',
+        borderColor: 'transparent',
+        bg: 'transparent',
+        color: 'text.muted',
+        cursor: 'pointer',
+        transitionDuration: 'fast',
+        transitionProperty: 'background-color, color, border-color',
+        _hover: {
+          bg: 'interactive.hover',
+          color: 'text.default',
+        },
+        _focusVisible: {
+          outlineWidth: 'strong',
+          outlineStyle: 'solid',
+          outlineColor: 'border.strong',
+          outlineOffset: '1px',
+        },
+      },
+      // Only rendered by `resizable` Content. A transparent grab strip on the
+      // inline-start edge (the content's transform makes it the containing
+      // block, as for `closeTrigger`); its `::before` line takes the accent on
+      // hover, focus, and during a drag. `touchAction: none` keeps a touch drag
+      // from scrolling instead of resizing.
+      resizeHandle: {
         position: 'absolute',
         insetBlock: '0',
         insetInlineStart: '0',
-        borderInlineStartWidth: 'strong',
-        borderInlineStartStyle: 'solid',
-        borderColor: 'transparent',
-        transitionProperty: 'border-color',
-        transitionDuration: 'fast',
-      },
-      '&:hover::before, &:focus-visible::before, &[data-dragging]::before': {
-        borderColor: 'interactive.accent',
+        zIndex: '1',
+        w: '2',
+        cursor: 'col-resize',
+        userSelect: 'none',
+        touchAction: 'none',
+        bg: 'transparent',
+        outline: 'none',
+        _before: {
+          content: '""',
+          position: 'absolute',
+          insetBlock: '0',
+          insetInlineStart: '0',
+          borderInlineStartWidth: 'strong',
+          borderInlineStartStyle: 'solid',
+          borderColor: 'transparent',
+          transitionProperty: 'border-color',
+          transitionDuration: 'fast',
+        },
+        '&:hover::before, &:focus-visible::before, &[data-dragging]::before': {
+          borderColor: 'interactive.accent',
+        },
       },
     },
-  },
-  variants: {
-    // Panel width. `md` preserves the previous fixed width; `sm`/`lg` give
-    // consumers a wider/narrower drawer without a hardcoded override.
-    size: {
-      sm: { content: { width: 'min(22rem, 100vw)' } },
-      md: { content: { width: 'min(28rem, 100vw)' } },
-      lg: { content: { width: 'min(40rem, 100vw)' } },
+    variants: {
+      // Panel width. `md` preserves the previous fixed width; `sm`/`lg` give
+      // consumers a wider/narrower drawer without a hardcoded override.
+      size: {
+        sm: { content: { width: 'min(22rem, 100vw)' } },
+        md: { content: { width: 'min(28rem, 100vw)' } },
+        lg: { content: { width: 'min(40rem, 100vw)' } },
+      },
     },
-  },
-  defaultVariants: {
-    size: 'md',
-  },
-});
+    defaultVariants: {
+      size: 'md',
+    },
+  });

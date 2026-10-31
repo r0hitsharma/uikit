@@ -17,53 +17,54 @@ import { defineSlotRecipe } from '@pandacss/dev';
  * `indicator__dot`, `indicator__root--status_x`, `indicator__dot--status_pending`,
  * `indicator__root--colorPalette_x`). Registered in the preset + `staticCss`.
  */
-export const indicatorRecipe = defineSlotRecipe({
-  className: 'indicator',
-  description:
-    'Status dot + optional label. status maps to a dark-aware colorPalette role token and (for pending) the indicatorPulse animation; colorPalette can override the hue.',
-  slots: ['root', 'dot'],
-  base: {
-    root: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '1.5',
-      fontSize: 'xs',
-      fontWeight: 'semibold',
-      lineHeight: '1',
-      color: 'text.muted',
-      whiteSpace: 'nowrap',
-    },
-    dot: {
-      display: 'inline-block',
-      width: '2',
-      height: '2',
-      flexShrink: '0',
-      borderRadius: 'full',
-      bg: 'colorPalette.solid.bg',
-      boxShadow: '0 0 0 2px var(--colors-color-palette-subtle-bg)',
-    },
-  },
-  variants: {
-    status: {
-      idle: { root: { colorPalette: 'neutral' } },
-      ready: { root: { colorPalette: 'blue' } },
-      active: { root: { colorPalette: 'green' } },
-      pending: {
-        root: { colorPalette: 'amber' },
-        dot: { animation: 'indicatorPulse' },
+export const indicatorRecipe: ReturnType<typeof defineSlotRecipe> =
+  defineSlotRecipe({
+    className: 'indicator',
+    description:
+      'Status dot + optional label. status maps to a dark-aware colorPalette role token and (for pending) the indicatorPulse animation; colorPalette can override the hue.',
+    slots: ['root', 'dot'],
+    base: {
+      root: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '1.5',
+        fontSize: 'xs',
+        fontWeight: 'semibold',
+        lineHeight: '1',
+        color: 'text.muted',
+        whiteSpace: 'nowrap',
       },
-      error: { root: { colorPalette: 'red' } },
+      dot: {
+        display: 'inline-block',
+        width: '2',
+        height: '2',
+        flexShrink: '0',
+        borderRadius: 'full',
+        bg: 'colorPalette.solid.bg',
+        boxShadow: '0 0 0 2px var(--colors-color-palette-subtle-bg)',
+      },
     },
-    colorPalette: {
-      neutral: { root: { colorPalette: 'neutral' } },
-      gray: { root: { colorPalette: 'gray' } },
-      green: { root: { colorPalette: 'green' } },
-      red: { root: { colorPalette: 'red' } },
-      amber: { root: { colorPalette: 'amber' } },
-      blue: { root: { colorPalette: 'blue' } },
+    variants: {
+      status: {
+        idle: { root: { colorPalette: 'neutral' } },
+        ready: { root: { colorPalette: 'blue' } },
+        active: { root: { colorPalette: 'green' } },
+        pending: {
+          root: { colorPalette: 'amber' },
+          dot: { animation: 'indicatorPulse' },
+        },
+        error: { root: { colorPalette: 'red' } },
+      },
+      colorPalette: {
+        neutral: { root: { colorPalette: 'neutral' } },
+        gray: { root: { colorPalette: 'gray' } },
+        green: { root: { colorPalette: 'green' } },
+        red: { root: { colorPalette: 'red' } },
+        amber: { root: { colorPalette: 'amber' } },
+        blue: { root: { colorPalette: 'blue' } },
+      },
     },
-  },
-  defaultVariants: {
-    status: 'idle',
-  },
-});
+    defaultVariants: {
+      status: 'idle',
+    },
+  });

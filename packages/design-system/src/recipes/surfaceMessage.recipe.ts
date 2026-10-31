@@ -10,68 +10,69 @@ import { defineSlotRecipe } from '@pandacss/dev';
  * nothing visually; a consumer applying the recipe class on its own bare markup
  * now gets the same 8px the component always drew.
  */
-export const surfaceMessageRecipe = defineSlotRecipe({
-  className: 'surfaceMessage',
-  description:
-    'Semantic surface message contract with tokenized root, title, body, and actions slots.',
-  slots: ['root', 'title', 'body', 'actions'],
-  base: {
-    root: {
-      borderRadius: 'lg',
-      borderWidth: 'hairline',
-      borderStyle: 'solid',
-      borderColor: 'border.subtle',
-      bg: 'surface.subtle',
-      p: '4',
-    },
-    title: {
-      m: '0',
-      textStyle: 'bodySm',
-      fontWeight: 'semibold',
-      color: 'text.strong',
-    },
-    body: {
-      m: '0',
-      // The 8px separates the body from the title above it, so it only applies
-      // when there IS something above it. A body-only message (no `title`, or
-      // Root + Body composed directly) would otherwise sit 8px low inside the
-      // 16px frame padding — visibly off-centre for a one-line message.
-      mt: '2',
-      _first: { mt: '0' },
-      textStyle: 'bodySm',
-      color: 'text.muted',
-    },
-    actions: {
-      display: 'flex',
-      gap: '2',
-      mt: '3',
-    },
-  },
-  variants: {
-    tone: {
-      default: {},
-      muted: {
-        root: {
-          bg: 'surface.default',
-        },
+export const surfaceMessageRecipe: ReturnType<typeof defineSlotRecipe> =
+  defineSlotRecipe({
+    className: 'surfaceMessage',
+    description:
+      'Semantic surface message contract with tokenized root, title, body, and actions slots.',
+    slots: ['root', 'title', 'body', 'actions'],
+    base: {
+      root: {
+        borderRadius: 'lg',
+        borderWidth: 'hairline',
+        borderStyle: 'solid',
+        borderColor: 'border.subtle',
+        bg: 'surface.subtle',
+        p: '4',
       },
-      dashed: {
-        root: {
-          borderStyle: 'dashed',
-        },
+      title: {
+        m: '0',
+        textStyle: 'bodySm',
+        fontWeight: 'semibold',
+        color: 'text.strong',
       },
-      critical: {
-        root: {
-          bg: 'bg.critical',
-          borderColor: 'text.critical',
-        },
-        title: {
-          color: 'text.critical',
-        },
+      body: {
+        m: '0',
+        // The 8px separates the body from the title above it, so it only applies
+        // when there IS something above it. A body-only message (no `title`, or
+        // Root + Body composed directly) would otherwise sit 8px low inside the
+        // 16px frame padding — visibly off-centre for a one-line message.
+        mt: '2',
+        _first: { mt: '0' },
+        textStyle: 'bodySm',
+        color: 'text.muted',
+      },
+      actions: {
+        display: 'flex',
+        gap: '2',
+        mt: '3',
       },
     },
-  },
-  defaultVariants: {
-    tone: 'default',
-  },
-});
+    variants: {
+      tone: {
+        default: {},
+        muted: {
+          root: {
+            bg: 'surface.default',
+          },
+        },
+        dashed: {
+          root: {
+            borderStyle: 'dashed',
+          },
+        },
+        critical: {
+          root: {
+            bg: 'bg.critical',
+            borderColor: 'text.critical',
+          },
+          title: {
+            color: 'text.critical',
+          },
+        },
+      },
+    },
+    defaultVariants: {
+      tone: 'default',
+    },
+  });

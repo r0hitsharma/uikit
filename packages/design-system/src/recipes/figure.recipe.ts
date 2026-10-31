@@ -11,7 +11,7 @@ import { defineRecipe } from '@pandacss/dev';
  * `figure`, variant `figure--${key}_${value}`). Registered in the preset +
  * staticCss.
  */
-export const figureRecipe = defineRecipe({
+export const figureRecipe: ReturnType<typeof defineRecipe> = defineRecipe({
   className: 'figure',
   description:
     'Tabular-figures numeric display: mono family, tabular-nums, tightened tracking. tone recolors via semantic text tokens; size steps the type; wrap toggles mid-number wrapping (off by default).',
