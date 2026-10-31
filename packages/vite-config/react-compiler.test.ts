@@ -91,12 +91,15 @@ async function bundleFixture(
 }
 
 /**
- * The body of one `//#region <file>` block rolldown emits per module. Matched
- * on the tail of the id, since rolldown writes it relative to the cwd rather
- * than to `root`.
+ * The body of one module Rolldown emits. Newer Rolldown versions use a
+ * `// <file>` header instead of `//#region <file>` blocks. Matched on the tail
+ * of the id, since Rolldown writes it relative to the cwd rather than to
+ * `root`.
  */
 function moduleBody(code: string, suffix: string): string {
-  const blocks = code.split('//#region ').slice(1);
+  const blocks = code.includes('//#region ')
+    ? code.split('//#region ').slice(1)
+    : code.split(/^\/\/ (?=.+\.[cm]?[jt]sx?$)/m).slice(1);
   const block = blocks.find((candidate) =>
     candidate.slice(0, candidate.indexOf('\n')).endsWith(suffix),
   );
