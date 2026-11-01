@@ -200,12 +200,12 @@ export const Overview = () => (
           </thead>
           <tbody>
             {allSpecs.map(({ fileName, spec }) => {
-              const isArray = Array.isArray((spec as { data?: unknown }).data);
-              const count = isArray
-                ? ((spec as { data: unknown[] }).data?.length ?? 0)
-                : Object.keys(
-                    (spec as { data?: Record<string, unknown> }).data ?? {},
-                  ).length;
+              const data = (spec as { data?: unknown }).data;
+              const count = Array.isArray(data)
+                ? data.length
+                : data && typeof data === 'object'
+                  ? Object.keys(data).length
+                  : 0;
 
               return (
                 <tr key={fileName}>

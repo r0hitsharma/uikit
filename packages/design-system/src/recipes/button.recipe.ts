@@ -37,7 +37,7 @@ const iconOnlySquare = (side: '6' | '8' | '9') => ({
  */
 const compactIconOnlySquare = { h: '7', w: '7', minW: '7' };
 
-export const buttonRecipe = defineRecipe({
+export const buttonRecipe: ReturnType<typeof defineRecipe> = defineRecipe({
   className: 'button',
   description:
     'Semantic button contract (single-variant-only for staticCss ["*"]). variant (panel|item) sets layout; emphasis="solid" + colorPalette produce CTA/destructive fills via dark-aware role tokens; itemDensity/panelDensity + size set metrics; iconOnly squares the button at its size.',

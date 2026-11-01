@@ -1,6 +1,6 @@
 import { defineRecipe } from '@pandacss/dev';
 
-export const panelActionRecipe = defineRecipe({
+export const panelActionRecipe: ReturnType<typeof defineRecipe> = defineRecipe({
   className: 'panelAction',
   description: 'Compact action controls used in panel headers and tab bodies.',
   base: {

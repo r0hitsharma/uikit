@@ -1,3 +1,5 @@
+import type { defineRecipe, defineSlotRecipe } from '@pandacss/dev';
+
 import { badgeRecipe } from './badge.recipe.js';
 import { buttonRecipe } from './button.recipe.js';
 import { checkboxRecipe } from './checkbox.recipe.js';
@@ -61,7 +63,10 @@ import { infoTipRecipe, tooltipRecipe } from './tooltip.recipe.js';
  * the emitted recipe set cannot diverge between them again — the same fix
  * `../tokens/sharedThemeTokens.ts` applied to the theme tokens.
  */
-export const designSystemRecipes = {
+export const designSystemRecipes: Record<
+  string,
+  ReturnType<typeof defineRecipe>
+> = {
   button: buttonRecipe,
   panelAction: panelActionRecipe,
   interactiveItem: interactiveItemRecipe,
@@ -77,7 +82,10 @@ export const designSystemRecipes = {
   statusPillRow: statusPillRowRecipe,
 };
 
-export const designSystemSlotRecipes = {
+export const designSystemSlotRecipes: Record<
+  string,
+  ReturnType<typeof defineSlotRecipe>
+> = {
   surfaceMessage: surfaceMessageRecipe,
   segmentedControl: segmentedControlRecipe,
   toggleSwitch: switchRecipe,
