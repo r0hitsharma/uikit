@@ -841,12 +841,6 @@
       "packages/uikit-preview/src/stories/templates/split-layout.stories.tsx",
       "packages/uikit-preview/src/stories/tokens/tokens.stories.tsx"
     ],
-    "packages/uikit-preview/styled-system/css/cva.js": [
-      "packages/uikit-preview/src/stories/atoms/segmented-control.stories.tsx",
-      "packages/uikit-preview/src/stories/atoms/switch.stories.tsx",
-      "packages/uikit-preview/src/stories/templates/activity-feed.stories.tsx",
-      "packages/uikit-preview/src/stories/templates/filter-bar.stories.tsx"
-    ],
     "packages/uikit-preview/styled-system/css/cx.js": [
       "packages/uikit-preview/src/stories/atoms/segmented-control.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/switch.stories.tsx",
@@ -916,7 +910,7 @@
       "packages/uikit-preview/src/stories/templates/split-layout.stories.tsx",
       "packages/uikit-preview/src/stories/tokens/tokens.stories.tsx"
     ],
-    "packages/uikit-preview/styled-system/recipes/create-recipe.js": [
+    "packages/uikit-preview/styled-system/recipes/runtime.js": [
       "packages/uikit-preview/src/stories/atoms/segmented-control.stories.tsx",
       "packages/uikit-preview/src/stories/atoms/switch.stories.tsx",
       "packages/uikit-preview/src/stories/templates/activity-feed.stories.tsx",
