@@ -36,48 +36,49 @@ const besideAt = (breakpoint: 'sm' | 'md' | 'lg' | 'xl') => ({
  * cannot statically extract) which the grid template reads with a fallback.
  * A sticky offset is supplied the same way via `--sidebar-sticky-top`.
  */
-export const sidebarGridRecipe = defineSlotRecipe({
-  className: 'sidebarGrid',
-  description:
-    'Sticky-rail sidebar + main grid; single column below the collapseBelow breakpoint (default md). Rail width and sticky offset overridable at runtime via the --sidebar-rail-width / --sidebar-sticky-top custom properties.',
-  slots: ['root', 'sidebar', 'main'],
-  base: {
-    root: {
-      display: 'grid',
-      gap: '6',
-      alignItems: 'start',
-      gridTemplateColumns: '1fr',
+export const sidebarGridRecipe: ReturnType<typeof defineSlotRecipe> =
+  defineSlotRecipe({
+    className: 'sidebarGrid',
+    description:
+      'Sticky-rail sidebar + main grid; single column below the collapseBelow breakpoint (default md). Rail width and sticky offset overridable at runtime via the --sidebar-rail-width / --sidebar-sticky-top custom properties.',
+    slots: ['root', 'sidebar', 'main'],
+    base: {
+      root: {
+        display: 'grid',
+        gap: '6',
+        alignItems: 'start',
+        gridTemplateColumns: '1fr',
+      },
+      sidebar: {
+        minWidth: '0',
+      },
+      main: {
+        minWidth: '0',
+      },
     },
-    sidebar: {
-      minWidth: '0',
-    },
-    main: {
-      minWidth: '0',
-    },
-  },
-  variants: {
-    // Breakpoint at which the rail sits beside the content. Below it, the base
-    // single-column grid applies. `md` reproduces the historical layout.
-    collapseBelow: {
-      sm: besideAt('sm'),
-      md: besideAt('md'),
-      lg: besideAt('lg'),
-      xl: besideAt('xl'),
-    },
-    // Runs the rail (and the divider between it and the content) the full height
-    // of the viewport without the consumer computing `calc(100vh - X)`; honours
-    // the same sticky offset.
-    fillViewport: {
-      false: {},
-      true: {
-        root: {
-          minHeight: 'calc(100vh - var(--sidebar-sticky-top, 0px))',
+    variants: {
+      // Breakpoint at which the rail sits beside the content. Below it, the base
+      // single-column grid applies. `md` reproduces the historical layout.
+      collapseBelow: {
+        sm: besideAt('sm'),
+        md: besideAt('md'),
+        lg: besideAt('lg'),
+        xl: besideAt('xl'),
+      },
+      // Runs the rail (and the divider between it and the content) the full height
+      // of the viewport without the consumer computing `calc(100vh - X)`; honours
+      // the same sticky offset.
+      fillViewport: {
+        false: {},
+        true: {
+          root: {
+            minHeight: 'calc(100vh - var(--sidebar-sticky-top, 0px))',
+          },
         },
       },
     },
-  },
-  defaultVariants: {
-    collapseBelow: 'md',
-    fillViewport: false,
-  },
-});
+    defaultVariants: {
+      collapseBelow: 'md',
+      fillViewport: false,
+    },
+  });

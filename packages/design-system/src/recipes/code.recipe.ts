@@ -7,7 +7,7 @@ import { defineRecipe } from '@pandacss/dev';
  * pre. The block variant resets a nested `<code>` back to inherit so
  * `<pre><code>` renders as one type ramp.
  */
-export const codeRecipe = defineRecipe({
+export const codeRecipe: ReturnType<typeof defineRecipe> = defineRecipe({
   className: 'code',
   description:
     'Monospace code surface over the codeBlock textStyle, with inline chip and scrollable block variants.',
