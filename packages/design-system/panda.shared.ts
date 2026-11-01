@@ -1,4 +1,6 @@
 import type { Config } from '@pandacss/dev';
+import { preset as pandaBasePreset } from '@pandacss/preset-base';
+import { preset as pandaDefaultPreset } from '@pandacss/preset-panda';
 
 import {
   designSystemRecipes,
@@ -40,7 +42,7 @@ import {
  *
  * What still lives ONLY here: `staticCss` (a Panda ROOT-config key a preset
  * cannot carry — see the note below) and the other root-only keys
- * (`jsxFramework`, `outExtension`, `preflight`, `studio`).
+ * (`jsxFramework`, `outExtension`, `preflight`).
  *
  * `recipes` and `slotRecipes` are now also shared, via
  * `src/recipes/sharedRecipes.ts` — the same `designSystemRecipes` /
@@ -56,6 +58,7 @@ import {
  */
 
 export const designSystemPandaConfig = {
+  presets: [pandaBasePreset, pandaDefaultPreset],
   jsxFramework: 'react',
   outExtension: 'js',
   preflight: true,
@@ -69,9 +72,6 @@ export const designSystemPandaConfig = {
     recipes: designSystemStaticCssRecipes,
   },
   globalCss: colorSchemeGlobalCss,
-  studio: {
-    logo: 'UI',
-  },
   theme: {
     extend: {
       keyframes: motionKeyframes,

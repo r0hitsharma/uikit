@@ -6,7 +6,7 @@ import { defineRecipe } from '@pandacss/dev';
  * property (a runtime value Panda cannot statically extract) which the recipe
  * reads with a token fallback.
  */
-export const pageShellRecipe = defineRecipe({
+export const pageShellRecipe: ReturnType<typeof defineRecipe> = defineRecipe({
   className: 'pageShell',
   description:
     'Centered page content column with a token max-width, overridable at runtime via the --page-max-width custom property.',

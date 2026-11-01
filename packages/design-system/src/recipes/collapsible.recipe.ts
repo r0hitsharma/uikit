@@ -16,88 +16,89 @@ import { defineSlotRecipe } from '@pandacss/dev';
  * (`collapsible__root`, `collapsible__trigger`, …). Registered in the preset +
  * staticCss.
  */
-export const collapsibleRecipe = defineSlotRecipe({
-  className: 'collapsible',
-  description:
-    'Disclosure skin over Ark Collapsible: a tokenized trigger with a chevron indicator that turns over when open, and a content region, all keyed off Ark data-state.',
-  slots: ['root', 'trigger', 'indicator', 'content'],
-  base: {
-    root: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      gap: '2',
-      width: 'full',
-      color: 'text.default',
-    },
-    trigger: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '1.5',
-      m: '0',
-      px: '1.5',
-      py: '1',
-      // Pull the trigger's padding back out so its label lines up with the
-      // content beneath it.
-      mx: '-1.5',
-      borderRadius: 'sm',
-      borderWidth: 'none',
-      bg: 'transparent',
-      color: 'text.default',
-      fontFamily: 'inherit',
-      textStyle: 'bodySm',
-      fontWeight: 'medium',
-      textAlign: 'start',
-      cursor: 'pointer',
-      transitionDuration: 'fast',
-      transitionProperty: 'background-color, color',
-      _hover: {
-        bg: 'interactive.hover',
-        color: 'text.strong',
+export const collapsibleRecipe: ReturnType<typeof defineSlotRecipe> =
+  defineSlotRecipe({
+    className: 'collapsible',
+    description:
+      'Disclosure skin over Ark Collapsible: a tokenized trigger with a chevron indicator that turns over when open, and a content region, all keyed off Ark data-state.',
+    slots: ['root', 'trigger', 'indicator', 'content'],
+    base: {
+      root: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: '2',
+        width: 'full',
+        color: 'text.default',
       },
-      '&[data-state="open"]': {
-        color: 'text.strong',
-      },
-      _disabled: {
-        color: 'text.muted',
-        cursor: 'not-allowed',
+      trigger: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '1.5',
+        m: '0',
+        px: '1.5',
+        py: '1',
+        // Pull the trigger's padding back out so its label lines up with the
+        // content beneath it.
+        mx: '-1.5',
+        borderRadius: 'sm',
+        borderWidth: 'none',
         bg: 'transparent',
-        // `_hover` and `_disabled` tie on specificity and Panda emits the
-        // hover rule last, so without this more specific rule a disabled
-        // trigger would still take the hover fill.
+        color: 'text.default',
+        fontFamily: 'inherit',
+        textStyle: 'bodySm',
+        fontWeight: 'medium',
+        textAlign: 'start',
+        cursor: 'pointer',
+        transitionDuration: 'fast',
+        transitionProperty: 'background-color, color',
         _hover: {
-          bg: 'transparent',
+          bg: 'interactive.hover',
+          color: 'text.strong',
+        },
+        '&[data-state="open"]': {
+          color: 'text.strong',
+        },
+        _disabled: {
           color: 'text.muted',
+          cursor: 'not-allowed',
+          bg: 'transparent',
+          // `_hover` and `_disabled` tie on specificity and Panda emits the
+          // hover rule last, so without this more specific rule a disabled
+          // trigger would still take the hover fill.
+          _hover: {
+            bg: 'transparent',
+            color: 'text.muted',
+          },
+        },
+        _focusVisible: {
+          outlineWidth: 'strong',
+          outlineStyle: 'solid',
+          outlineColor: 'border.strong',
+          outlineOffset: '1px',
         },
       },
-      _focusVisible: {
-        outlineWidth: 'strong',
-        outlineStyle: 'solid',
-        outlineColor: 'border.strong',
-        outlineOffset: '1px',
+      indicator: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: '0',
+        color: 'text.muted',
+        transitionDuration: 'fast',
+        transitionProperty: 'transform',
+        transitionTimingFunction: 'out',
+        '&[data-state="open"]': {
+          transform: 'rotate(180deg)',
+        },
+        _motionReduce: {
+          transitionDuration: '0s',
+        },
+      },
+      content: {
+        width: 'full',
+        minWidth: '0',
+        textStyle: 'bodySm',
+        color: 'text.default',
       },
     },
-    indicator: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexShrink: '0',
-      color: 'text.muted',
-      transitionDuration: 'fast',
-      transitionProperty: 'transform',
-      transitionTimingFunction: 'out',
-      '&[data-state="open"]': {
-        transform: 'rotate(180deg)',
-      },
-      _motionReduce: {
-        transitionDuration: '0s',
-      },
-    },
-    content: {
-      width: 'full',
-      minWidth: '0',
-      textStyle: 'bodySm',
-      color: 'text.default',
-    },
-  },
-});
+  });
