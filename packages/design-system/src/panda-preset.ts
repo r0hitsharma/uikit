@@ -73,115 +73,116 @@ import {
  * normally the newest 1.x, which can be newer than their `@pandacss/dev`.
  */
 
-export const designSystemStandalonePreset = definePreset({
-  name: 'design-system',
-  presets: [pandaBasePreset, pandaDefaultPreset],
-  globalCss: colorSchemeGlobalCss,
-  theme: {
-    extend: {
-      keyframes: motionKeyframes,
-      tokens: {
-        animations: animationTokens,
-        borderWidths: borderWidthTokens,
-        fontSizes: microFontSizes,
-        zIndex: zIndexTokens,
+export const designSystemStandalonePreset: ReturnType<typeof definePreset> =
+  definePreset({
+    name: 'design-system',
+    presets: [pandaBasePreset, pandaDefaultPreset],
+    globalCss: colorSchemeGlobalCss,
+    theme: {
+      extend: {
+        keyframes: motionKeyframes,
+        tokens: {
+          animations: animationTokens,
+          borderWidths: borderWidthTokens,
+          fontSizes: microFontSizes,
+          zIndex: zIndexTokens,
+        },
+        semanticTokens: {
+          shadows: elevationShadows,
+          colors: {
+            // Each family below is defined in `src/tokens/sharedThemeTokens.ts`,
+            // the one source this preset and the internal `panda.shared.ts`
+            // config both read — the rationale for each ramp lives there. Order
+            // is load-bearing only in that it is the order both configs use.
+            surface: surfaceColors,
+            text: textColors,
+            border: borderColors,
+            interactive: interactiveColors,
+            scrollbar: scrollbarColors,
+            overlay: overlayColors,
+            fg: fgColors,
+            bg: bgColors,
+            // The chart/identity families come from their own shared module,
+            // `src/tokens/chartColorTokens.ts` (the union
+            // `@r0hitsharma/charting` mirrors is derived from it).
+            chart: chartColorSemanticTokens.chart,
+            heat: heatColors,
+            categorical: categoricalColors,
+            identity: chartColorSemanticTokens.identity,
+            // ── colorPalette ROLE tokens (role-based, on the 50-950 scale) ──
+            ...colorPaletteRoleTokens,
+          },
+        },
+        // NOT shared with `panda.shared.ts` via a module like
+        // `sharedThemeTokens.ts`, but kept in sync by hand: both configs define
+        // the same seven text styles below (`figure` included — the `meter` and
+        // `keyValueTable` slot recipes reference it, so a config missing it
+        // would silently drop just their tabular-numeral styling).
+        textStyles: {
+          sectionLabel: {
+            value: {
+              fontSize: 'xs',
+              fontWeight: 'medium',
+              letterSpacing: 'wide',
+            },
+          },
+          // Micro type roles so consumers stop reaching for a raw `2xs`/`3xs`.
+          microLabel: {
+            value: {
+              fontSize: '3xs',
+              fontWeight: 'medium',
+              letterSpacing: 'wide',
+            },
+          },
+          metaText: {
+            value: {
+              fontSize: '2xs',
+              lineHeight: 'relaxed',
+            },
+          },
+          panelTitle: {
+            value: {
+              fontSize: 'xl',
+              fontWeight: 'semibold',
+              lineHeight: 'tight',
+            },
+          },
+          bodySm: {
+            value: {
+              fontSize: 'sm',
+              lineHeight: 'relaxed',
+            },
+          },
+          // Numeric/figure type: mono family with tabular figures and slightly
+          // tightened tracking so columns of numbers align and a headline figure
+          // and the row beneath it read as the same kind of value. Consumers reach
+          // for this (or the `Figure` atom / `figure` recipe) instead of
+          // re-declaring `fontVariantNumeric: 'tabular-nums'` at each call site.
+          figure: {
+            value: {
+              fontFamily: 'mono',
+              fontVariantNumeric: 'tabular-nums',
+              letterSpacing: '-0.02em',
+            },
+          },
+          codeBlock: {
+            value: {
+              fontFamily: 'mono',
+              fontSize: 'sm',
+              lineHeight: 'relaxed',
+            },
+          },
+        },
+        // Shared with `panda.shared.ts` via `./recipes/sharedRecipes.ts` — both
+        // configs reference the same `designSystemRecipes` /
+        // `designSystemSlotRecipes` maps, so the internal build and this
+        // published preset structurally cannot register a different recipe set
+        // again the way they used to (see that module's doc comment).
+        recipes: designSystemRecipes,
+        slotRecipes: designSystemSlotRecipes,
       },
-      semanticTokens: {
-        shadows: elevationShadows,
-        colors: {
-          // Each family below is defined in `src/tokens/sharedThemeTokens.ts`,
-          // the one source this preset and the internal `panda.shared.ts`
-          // config both read — the rationale for each ramp lives there. Order
-          // is load-bearing only in that it is the order both configs use.
-          surface: surfaceColors,
-          text: textColors,
-          border: borderColors,
-          interactive: interactiveColors,
-          scrollbar: scrollbarColors,
-          overlay: overlayColors,
-          fg: fgColors,
-          bg: bgColors,
-          // The chart/identity families come from their own shared module,
-          // `src/tokens/chartColorTokens.ts` (the union
-          // `@r0hitsharma/charting` mirrors is derived from it).
-          chart: chartColorSemanticTokens.chart,
-          heat: heatColors,
-          categorical: categoricalColors,
-          identity: chartColorSemanticTokens.identity,
-          // ── colorPalette ROLE tokens (role-based, on the 50-950 scale) ──
-          ...colorPaletteRoleTokens,
-        },
-      },
-      // NOT shared with `panda.shared.ts` via a module like
-      // `sharedThemeTokens.ts`, but kept in sync by hand: both configs define
-      // the same seven text styles below (`figure` included — the `meter` and
-      // `keyValueTable` slot recipes reference it, so a config missing it
-      // would silently drop just their tabular-numeral styling).
-      textStyles: {
-        sectionLabel: {
-          value: {
-            fontSize: 'xs',
-            fontWeight: 'medium',
-            letterSpacing: 'wide',
-          },
-        },
-        // Micro type roles so consumers stop reaching for a raw `2xs`/`3xs`.
-        microLabel: {
-          value: {
-            fontSize: '3xs',
-            fontWeight: 'medium',
-            letterSpacing: 'wide',
-          },
-        },
-        metaText: {
-          value: {
-            fontSize: '2xs',
-            lineHeight: 'relaxed',
-          },
-        },
-        panelTitle: {
-          value: {
-            fontSize: 'xl',
-            fontWeight: 'semibold',
-            lineHeight: 'tight',
-          },
-        },
-        bodySm: {
-          value: {
-            fontSize: 'sm',
-            lineHeight: 'relaxed',
-          },
-        },
-        // Numeric/figure type: mono family with tabular figures and slightly
-        // tightened tracking so columns of numbers align and a headline figure
-        // and the row beneath it read as the same kind of value. Consumers reach
-        // for this (or the `Figure` atom / `figure` recipe) instead of
-        // re-declaring `fontVariantNumeric: 'tabular-nums'` at each call site.
-        figure: {
-          value: {
-            fontFamily: 'mono',
-            fontVariantNumeric: 'tabular-nums',
-            letterSpacing: '-0.02em',
-          },
-        },
-        codeBlock: {
-          value: {
-            fontFamily: 'mono',
-            fontSize: 'sm',
-            lineHeight: 'relaxed',
-          },
-        },
-      },
-      // Shared with `panda.shared.ts` via `./recipes/sharedRecipes.ts` — both
-      // configs reference the same `designSystemRecipes` /
-      // `designSystemSlotRecipes` maps, so the internal build and this
-      // published preset structurally cannot register a different recipe set
-      // again the way they used to (see that module's doc comment).
-      recipes: designSystemRecipes,
-      slotRecipes: designSystemSlotRecipes,
     },
-  },
-});
+  });
 
 const BASE_THEME_NOTICE = [
   '[@r0hitsharma/design-system] `designSystemPreset` is deprecated: import',

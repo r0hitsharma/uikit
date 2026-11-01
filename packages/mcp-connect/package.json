@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@r0hitsharma/design-system": "*",
-    "lucide-react": "1.47.0"
+    "lucide-react": "1.59.0"
   },
   "peerDependencies": {
     "react": "^19.0.0"
@@ -39,8 +39,8 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "19.3.0",
     "jsdom": "^30.0.0",
-    "oxfmt": "0.68.0",
-    "oxlint": "1.83.0",
+    "oxfmt": "0.73.0",
+    "oxlint": "1.88.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "vitest": "^4.1.9"

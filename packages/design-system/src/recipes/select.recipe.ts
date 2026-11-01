@@ -8,64 +8,65 @@ import { defineSlotRecipe } from '@pandacss/dev';
  * in the recipes cascade layer so a consumer `className` (utilities layer, e.g.
  * `css({ width: '150px' })`) overrides it.
  */
-export const selectRecipe = defineSlotRecipe({
-  className: 'select',
-  description:
-    'Native <select> control skinned to match the input recipe: tokenized border, focus ring, disabled state, plus a non-interactive chevron indicator.',
-  slots: ['root', 'control', 'indicator'],
-  base: {
-    root: {
-      position: 'relative',
-      display: 'inline-flex',
-      alignItems: 'center',
-      width: 'full',
-    },
-    control: {
-      width: 'full',
-      minWidth: '0',
-      h: '9',
-      borderWidth: 'hairline',
-      borderStyle: 'solid',
-      borderColor: 'border.subtle',
-      borderRadius: 'md',
-      bg: 'surface.default',
-      color: 'text.default',
-      pl: '3',
-      pr: '10',
-      fontFamily: 'inherit',
-      textStyle: 'bodySm',
-      lineHeight: 'normal',
-      appearance: 'none',
-      outline: 'none',
-      cursor: 'pointer',
-      transitionDuration: 'fast',
-      transitionProperty: 'border-color, box-shadow',
-      transitionTimingFunction: 'out',
-      _hover: {
-        borderColor: 'border.default',
+export const selectRecipe: ReturnType<typeof defineSlotRecipe> =
+  defineSlotRecipe({
+    className: 'select',
+    description:
+      'Native <select> control skinned to match the input recipe: tokenized border, focus ring, disabled state, plus a non-interactive chevron indicator.',
+    slots: ['root', 'control', 'indicator'],
+    base: {
+      root: {
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        width: 'full',
       },
-      _focusVisible: {
-        borderColor: 'border.strong',
-        outlineWidth: 'strong',
-        outlineStyle: 'solid',
-        outlineColor: 'border.strong',
-        outlineOffset: '1px',
+      control: {
+        width: 'full',
+        minWidth: '0',
+        h: '9',
+        borderWidth: 'hairline',
+        borderStyle: 'solid',
+        borderColor: 'border.subtle',
+        borderRadius: 'md',
+        bg: 'surface.default',
+        color: 'text.default',
+        pl: '3',
+        pr: '10',
+        fontFamily: 'inherit',
+        textStyle: 'bodySm',
+        lineHeight: 'normal',
+        appearance: 'none',
+        outline: 'none',
+        cursor: 'pointer',
+        transitionDuration: 'fast',
+        transitionProperty: 'border-color, box-shadow',
+        transitionTimingFunction: 'out',
+        _hover: {
+          borderColor: 'border.default',
+        },
+        _focusVisible: {
+          borderColor: 'border.strong',
+          outlineWidth: 'strong',
+          outlineStyle: 'solid',
+          outlineColor: 'border.strong',
+          outlineOffset: '1px',
+        },
+        '&:disabled, &[data-disabled]': {
+          opacity: '0.65',
+          cursor: 'not-allowed',
+        },
       },
-      '&:disabled, &[data-disabled]': {
-        opacity: '0.65',
-        cursor: 'not-allowed',
+      indicator: {
+        position: 'absolute',
+        top: '50%',
+        insetInlineEnd: '3',
+        display: 'inline-flex',
+        w: '4',
+        h: '4',
+        color: 'text.muted',
+        pointerEvents: 'none',
+        transform: 'translateY(-50%)',
       },
     },
-    indicator: {
-      position: 'absolute',
-      top: '50%',
-      insetInlineEnd: '3',
-      display: 'inline-flex',
-      w: '4',
-      h: '4',
-      color: 'text.muted',
-      pointerEvents: 'none',
-      transform: 'translateY(-50%)',
-    },
-  },
-});
+  });

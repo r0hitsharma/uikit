@@ -15,7 +15,7 @@ import { defineRecipe } from '@pandacss/dev';
  * recipe is registered in the preset and listed in `staticCss` (`['*']`) so all
  * variant classes are generated.
  */
-export const badgeRecipe = defineRecipe({
+export const badgeRecipe: ReturnType<typeof defineRecipe> = defineRecipe({
   className: 'badge',
   description:
     'Status/label badge on the variant × colorPalette model. variant selects the fill style; colorPalette selects the hue via dark-aware role tokens; size sets density.',

@@ -21,13 +21,13 @@
     "access": "public"
   },
   "dependencies": {
-    "oxfmt": "0.68.0",
-    "oxlint": "1.83.0"
+    "oxfmt": "0.73.0",
+    "oxlint": "1.88.0"
   },
   "devDependencies": {
     "@r0hitsharma/oxfmt-config": "*",
     "@r0hitsharma/tsconfig": "*",
-    "@types/node": "24.13.6",
+    "@types/node": "24.19.2",
     "vitest": "^4.1.9"
   },
   "files": [

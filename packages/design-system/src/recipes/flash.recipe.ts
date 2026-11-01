@@ -16,7 +16,7 @@ import { defineRecipe } from '@pandacss/dev';
  * Applied by its stable class names (`flash`, `flash--tone_x`). Registered in
  * the preset + staticCss.
  */
-export const flashRecipe = defineRecipe({
+export const flashRecipe: ReturnType<typeof defineRecipe> = defineRecipe({
   className: 'flash',
   description:
     'Two-phase flash-on-change tint for non-table values. tone selects the tint color; suppressed under prefers-reduced-motion (FlashOnChange shows a discrete marker instead).',
