@@ -25,7 +25,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@mcp-b/global": "5.1.0",
+    "@mcp-b/global": "6.0.3",
     "@r0hitsharma/mcp-relay": "*"
   },
   "peerDependencies": {
