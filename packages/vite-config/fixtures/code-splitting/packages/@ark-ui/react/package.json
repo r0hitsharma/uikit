@@ -1,0 +1,1 @@
+{ "name": "@ark-ui/react", "type": "module", "sideEffects": false, "exports": { ".": "./index.js" } }

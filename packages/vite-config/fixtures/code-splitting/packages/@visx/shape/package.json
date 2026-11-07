@@ -1,0 +1,1 @@
+{ "name": "@visx/shape", "type": "module", "sideEffects": false, "exports": { ".": "./index.js" } }
