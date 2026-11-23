@@ -35,7 +35,7 @@
     "@cloudflare/workers-types": "^5.0.0",
     "@ladle/react": "^5.1.1",
     "@pandacss/dev": "^2.0.0",
-    "@playwright/test": "1.64.1",
+    "@playwright/test": "1.65.1",
     "@r0hitsharma/mcp-relay": "*",
     "@r0hitsharma/oxfmt-config": "*",
     "@r0hitsharma/oxlint-config": "*",
